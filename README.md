@@ -32,7 +32,7 @@ If you're an AI coding agent (GitHub Copilot, Claude Code, etc.) working on this
 
 ## Installation
 
-This installation follows after the manual setup steps described in the [agent-setup documentation](https://github.com/lsimons/lsimons-bot/blob/main/docs/agent-setup.md).
+This installation follows after the manual setup steps described in the [agent setup documentation](./AGENT_SETUP.md).
 
 ### Quick Start
 
