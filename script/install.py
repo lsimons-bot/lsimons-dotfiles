@@ -194,7 +194,8 @@ def run_topic_installers(dotfiles_root, python_path):
     
     # Find all install.py scripts
     for topic_dir in dotfiles_root.iterdir():
-        if topic_dir.is_dir() and not topic_dir.name.startswith('.'):
+        # Skip script directory to avoid recursive invocation
+        if topic_dir.is_dir() and not topic_dir.name.startswith('.') and topic_dir.name != 'script':
             install_py = topic_dir / 'install.py'
             if install_py.exists():
                 install_scripts.append(install_py)
