@@ -20,6 +20,9 @@ def main():
     else:
         print("[INFO] Installing nvm...")
         try:
+            # Create NVM_DIR before install (nvm install script requires it to exist)
+            nvm_dir.mkdir(parents=True, exist_ok=True)
+
             env = os.environ.copy()
             env['NVM_DIR'] = str(nvm_dir)
 
