@@ -16,6 +16,7 @@ if [ -d "$ZSH" ]; then
         git
         brew
         macos
+        uv
     )
 
     # Disable auto-update prompts (use topgrade instead)
