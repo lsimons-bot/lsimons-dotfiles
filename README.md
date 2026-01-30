@@ -10,7 +10,8 @@ A modular dotfiles configuration for macOS, featuring ZSH and Python support, XD
 - 📁 **XDG Base Directory compliant** - Follows the [freedesktop.org specification](https://specifications.freedesktop.org/basedir-spec/latest/)
 - 🔐 **1Password integration** - Load secrets securely without storing them in git
 - 🐚 **ZSH configuration** - Clean, modular ZSH setup
-- 🐍 **Python support** - Python environment configuration with XDG compliance
+- 🐍 **Python-based installation** - Uses Python for installation automation
+- 🍺 **Homebrew integration** - Automatically installs and uses Homebrew
 - 🔄 **Idempotent installation** - Safe to run multiple times
 - 💾 **Automatic backups** - Backs up existing files before making changes
 
@@ -21,9 +22,13 @@ Before installation, ensure you have:
 1. **macOS** (tested on macOS)
 2. **ZSH** as your shell (default on modern macOS)
 3. **Git** installed
-4. **1Password CLI** (optional, for secret management)
-   - Install: `brew install 1password-cli`
-   - Setup: Follow [1Password CLI getting started](https://developer.1password.com/docs/cli/get-started/)
+4. **Internet connection** (for downloading Homebrew and Python)
+
+**Note:** The installation script will automatically install Homebrew and Python if not present. 1Password CLI is optional for secret management.
+
+## For AI Agents
+
+If you're an AI coding agent (GitHub Copilot, Claude Code, etc.) working on this repository, please read [AGENTS.md](AGENTS.md) for detailed instructions and guidelines.
 
 ## Installation
 
@@ -36,11 +41,11 @@ This installation follows after the manual setup steps described in the [agent-s
 git clone https://github.com/lsimons/lsimons-dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
 
+# Run the installation script (installs Homebrew, Python, and dependencies)
+./script/install.py
+
 # Run the bootstrap script to symlink dotfiles
 ./script/bootstrap
-
-# (Optional) Run topic-specific installations
-./script/install
 
 # Reload your shell
 source ~/.zshrc
@@ -48,7 +53,19 @@ source ~/.zshrc
 
 ### What Gets Installed
 
-The bootstrap script will:
+The installation process will:
+
+1. **Install Homebrew** (if not already installed)
+   - The macOS package manager
+
+2. **Install Python via Homebrew** (if not already installed)
+   - Python 3.x from Homebrew
+   - Used for running installation scripts
+
+3. **Run topic-specific installers** (if any exist)
+   - Each topic can have its own `install.py` script
+
+The bootstrap script will then:
 
 1. Create XDG Base Directory structure:
    - `~/.config` (XDG_CONFIG_HOME)
