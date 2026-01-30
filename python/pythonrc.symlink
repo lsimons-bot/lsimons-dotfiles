@@ -24,4 +24,4 @@ import atexit
 atexit.register(readline.write_history_file, history_file)
 
 # Clean up namespace
-del os, sys, readline, rlcompleter, atexit, xdg_state_home, history_file
+del os, readline, rlcompleter, atexit, xdg_state_home, history_file

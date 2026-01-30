@@ -183,9 +183,9 @@ op_export GITHUB_TOKEN "op://Development/GitHub/token"
    - `mytopic.symlink` - File to symlink
    - `install.sh` - Installation script (optional)
 
-3. Run bootstrap to apply:
+3. (Optional) Run topic-specific installers:
    ```bash
-   ~/.dotfiles/script/bootstrap
+   ~/.dotfiles/script/install.py
    ```
 
 ### Modifying Existing Configuration

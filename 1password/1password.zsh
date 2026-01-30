@@ -26,8 +26,7 @@ if command -v op &> /dev/null; then
     local secret_ref="$2"
     local value
     
-    value=$(op read "$secret_ref" 2>/dev/null)
-    if [ $? -eq 0 ] && [ -n "$value" ]; then
+    if value=$(op read "$secret_ref" 2>/dev/null) && [ -n "$value" ]; then
       export "$var_name"="$value"
       return 0
     else
