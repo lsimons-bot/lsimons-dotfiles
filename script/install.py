@@ -313,30 +313,99 @@ def bootstrap_dotfiles(dotfiles_root):
     success("Dotfiles linked")
 
 
+def get_topic_dependencies(topic_dir):
+    """Read dependencies from a topic's dependencies.txt file"""
+    deps_file = topic_dir / 'dependencies.txt'
+    if not deps_file.exists():
+        return []
+
+    dependencies = []
+    for line in deps_file.read_text().strip().split('\n'):
+        line = line.strip()
+        if line and not line.startswith('#'):
+            dependencies.append(line)
+    return dependencies
+
+
+def topological_sort(topics, dependencies):
+    """
+    Sort topics so dependencies come before dependents.
+    topics: dict of topic_name -> install_script_path
+    dependencies: dict of topic_name -> list of dependency topic names
+    Returns: list of topic names in installation order
+    """
+    # Build in-degree map and adjacency list
+    in_degree = {topic: 0 for topic in topics}
+    dependents = {topic: [] for topic in topics}
+
+    for topic, deps in dependencies.items():
+        for dep in deps:
+            if dep in topics:
+                in_degree[topic] += 1
+                dependents[dep].append(topic)
+            else:
+                warn(f"Topic '{topic}' depends on '{dep}' which has no installer")
+
+    # Kahn's algorithm for topological sort
+    queue = [topic for topic, degree in in_degree.items() if degree == 0]
+    result = []
+
+    while queue:
+        # Sort queue for deterministic ordering
+        queue.sort()
+        topic = queue.pop(0)
+        result.append(topic)
+
+        for dependent in dependents[topic]:
+            in_degree[dependent] -= 1
+            if in_degree[dependent] == 0:
+                queue.append(dependent)
+
+    if len(result) != len(topics):
+        # Cycle detected
+        remaining = set(topics.keys()) - set(result)
+        error(f"Circular dependency detected involving: {remaining}")
+        return None
+
+    return result
+
+
 def run_topic_installers(dotfiles_root, python_path):
-    """Run topic-specific installation scripts"""
+    """Run topic-specific installation scripts in dependency order"""
     info("Looking for topic installation scripts...")
 
-    install_scripts = []
+    topics = {}  # topic_name -> install_script_path
+    dependencies = {}  # topic_name -> list of dependencies
 
-    # Find all install.py scripts
+    # Find all install.py scripts and their dependencies
     for topic_dir in dotfiles_root.iterdir():
         # Skip script directory to avoid recursive invocation
         if topic_dir.is_dir() and not topic_dir.name.startswith('.') and topic_dir.name != 'script':
             install_py = topic_dir / 'install.py'
             if install_py.exists():
-                install_scripts.append(install_py)
+                topic_name = topic_dir.name
+                topics[topic_name] = install_py
+                dependencies[topic_name] = get_topic_dependencies(topic_dir)
 
-    if not install_scripts:
+    if not topics:
         info("No topic install.py scripts found")
         return True
 
-    info(f"Found {len(install_scripts)} topic installer(s)")
+    info(f"Found {len(topics)} topic installer(s)")
 
-    # Run each installer
-    for script in install_scripts:
-        topic = script.parent.name
-        info(f"Running installer for: {topic}")
+    # Sort topics by dependencies
+    sorted_topics = topological_sort(topics, dependencies)
+    if sorted_topics is None:
+        return False
+
+    # Run each installer in order
+    for topic in sorted_topics:
+        script = topics[topic]
+        deps = dependencies[topic]
+        if deps:
+            info(f"Running installer for: {topic} (depends on: {', '.join(deps)})")
+        else:
+            info(f"Running installer for: {topic}")
 
         try:
             run_command([python_path, str(script)])
