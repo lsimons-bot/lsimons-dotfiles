@@ -1,37 +1,27 @@
 #!/usr/bin/env python3
-"""Installation script for Oh My Zsh"""
+"""Installation script for ZSH configuration"""
 
-import subprocess
 import sys
-import os
 from pathlib import Path
+import os
 
 
 def main():
-    print("[INFO] Installing Oh My Zsh...")
+    print("[INFO] Setting up ZSH directories...")
 
-    # Check if already installed
-    oh_my_zsh_dir = Path.home() / '.oh-my-zsh'
-    if oh_my_zsh_dir.exists():
-        print("[SUCCESS] Oh My Zsh already installed")
-        return 0
+    # Get XDG paths
+    xdg_cache = Path(os.environ.get('XDG_CACHE_HOME', Path.home() / '.cache'))
+    xdg_state = Path(os.environ.get('XDG_STATE_HOME', Path.home() / '.local/state'))
 
-    # Install Oh My Zsh (unattended mode)
-    try:
-        env = os.environ.copy()
-        env['RUNZSH'] = 'no'  # Don't run zsh after install
-        env['CHSH'] = 'no'    # Don't change shell
+    # Ensure ZSH directories exist
+    zsh_cache = xdg_cache / 'zsh'
+    zsh_state = xdg_state / 'zsh'
 
-        subprocess.run(
-            ['sh', '-c', 'curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh'],
-            check=True,
-            env=env
-        )
-        print("[SUCCESS] Oh My Zsh installed")
-        return 0
-    except subprocess.CalledProcessError:
-        print("[ERROR] Failed to install Oh My Zsh", file=sys.stderr)
-        return 1
+    zsh_cache.mkdir(parents=True, exist_ok=True)
+    zsh_state.mkdir(parents=True, exist_ok=True)
+
+    print("[SUCCESS] ZSH directories configured")
+    return 0
 
 
 if __name__ == '__main__':
