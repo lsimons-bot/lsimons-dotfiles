@@ -1,0 +1,28 @@
+# Python interactive shell startup
+# This file is loaded when starting an interactive Python session
+
+import os
+import sys
+import readline
+import rlcompleter
+
+# Enable tab completion
+readline.parse_and_bind('tab: complete')
+
+# History file location following XDG spec
+xdg_state_home = os.environ.get('XDG_STATE_HOME', os.path.expanduser('~/.local/state'))
+history_file = os.path.join(xdg_state_home, 'python', 'history')
+
+# Ensure directory exists
+os.makedirs(os.path.dirname(history_file), exist_ok=True)
+
+# Load history if it exists
+if os.path.exists(history_file):
+    readline.read_history_file(history_file)
+
+# Save history on exit
+import atexit
+atexit.register(readline.write_history_file, history_file)
+
+# Clean up namespace
+del os, sys, readline, rlcompleter, atexit, xdg_state_home, history_file

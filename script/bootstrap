@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+#
+# Bootstrap script for lsimons-dotfiles
+# This script is safe to run multiple times (idempotent)
+# It symlinks files ending in .symlink to the appropriate locations
+#
+# Inspired by https://github.com/holman/dotfiles
+
+set -e
+
+DOTFILES_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+info() {
+  echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+success() {
+  echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+warn() {
+  echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+error() {
+  echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Backup a file before replacing it
+backup_file() {
+  local file="$1"
+  if [ -f "$file" ] || [ -L "$file" ]; then
+    local backup_dir="$HOME/.dotfiles-backup/$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$backup_dir"
+    mv "$file" "$backup_dir/"
+    info "Backed up $file to $backup_dir/"
+  fi
+}
+
+# Link a file to its destination
+link_file() {
+  local src="$1"
+  local dst="$2"
+  
+  # Check if destination already exists and is correct
+  if [ -L "$dst" ]; then
+    local current_src="$(readlink "$dst")"
+    if [ "$current_src" = "$src" ]; then
+      success "Already linked: $dst"
+      return 0
+    else
+      warn "Symlink exists but points to different location: $dst -> $current_src"
+      backup_file "$dst"
+    fi
+  elif [ -e "$dst" ]; then
+    warn "File exists: $dst"
+    backup_file "$dst"
+  fi
+  
+  # Create parent directory if it doesn't exist
+  local parent_dir="$(dirname "$dst")"
+  mkdir -p "$parent_dir"
+  
+  # Create symlink
+  ln -s "$src" "$dst"
+  success "Linked: $dst -> $src"
+}
+
+# Setup XDG directories
+setup_xdg() {
+  info "Setting up XDG Base Directory structure..."
+  
+  local XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+  local XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+  local XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+  local XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+  
+  mkdir -p "$XDG_CONFIG_HOME"
+  mkdir -p "$XDG_DATA_HOME"
+  mkdir -p "$XDG_CACHE_HOME"
+  mkdir -p "$XDG_STATE_HOME"
+  
+  success "XDG directories created"
+}
+
+# Main installation
+main() {
+  info "Starting dotfiles bootstrap..."
+  info "Dotfiles root: $DOTFILES_ROOT"
+  
+  # Setup XDG directories first
+  setup_xdg
+  
+  # Find all .symlink files and link them
+  info "Linking dotfiles..."
+  
+  for src in "$DOTFILES_ROOT"/**/*.symlink; do
+    if [ -f "$src" ]; then
+      # Determine destination
+      local basename="$(basename "$src" .symlink)"
+      
+      # Special handling for specific files
+      case "$basename" in
+        zshrc)
+          local dst="$HOME/.zshrc"
+          ;;
+        gitconfig)
+          local XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+          local dst="$XDG_CONFIG_HOME/git/config"
+          mkdir -p "$XDG_CONFIG_HOME/git"
+          ;;
+        pythonrc)
+          local XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+          local dst="$XDG_CONFIG_HOME/python/pythonrc"
+          mkdir -p "$XDG_CONFIG_HOME/python"
+          ;;
+        *)
+          # Default: link to home directory with a dot prefix
+          local dst="$HOME/.$basename"
+          ;;
+      esac
+      
+      link_file "$src" "$dst"
+    fi
+  done
+  
+  success "Bootstrap complete!"
+  info ""
+  info "Next steps:"
+  info "  1. Run 'source ~/.zshrc' to load the new configuration"
+  info "  2. (Optional) Run 'script/install' to run topic-specific installations"
+  info "  3. Configure 1Password CLI for secret management"
+}
+
+main "$@"

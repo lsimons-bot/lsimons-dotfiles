@@ -1,0 +1,36 @@
+# lsimons ZSH configuration
+# This follows the XDG Base Directory specification
+
+# Set up XDG Base Directory paths if not already set
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+
+# Source all .zsh files from the dotfiles directory
+# This allows for modular configuration by topic
+DOTFILES="$HOME/.dotfiles"
+if [ -d "$DOTFILES" ]; then
+  # Load path configuration first
+  for file in "$DOTFILES"/*/path.zsh; do
+    [ -r "$file" ] && source "$file"
+  done
+  
+  # Load everything else
+  for file in "$DOTFILES"/*/*.zsh; do
+    # Skip path.zsh and completion.zsh (loaded separately)
+    case "$file" in
+      */path.zsh|*/completion.zsh) continue ;;
+      *) [ -r "$file" ] && source "$file" ;;
+    esac
+  done
+  
+  # Load completion configuration last
+  for file in "$DOTFILES"/*/completion.zsh; do
+    [ -r "$file" ] && source "$file"
+  done
+fi
+
+# Initialize completion system if not already done
+autoload -Uz compinit
+compinit -d "$XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION"

@@ -1,0 +1,34 @@
+# Dotfiles .gitignore
+
+# Never commit actual secrets
+1password/.env.1password
+
+# Backup directory (created during installation)
+.dotfiles-backup/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ZSH
+*.zwc
+.zcompdump*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Editors
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Local customizations (user-specific, not in git)
+local/
+*.local
