@@ -7,21 +7,6 @@ export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
-# Rancher Desktop bin path
-if [ -d "$HOME/.rd/bin" ]; then
-  export PATH="$HOME/.rd/bin:$PATH"
-fi
-
-# Local bin path
-if [ -d "$HOME/.local/bin" ]; then
-  export PATH="$HOME/.local/bin:$PATH"
-fi
-
-# LM Studio bin path
-if [ -d "$HOME/.lmstudio/bin" ]; then
-  export PATH="$HOME/.lmstudio/bin:$PATH"
-fi
-
 # Source all .zsh files from the dotfiles directory
 # This allows for modular configuration by topic
 DOTFILES="$HOME/.dotfiles"
