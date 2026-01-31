@@ -1,0 +1,2 @@
+# Python symlink destinations
+pythonrc.symlink -> $XDG_CONFIG_HOME/python/pythonrc

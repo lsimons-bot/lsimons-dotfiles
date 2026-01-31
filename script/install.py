@@ -285,31 +285,60 @@ def link_file(src, dst):
     return True
 
 
+def load_symlink_mappings(topic_dir):
+    """Load symlink destination mappings from topic's symlinks.txt"""
+    mappings = {}
+    symlinks_file = topic_dir / 'symlinks.txt'
+    if not symlinks_file.exists():
+        return mappings
+
+    home = Path.home()
+    xdg_config_home = Path(os.environ.get('XDG_CONFIG_HOME', home / '.config'))
+
+    for line in symlinks_file.read_text().strip().split('\n'):
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        if ' -> ' not in line:
+            continue
+
+        src_name, dst_path = line.split(' -> ', 1)
+        src_name = src_name.strip()
+        dst_path = dst_path.strip()
+
+        # Expand variables
+        dst_path = dst_path.replace('$HOME', str(home))
+        dst_path = dst_path.replace('$XDG_CONFIG_HOME', str(xdg_config_home))
+        dst_path = dst_path.replace('~', str(home))
+
+        mappings[src_name] = Path(dst_path)
+
+    return mappings
+
+
 def bootstrap_dotfiles(dotfiles_root):
     """Symlink dotfiles to appropriate locations"""
     info("Linking dotfiles...")
 
     home = Path.home()
-    xdg_config_home = Path(os.environ.get('XDG_CONFIG_HOME', home / '.config'))
+
+    # Load all symlink mappings from topic directories
+    all_mappings = {}
+    for topic_dir in dotfiles_root.iterdir():
+        if topic_dir.is_dir() and not topic_dir.name.startswith('.'):
+            mappings = load_symlink_mappings(topic_dir)
+            for src_name, dst in mappings.items():
+                src_path = topic_dir / src_name
+                if src_path.exists():
+                    all_mappings[src_path] = dst
 
     for src in dotfiles_root.rglob('*.symlink'):
         if src.is_file():
-            # Determine destination
-            basename = src.stem  # filename without .symlink extension
-
-            # Special handling for specific files
-            if basename == 'zshrc':
-                dst = home / '.zshrc'
-            elif basename == 'gitconfig':
-                dst = xdg_config_home / 'git' / 'config'
-            elif basename == 'pythonrc':
-                dst = xdg_config_home / 'python' / 'pythonrc'
-            elif basename == 'settings.json' and src.parent.name == 'zed':
-                dst = xdg_config_home / 'zed' / 'settings.json'
-            elif basename == 'tmux.conf':
-                dst = home / '.tmux.conf'
+            if src in all_mappings:
+                dst = all_mappings[src]
             else:
                 # Default: link to home directory with a dot prefix
+                basename = src.stem
                 dst = home / f'.{basename}'
 
             link_file(src, dst)

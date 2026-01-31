@@ -1,0 +1,2 @@
+# ZSH symlink destinations
+zshrc.symlink -> ~/.zshrc
