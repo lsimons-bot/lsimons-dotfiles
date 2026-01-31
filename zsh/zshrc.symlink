@@ -12,6 +12,16 @@ if [ -d "$HOME/.rd/bin" ]; then
   export PATH="$HOME/.rd/bin:$PATH"
 fi
 
+# Local bin path
+if [ -d "$HOME/.local/bin" ]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# LM Studio bin path
+if [ -d "$HOME/.lmstudio/bin" ]; then
+  export PATH="$HOME/.lmstudio/bin:$PATH"
+fi
+
 # Source all .zsh files from the dotfiles directory
 # This allows for modular configuration by topic
 DOTFILES="$HOME/.dotfiles"
