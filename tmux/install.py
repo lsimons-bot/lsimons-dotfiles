@@ -1,27 +1,26 @@
 #!/usr/bin/env python3
 """Installation script for tmux"""
 
-import subprocess
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
+from helpers import info, success, error, command_exists, brew_install
 
 
 def main():
-    print("[INFO] Installing tmux...")
+    info("Installing tmux...")
 
-    # Check if already installed
-    result = subprocess.run(['which', 'tmux'], capture_output=True)
-    if result.returncode == 0:
-        print("[SUCCESS] tmux already installed")
+    if command_exists('tmux'):
+        success("tmux already installed")
         return 0
 
-    # Install via Homebrew
-    try:
-        subprocess.run(['brew', 'install', 'tmux'], check=True)
-        print("[SUCCESS] tmux installed")
+    if brew_install('tmux'):
+        success("tmux installed")
         return 0
-    except subprocess.CalledProcessError:
-        print("[ERROR] Failed to install tmux", file=sys.stderr)
-        return 1
+
+    error("Failed to install tmux")
+    return 1
 
 
 if __name__ == '__main__':

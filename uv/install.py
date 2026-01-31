@@ -1,27 +1,26 @@
 #!/usr/bin/env python3
 """Installation script for uv (Python package manager)"""
 
-import subprocess
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
+from helpers import info, success, error, command_exists, brew_install
 
 
 def main():
-    print("[INFO] Installing uv...")
+    info("Installing uv...")
 
-    # Check if already installed
-    result = subprocess.run(['which', 'uv'], capture_output=True)
-    if result.returncode == 0:
-        print("[SUCCESS] uv already installed")
+    if command_exists('uv'):
+        success("uv already installed")
         return 0
 
-    # Install via Homebrew
-    try:
-        subprocess.run(['brew', 'install', 'uv'], check=True)
-        print("[SUCCESS] uv installed")
+    if brew_install('uv'):
+        success("uv installed")
         return 0
-    except subprocess.CalledProcessError:
-        print("[ERROR] Failed to install uv", file=sys.stderr)
-        return 1
+
+    error("Failed to install uv")
+    return 1
 
 
 if __name__ == '__main__':

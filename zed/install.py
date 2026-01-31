@@ -1,28 +1,26 @@
 #!/usr/bin/env python3
 """Installation script for Zed editor"""
 
-import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
+from helpers import info, success, error, app_exists, brew_install
+
 
 def main():
-    print("[INFO] Installing Zed...")
+    info("Installing Zed...")
 
-    # Check if already installed
-    app_path = Path('/Applications/Zed.app')
-    if app_path.exists():
-        print("[SUCCESS] Zed already installed")
+    if app_exists('Zed'):
+        success("Zed already installed")
         return 0
 
-    # Install via Homebrew
-    try:
-        subprocess.run(['brew', 'install', '--cask', 'zed'], check=True)
-        print("[SUCCESS] Zed installed")
+    if brew_install('zed', cask=True):
+        success("Zed installed")
         return 0
-    except subprocess.CalledProcessError:
-        print("[ERROR] Failed to install Zed", file=sys.stderr)
-        return 1
+
+    error("Failed to install Zed")
+    return 1
 
 
 if __name__ == '__main__':

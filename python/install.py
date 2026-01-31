@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 """Installation script for Python configuration"""
 
-import subprocess
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
+from helpers import info, success, error, command_exists
 
 
 def main():
-    print("[INFO] Checking Python installation...")
+    info("Checking Python installation...")
 
-    # Verify Python is available (installed by main installer via Homebrew)
-    result = subprocess.run(['which', 'python3'], capture_output=True)
-    if result.returncode != 0:
-        print("[ERROR] Python not found", file=sys.stderr)
+    if not command_exists('python3'):
+        error("Python not found")
         return 1
 
-    print("[SUCCESS] Python is installed")
+    success("Python is installed")
     return 0
 
 

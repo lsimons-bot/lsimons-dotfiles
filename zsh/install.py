@@ -2,25 +2,26 @@
 """Installation script for ZSH configuration"""
 
 import sys
-from pathlib import Path
 import os
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
+from helpers import info, success
 
 
 def main():
-    print("[INFO] Setting up ZSH directories...")
+    info("Setting up ZSH directories...")
 
-    # Get XDG paths
     xdg_cache = Path(os.environ.get('XDG_CACHE_HOME', Path.home() / '.cache'))
     xdg_state = Path(os.environ.get('XDG_STATE_HOME', Path.home() / '.local/state'))
 
-    # Ensure ZSH directories exist
     zsh_cache = xdg_cache / 'zsh'
     zsh_state = xdg_state / 'zsh'
 
     zsh_cache.mkdir(parents=True, exist_ok=True)
     zsh_state.mkdir(parents=True, exist_ok=True)
 
-    print("[SUCCESS] ZSH directories configured")
+    success("ZSH directories configured")
     return 0
 
 

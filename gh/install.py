@@ -1,27 +1,26 @@
 #!/usr/bin/env python3
 """Installation script for GitHub CLI"""
 
-import subprocess
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
+from helpers import info, success, error, command_exists, brew_install
 
 
 def main():
-    print("[INFO] Installing GitHub CLI...")
+    info("Installing GitHub CLI...")
 
-    # Check if already installed
-    result = subprocess.run(['which', 'gh'], capture_output=True)
-    if result.returncode == 0:
-        print("[SUCCESS] GitHub CLI already installed")
+    if command_exists('gh'):
+        success("GitHub CLI already installed")
         return 0
 
-    # Install via Homebrew
-    try:
-        subprocess.run(['brew', 'install', 'gh'], check=True)
-        print("[SUCCESS] GitHub CLI installed")
+    if brew_install('gh'):
+        success("GitHub CLI installed")
         return 0
-    except subprocess.CalledProcessError:
-        print("[ERROR] Failed to install GitHub CLI", file=sys.stderr)
-        return 1
+
+    error("Failed to install GitHub CLI")
+    return 1
 
 
 if __name__ == '__main__':

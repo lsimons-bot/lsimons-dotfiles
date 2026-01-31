@@ -1,28 +1,26 @@
 #!/usr/bin/env python3
 """Installation script for Ghostty terminal"""
 
-import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
+from helpers import info, success, error, app_exists, brew_install
+
 
 def main():
-    print("[INFO] Installing Ghostty...")
+    info("Installing Ghostty...")
 
-    # Check if already installed
-    app_path = Path('/Applications/Ghostty.app')
-    if app_path.exists():
-        print("[SUCCESS] Ghostty already installed")
+    if app_exists('Ghostty'):
+        success("Ghostty already installed")
         return 0
 
-    # Install via Homebrew
-    try:
-        subprocess.run(['brew', 'install', '--cask', 'ghostty'], check=True)
-        print("[SUCCESS] Ghostty installed")
+    if brew_install('ghostty', cask=True):
+        success("Ghostty installed")
         return 0
-    except subprocess.CalledProcessError:
-        print("[ERROR] Failed to install Ghostty", file=sys.stderr)
-        return 1
+
+    error("Failed to install Ghostty")
+    return 1
 
 
 if __name__ == '__main__':

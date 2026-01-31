@@ -1,27 +1,26 @@
 #!/usr/bin/env python3
 """Installation script for topgrade (automated system updater)"""
 
-import subprocess
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
+from helpers import info, success, error, command_exists, brew_install
 
 
 def main():
-    print("[INFO] Installing topgrade...")
+    info("Installing topgrade...")
 
-    # Check if already installed
-    result = subprocess.run(['which', 'topgrade'], capture_output=True)
-    if result.returncode == 0:
-        print("[SUCCESS] topgrade already installed")
+    if command_exists('topgrade'):
+        success("topgrade already installed")
         return 0
 
-    # Install via Homebrew
-    try:
-        subprocess.run(['brew', 'install', 'topgrade'], check=True)
-        print("[SUCCESS] topgrade installed")
+    if brew_install('topgrade'):
+        success("topgrade installed")
         return 0
-    except subprocess.CalledProcessError:
-        print("[ERROR] Failed to install topgrade", file=sys.stderr)
-        return 1
+
+    error("Failed to install topgrade")
+    return 1
 
 
 if __name__ == '__main__':

@@ -1,27 +1,26 @@
 #!/usr/bin/env python3
 """Installation script for 1Password CLI"""
 
-import subprocess
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
+from helpers import info, success, error, command_exists, brew_install
 
 
 def main():
-    print("[INFO] Installing 1Password CLI...")
+    info("Installing 1Password CLI...")
 
-    # Check if already installed
-    result = subprocess.run(['which', 'op'], capture_output=True)
-    if result.returncode == 0:
-        print("[SUCCESS] 1Password CLI already installed")
+    if command_exists('op'):
+        success("1Password CLI already installed")
         return 0
 
-    # Install via Homebrew
-    try:
-        subprocess.run(['brew', 'install', '--cask', '1password-cli'], check=True)
-        print("[SUCCESS] 1Password CLI installed")
+    if brew_install('1password-cli', cask=True):
+        success("1Password CLI installed")
         return 0
-    except subprocess.CalledProcessError:
-        print("[ERROR] Failed to install 1Password CLI", file=sys.stderr)
-        return 1
+
+    error("Failed to install 1Password CLI")
+    return 1
 
 
 if __name__ == '__main__':
