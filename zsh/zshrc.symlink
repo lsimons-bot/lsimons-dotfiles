@@ -27,21 +27,21 @@ fi
 DOTFILES="$HOME/.dotfiles"
 if [ -d "$DOTFILES" ]; then
   # Load path configuration first
-  for file in "$DOTFILES"/*/path.zsh; do
+  for file in "$DOTFILES"/*/path.zsh(N); do
     [ -r "$file" ] && source "$file"
   done
-  
+
   # Load everything else
-  for file in "$DOTFILES"/*/*.zsh; do
+  for file in "$DOTFILES"/*/*.zsh(N); do
     # Skip path.zsh and completion.zsh (loaded separately)
     case "$file" in
       */path.zsh|*/completion.zsh) continue ;;
       *) [ -r "$file" ] && source "$file" ;;
     esac
   done
-  
+
   # Load completion configuration last
-  for file in "$DOTFILES"/*/completion.zsh; do
+  for file in "$DOTFILES"/*/completion.zsh(N); do
     [ -r "$file" ] && source "$file"
   done
 fi
