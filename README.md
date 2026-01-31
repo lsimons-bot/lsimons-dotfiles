@@ -43,14 +43,19 @@ The installation script (`./script/install.py`) will:
 |-------|----------|
 | `1password/` | 1Password CLI (`op`) |
 | `brave/` | Brave Browser |
+| `gemini/` | Gemini CLI |
 | `gh/` | GitHub CLI |
 | `ghostty/` | Ghostty terminal |
+| `git/` | Git (via Homebrew) |
 | `node/` | nvm and Node.js LTS |
+| `oh-my-zsh/` | Oh My Zsh |
 | `pi-coding-agent/` | pi-coding-agent |
+| `python/` | Python configuration |
 | `tmux/` | tmux |
 | `topgrade/` | topgrade (automated updates) |
+| `uv/` | uv (Python package manager) |
 | `zed/` | Zed editor |
-| `zsh/` | Oh My Zsh |
+| `zsh/` | ZSH directories |
 
 ## For AI Agents
 
@@ -60,20 +65,24 @@ If you're an AI coding agent (GitHub Copilot, Claude Code, etc.) working on this
 
 ```
 .
-└── script/           # Installation scripts
-    └── install.py    # Main installer
+├── script/           # Installation scripts and helpers
+│   ├── install.py    # Main installer
+│   └── helpers.py    # Shared functions for topic installers
 ├── 1password/        # 1Password CLI integration
 ├── brave/            # Brave browser installer
+├── gemini/           # Gemini CLI installer
 ├── gh/               # GitHub CLI installer
 ├── ghostty/          # Ghostty terminal installer
-├── git/              # Git configuration
+├── git/              # Git configuration and installer
 ├── node/             # nvm and Node.js
+├── oh-my-zsh/        # Oh My Zsh installer
 ├── pi-coding-agent/  # Coding agent installer
 ├── python/           # Python configuration
 ├── tmux/             # tmux installer
 ├── topgrade/         # topgrade installer
+├── uv/               # uv Python package manager
 ├── zed/              # Zed editor installer
-├── zsh/              # ZSH configuration and Oh My Zsh
+└── zsh/              # ZSH configuration
 ```
 
 ### File Naming Convention
