@@ -32,11 +32,17 @@ if command -v op &> /dev/null; then
 
   # Load secrets from .env.1password if it exists
   # Format: VAR_NAME=op://vault/item/field
-  # Uses op inject for efficient bulk loading (single op call)
+  # Uses op run for efficient bulk loading (single op call with proper escaping)
   if [ -f "$HOME/.dotfiles/1password/.env.1password" ]; then
-    eval "$(grep -v '^#' "$HOME/.dotfiles/1password/.env.1password" | grep -v '^$' | grep 'op://' | \
-      sed 's/=op:\/\//="{{ op:\/\//; s/$/" }}/' | \
-      sed 's/^/export /' | \
-      op inject 2>/dev/null)" || true
+    local _op_vars
+    _op_vars=$(grep -v '^#' "$HOME/.dotfiles/1password/.env.1password" | grep -v '^$' | grep 'op://' | cut -d= -f1 | tr '\n' ' ')
+    if [ -n "$_op_vars" ]; then
+      eval "$(op run --no-masking --env-file="$HOME/.dotfiles/1password/.env.1password" -- sh -c '
+        for v in '"$_op_vars"'; do
+          val=$(printenv "$v" 2>/dev/null)
+          [ -n "$val" ] && printf "export %s=%q\n" "$v" "$val"
+        done
+      ' 2>/dev/null)" || true
+    fi
   fi
 fi
