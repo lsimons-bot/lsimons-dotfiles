@@ -39,53 +39,15 @@ Using a distinct or an incognito browser, for the new bot...
 
 Change your AGENTS.md file(s) to write git commits that include the bot as a co-author.
 
-### Set the git co-author
+Always add a Co-authored-by line. Check `git config --get user.email` to determine authorship:
+- If you're `bot@leosimons.com`: add `Co-authored-by: Leo Simons <mail@leosimons.com>`
+- If you're `mail@leosimons.com` (or other human): add `Co-authored-by: lsimons-bot <bot@leosimons.com>`
 
-When you make git commits, you must always attribute the co-author. At the end of every git commit message, add two extra newlines and then a Co-authored-by line.
-
-To determine who your co-author is, check your git user.email with: `git config get user.email`. If you are bot@leosimons.com, then your co-author line should be the human author:
-
+Example:
 ```
-Co-authored-by: Leo Simons <mail@leosimons.com>
-```
+feat(git_sync): Add hostname filter to OwnerConfig
 
-If instead you are mail@leosimons.com, or another human user, then your co-author line should be the bot author:
-
-```
 Co-authored-by: lsimons-bot <bot@leosimons.com>
-```
-
-A good example of a commit message (Leo as author, so lsimons-bot as co-author):
-
-```
-Author: Leo Simons <mail@leosimons.com>
-Date:   Fri Jan 2 16:49:26 2026 +0100
-
-    feat(git_sync): Add hostname filter to OwnerConfig (lsa-tsl)
-
-    Co-authored-by: lsimons-bot <bot@leosimons.com>
-```
-
-Another good example would be (lsimons-bot as author, so Leo as co-author):
-
-```
-Author: lsimons-bot <bot@leosimons.com>
-Date:   Fri Jan 2 16:49:26 2026 +0100
-
-    feat(git_sync): Add hostname filter to OwnerConfig (lsa-tsl)
-
-    Co-authored-by: Leo Simons <mail@leosimons.com>
-```
-
-A BAD example is (lsimons-bot can't be both author and co-author):
-
-```
-Author: lsimons-bot <bot@leosimons.com>
-Date:   Fri Jan 2 16:49:26 2026 +0100
-
-    feat(git_sync): Add hostname filter to OwnerConfig (lsa-tsl)
-
-    Co-authored-by: lsimons-bot <bot@leosimons.com>
 ```
 
 ## Setting up an agent coding VM
