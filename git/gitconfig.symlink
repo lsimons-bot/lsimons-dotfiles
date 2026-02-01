@@ -1,5 +1,9 @@
 # Git global configuration
 # This file will be symlinked to XDG_CONFIG_HOME/git/config
+# Machine-specific settings (user.name, user.email) are in config.local
+
+[include]
+    path = config.local
 
 [gpg]
     format = ssh
@@ -12,8 +16,6 @@
 
 [user]
     signingkey =
-    name = Leo-Bot Simons
-    email = bot@leosimons.com
 
 [core]
 	editor = vim
