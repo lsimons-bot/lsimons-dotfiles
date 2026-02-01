@@ -73,10 +73,22 @@ def get_short_hostname():
     return socket.gethostname().split('.')[0]
 
 
+def _deep_merge(base, override):
+    """Recursively merge override into base, returning a new dict."""
+    result = base.copy()
+    for key, value in override.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            result[key] = _deep_merge(result[key], value)
+        else:
+            result[key] = value
+    return result
+
+
 def get_machine_config():
     """Load machine-specific configuration.
 
-    Looks for machines/<hostname>.json, falls back to machines/default.json.
+    Always loads machines/default.json, then merges machines/<hostname>.json
+    on top if it exists.
 
     Returns:
         tuple: (config_dict, hostname)
@@ -84,10 +96,14 @@ def get_machine_config():
     hostname = get_short_hostname()
     machines_dir = DOTFILES_ROOT / 'machines'
 
-    # Try machine-specific config first
-    config_file = machines_dir / f'{hostname}.json'
-    if not config_file.exists():
-        config_file = machines_dir / 'default.json'
+    # Always load default first
+    with open(machines_dir / 'default.json') as f:
+        config = json.load(f)
 
-    with open(config_file) as f:
-        return json.load(f), hostname
+    # Merge hostname-specific config if it exists
+    host_config_file = machines_dir / f'{hostname}.json'
+    if host_config_file.exists():
+        with open(host_config_file) as f:
+            config = _deep_merge(config, json.load(f))
+
+    return config, hostname
