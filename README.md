@@ -47,6 +47,7 @@ The installation script (`./script/install.py`) will:
 | `gh/` | GitHub CLI |
 | `ghostty/` | Ghostty terminal |
 | `git/` | Git (via Homebrew) |
+| `jdk/` | JDK configuration |
 | `node/` | nvm and Node.js LTS |
 | `oh-my-zsh/` | Oh My Zsh |
 | `pi-coding-agent/` | pi-coding-agent |
@@ -77,6 +78,7 @@ If you're an AI coding agent (GitHub Copilot, Claude Code, etc.) working on this
 ├── gh/               # GitHub CLI installer
 ├── ghostty/          # Ghostty terminal installer
 ├── git/              # Git configuration and installer
+├── jdk/              # JDK configuration
 ├── node/             # nvm and Node.js
 ├── oh-my-zsh/        # Oh My Zsh installer
 ├── pi-coding-agent/  # Coding agent installer
