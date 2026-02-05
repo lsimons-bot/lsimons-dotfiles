@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Check Python syntax
+        run: |
+          python3 -m py_compile script/install.py
+          python3 -m py_compile script/helpers.py
+          for f in */install.py; do
+            python3 -m py_compile "$f"
+          done
+
+      - name: Run ruff linting
+        run: |
+          pip install ruff
+          ruff check script/install.py script/helpers.py --select=E,F,W
+
+      - name: Validate JSON configs
+        run: |
+          python3 -c "import json; json.load(open('machines/default.json'))"
