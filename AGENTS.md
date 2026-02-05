@@ -48,6 +48,14 @@ newtopic/
 
 Update README.md to document it.
 
+## Commit Message Convention
+
+Follow [Conventional Commits](https://conventionalcommits.org/):
+
+**Format:** `type(scope): description`
+
+**Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `build`, `ci`, `perf`, `revert`, `improvement`, `chore`
+
 ## Session Completion
 
 Work is NOT complete until `git push` succeeds.
