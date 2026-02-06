@@ -2,9 +2,6 @@
 # On macOS, bash reads .bash_profile for login shells.
 # Source .bashrc so all config lives in one place.
 
-# Silence macOS "default interactive shell is now zsh" warning
-export BASH_SILENCE_DEPRECATION_WARNING=1
-
 if [ -f "$HOME/.bashrc" ]; then
   source "$HOME/.bashrc"
 fi
