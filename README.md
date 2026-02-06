@@ -202,6 +202,16 @@ ls -la ~/.bashrc ~/.bash_profile
 # Should show: ~/.bash_profile -> ~/.dotfiles/bash/bash_profile.symlink
 ```
 
+### macOS "default interactive shell is now zsh" warning
+
+Apple's `/bin/bash` prints a deprecation warning on every interactive start. To silence it, add to your environment (e.g. in a terminal profile or launch agent):
+
+```bash
+export BASH_SILENCE_DEPRECATION_WARNING=1
+```
+
+This is baked into the macOS bash binary itself, not a config file. The dotfiles don't set this automatically because it's a per-user preference about which shell to use.
+
 ### 1Password secrets not loading
 
 1. Check CLI is installed: `which op`
