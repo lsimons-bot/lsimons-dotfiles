@@ -5,5 +5,10 @@
       "email": "bot@leosimons.com",
       "signingkey": "/Users/lsimons/.ssh/id_lsimons_bot_ed25519.pub"
     }
+  },
+  "1password": {
+    "secrets": {
+      "GITHUB_TOKEN": "op://AI/GITHUB_TOKEN/password"
+    }
   }
 }
