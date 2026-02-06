@@ -23,8 +23,12 @@ def main():
         env['RUNZSH'] = 'no'
         env['CHSH'] = 'no'
 
+        omz_url = (
+            "https://raw.githubusercontent.com"
+            "/ohmyzsh/ohmyzsh/master/tools/install.sh"
+        )
         subprocess.run(
-            ['sh', '-c', 'curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh'],
+            ['sh', '-c', f'curl -fsSL {omz_url} | sh'],
             check=True,
             env=env
         )

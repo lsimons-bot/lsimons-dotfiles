@@ -7,11 +7,14 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
-from helpers import info, success, error, command_exists, brew_install, get_machine_config, DOTFILES_ROOT
+from helpers import (
+    DOTFILES_ROOT, info, success, error, command_exists,
+    brew_install, get_machine_config,
+)
 
 
 def generate_env_file():
-    """Generate combined env file from base .env.1password + machine-specific secrets."""
+    """Generate combined env file from base .env.1password + machine secrets."""
     home = Path.home()
     xdg_config_home = Path(os.environ.get('XDG_CONFIG_HOME', home / '.config'))
     env_dir = xdg_config_home / '1password'

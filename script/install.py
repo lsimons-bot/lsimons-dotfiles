@@ -215,7 +215,7 @@ def create_dotfiles_symlink(dotfiles_root):
 
     # Check if a regular directory exists at ~/.dotfiles
     elif symlink_path.exists():
-        error(f"~/.dotfiles exists as a directory or file, not a symlink")
+        error("~/.dotfiles exists as a directory or file, not a symlink")
         error(f"Please move or remove {symlink_path} manually")
         return False
 
@@ -251,7 +251,8 @@ def backup_file(file_path):
     """Backup a file before replacing it"""
     path = Path(file_path)
     if path.exists() or path.is_symlink():
-        backup_dir = Path.home() / '.dotfiles-backup' / datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_dir = Path.home() / '.dotfiles-backup' / timestamp
         backup_dir.mkdir(parents=True, exist_ok=True)
         dest = backup_dir / path.name
         shutil.move(str(path), str(dest))
@@ -270,7 +271,8 @@ def link_file(src, dst):
             success(f"Already linked: {dst}")
             return True
         else:
-            warn(f"Symlink exists but points to different location: {dst} -> {current_src}")
+            warn(f"Symlink exists but points elsewhere: "
+                 f"{dst} -> {current_src}")
             backup_file(dst)
     elif dst_path.exists():
         warn(f"File exists: {dst}")
@@ -413,7 +415,9 @@ def run_topic_installers(dotfiles_root, python_path):
     # Find all install.py scripts and their dependencies
     for topic_dir in dotfiles_root.iterdir():
         # Skip script directory to avoid recursive invocation
-        if topic_dir.is_dir() and not topic_dir.name.startswith('.') and topic_dir.name != 'script':
+        if (topic_dir.is_dir()
+                and not topic_dir.name.startswith('.')
+                and topic_dir.name != 'script'):
             install_py = topic_dir / 'install.py'
             if install_py.exists():
                 topic_name = topic_dir.name

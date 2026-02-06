@@ -6,7 +6,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
-from helpers import info, success, error, brew_install, brew_is_installed, get_machine_config
+from helpers import (
+    info, success, error, brew_install, brew_is_installed,
+    get_machine_config,
+)
 
 
 def generate_local_config():
@@ -38,7 +41,8 @@ def generate_local_config():
             return True
 
     config_local.write_text(content)
-    success(f"Generated git config.local for {hostname}: {git_user['name']} <{git_user['email']}>")
+    name, email = git_user['name'], git_user['email']
+    success(f"Generated git config.local for {hostname}: {name} <{email}>")
     return True
 
 

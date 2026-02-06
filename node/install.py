@@ -27,8 +27,12 @@ def main():
             env['NVM_DIR'] = str(nvm_dir)
             env['PROFILE'] = '/dev/null'
 
+            nvm_url = (
+                "https://raw.githubusercontent.com"
+                "/nvm-sh/nvm/v0.40.1/install.sh"
+            )
             subprocess.run(
-                ['sh', '-c', 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'],
+                ['sh', '-c', f'curl -o- {nvm_url} | bash'],
                 check=True,
                 env=env
             )

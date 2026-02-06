@@ -16,7 +16,8 @@ def install_npm_package():
     info("Installing pi-coding-agent npm package...")
 
     if not command_exists('npm'):
-        xdg_data_home = os.environ.get('XDG_DATA_HOME', str(Path.home() / '.local/share'))
+        home = str(Path.home() / '.local/share')
+        xdg_data_home = os.environ.get('XDG_DATA_HOME', home)
         nvm_dir = Path(xdg_data_home) / 'nvm'
 
         if not (nvm_dir / 'nvm.sh').exists():

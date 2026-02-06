@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Installation script for Claude Code"""
 
-import os
 import shutil
 import sys
 from pathlib import Path
