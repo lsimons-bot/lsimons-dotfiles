@@ -43,6 +43,7 @@ The installation script (`./script/install.py`) will:
 | Topic | Installs |
 |-------|----------|
 | `1password/` | 1Password CLI (`op`) |
+| `aws/` | AWS CLI (`awscli`) + default `~/.aws/config` |
 | `bash/` | Bash configuration and directories |
 | `bash-it/` | Bash-it framework (prompt, plugins) |
 | `brave/` | Brave Browser |
@@ -76,6 +77,7 @@ If you're an AI coding agent (GitHub Copilot, Claude Code, etc.) working on this
 ├── machines/         # Machine-specific configuration
 │   ├── default.json  # Default config (used when no hostname match)
 │   └── <hostname>.json # Per-machine overrides
+├── aws/              # AWS CLI and configuration
 ├── sh/               # Shared shell configuration (sourced by both bash and zsh)
 ├── bash/             # Bash-specific configuration
 ├── 1password/        # 1Password CLI integration
