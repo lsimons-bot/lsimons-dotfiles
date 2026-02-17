@@ -1,5 +1,7 @@
 # Agent Instructions for lsimons-dotfiles
 
+> This file (`AGENTS.md`) is the canonical agent configuration. `CLAUDE.md` is a symlink to this file.
+
 Personal dotfiles repository for macOS. Topic-based structure inspired by [holman/dotfiles](https://github.com/holman/dotfiles).
 
 ## Quick Reference
