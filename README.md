@@ -56,6 +56,7 @@ The installation script (`./script/install.py`) will:
 | `oh-my-zsh/` | Oh My Zsh |
 | `pi-coding-agent/` | pi-coding-agent |
 | `python/` | Python configuration |
+| `ssh/` | SSH configuration (post-quantum warning, 1Password agent) |
 | `terraform/` | tfenv and Terraform |
 | `tmux/` | tmux |
 | `topgrade/` | topgrade (automated updates) |
@@ -91,6 +92,7 @@ If you're an AI coding agent (GitHub Copilot, Claude Code, etc.) working on this
 ├── oh-my-zsh/        # Oh My Zsh installer
 ├── pi-coding-agent/  # Coding agent installer
 ├── python/           # Python configuration
+├── ssh/              # SSH configuration
 ├── terraform/        # tfenv and Terraform
 ├── tmux/             # tmux installer
 ├── topgrade/         # topgrade installer

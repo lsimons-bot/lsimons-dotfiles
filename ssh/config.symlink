@@ -1,0 +1,8 @@
+# Managed by lsimons-dotfiles
+# Local overrides: ~/.ssh/config.local
+
+Include config.local
+
+# Disable post-quantum key exchange warning (OpenSSH 10.1+)
+# https://www.openssh.org/pq.html
+WarnWeakCrypto no
