@@ -54,6 +54,7 @@ The installation script (`./script/install.py`) will:
 | `jdk/` | JDK configuration |
 | `node/` | nvm and Node.js LTS |
 | `oh-my-zsh/` | Oh My Zsh |
+| `openspec/` | openspec |
 | `pi-coding-agent/` | pi-coding-agent |
 | `python/` | Python configuration |
 | `ssh/` | SSH configuration (post-quantum warning, 1Password agent) |
@@ -90,6 +91,7 @@ If you're an AI coding agent (GitHub Copilot, Claude Code, etc.) working on this
 ├── jdk/              # JDK configuration
 ├── node/             # nvm and Node.js
 ├── oh-my-zsh/        # Oh My Zsh installer
+├── openspec/         # openspec installer
 ├── pi-coding-agent/  # Coding agent installer
 ├── python/           # Python configuration
 ├── ssh/              # SSH configuration
