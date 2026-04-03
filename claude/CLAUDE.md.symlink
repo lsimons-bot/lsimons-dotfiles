@@ -17,17 +17,3 @@
 - No unsolicited suggestions for improvements I didn't ask about.
 - No warnings about edge cases unless they're actually likely to bite.
 
-# Git
-
-## Commit Messages
-
-Always add a Co-authored-by line. Check `git config --get user.email` to determine authorship:
-- If you're `bot@leosimons.com`: add `Co-authored-by: Leo Simons <mail@leosimons.com>`
-- If you're `mail@leosimons.com` (or other human): add `Co-authored-by: lsimons-bot <bot@leosimons.com>`
-
-Example:
-```
-feat(git_sync): Add hostname filter to OwnerConfig
-
-Co-authored-by: lsimons-bot <bot@leosimons.com>
-```

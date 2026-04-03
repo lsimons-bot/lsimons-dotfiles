@@ -1,3 +1,2 @@
 # Claude Code symlink destinations
-settings.json.symlink -> ~/.claude/settings.json
 CLAUDE.md.symlink -> ~/.claude/CLAUDE.md
