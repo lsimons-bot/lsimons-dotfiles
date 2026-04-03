@@ -47,10 +47,9 @@ def get_git_email():
 def build_attribution(email):
     """Return the commit attribution string based on git email."""
     if email == 'bot@leosimons.com':
-        coauthor = 'Co-authored-by: Leo Simons <mail@leosimons.com>'
+        return 'Co-Authored-By: Leo Simons <mail@leosimons.com>'
     else:
-        coauthor = 'Co-authored-by: lsimons-bot <bot@leosimons.com>'
-    return f'Co-Authored-By: Claude <noreply@anthropic.com>\n{coauthor}'
+        return 'Co-Authored-By: lsimons-bot <bot@leosimons.com>'
 
 
 def write_settings(claude_dir, topic_dir):
@@ -67,7 +66,7 @@ def write_settings(claude_dir, topic_dir):
         attribution_text = build_attribution(email)
         settings['attribution'] = {
             'commit': attribution_text,
-            'pr': 'Co-Authored-By: Claude <noreply@anthropic.com>',
+            'pr': attribution_text,
         }
     else:
         info("No git email found; skipping attribution config")
