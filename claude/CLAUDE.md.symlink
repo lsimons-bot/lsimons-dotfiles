@@ -17,3 +17,11 @@
 - No unsolicited suggestions for improvements I didn't ask about.
 - No warnings about edge cases unless they're actually likely to bite.
 
+# Commit Attribution
+
+- Do NOT add `Signed-off-by` tags. Only humans can certify the Developer Certificate of Origin.
+- `Co-Authored-By` attribution is configured (e.g. in `~/.claude/settings.json`) and is applied automatically — do not remove or skip it.
+- In addition, include an `Assisted-by` tag per the Linux kernel convention:
+  `Assisted-by: AGENT_NAME:MODEL_VERSION`
+  Example: `Assisted-by: Claude:claude-sonnet-4-6`
+
