@@ -91,40 +91,7 @@ If you're an AI coding agent (GitHub Copilot, Claude Code, etc.) working on this
 ├── machines/         # Machine-specific configuration
 │   ├── default.json  # Default config (used when no hostname match)
 │   └── <hostname>.json # Per-machine overrides
-├── 1password/        # 1Password CLI integration
-├── ansible/          # Ansible installer
-├── aws/              # AWS CLI and configuration
-├── azure/            # Azure CLI installer
-├── bash/             # Bash-specific configuration
-├── bash-it/          # Bash-it framework
-├── brave/            # Brave browser installer
-├── claude/           # Claude Code CLI installer and configuration
-├── copilot/          # GitHub Copilot CLI installer
-├── docker/           # Docker installer
-├── gemini/           # Gemini CLI installer
-├── gh/               # GitHub CLI installer
-├── ghostty/          # Ghostty terminal installer
-├── git/              # Git configuration and installer
-├── go/               # Go installer
-├── jdk/              # JDK configuration
-├── lsimons-agent/    # LLM agent environment configuration
-├── node/             # nvm and Node.js
-├── oh-my-zsh/        # Oh My Zsh installer
-├── openspec/         # openspec installer
-├── pi-coding-agent/  # Coding agent installer
-├── python/           # Python configuration
-├── ruby/             # Ruby installer
-├── rust/             # Rust installer
-├── sh/               # Shared shell configuration (sourced by both bash and zsh)
-├── ssh/              # SSH configuration
-├── terraform/        # tfenv and Terraform
-├── tmux/             # tmux installer
-├── topgrade/         # topgrade installer
-├── uv/               # uv Python package manager
-├── vivaldi/          # Vivaldi browser installer
-├── wordpress/        # WordPress shell environment
-├── zed/              # Zed editor installer
-└── zsh/              # ZSH-specific configuration
+└── <topic>/          # One directory per topic (see table above)
 ```
 
 ### File Naming Convention
