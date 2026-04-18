@@ -43,27 +43,37 @@ The installation script (`./script/install.py`) will:
 | Topic | Installs |
 |-------|----------|
 | `1password/` | 1Password CLI (`op`) |
+| `ansible/` | Ansible and related tools |
 | `aws/` | AWS CLI (`awscli`) + default `~/.aws/config` |
+| `azure/` | Azure CLI (`az`) |
 | `bash/` | Bash configuration and directories |
 | `bash-it/` | Bash-it framework (prompt, plugins) |
 | `brave/` | Brave Browser |
+| `claude/` | Claude Code CLI and configuration |
+| `copilot/` | GitHub Copilot CLI |
+| `docker/` | Docker |
 | `gemini/` | Gemini CLI |
 | `gh/` | GitHub CLI |
 | `go/` | Go |
 | `ghostty/` | Ghostty terminal |
 | `git/` | Git (via Homebrew) |
 | `jdk/` | JDK configuration |
+| `lsimons-agent/` | LLM agent environment configuration |
 | `node/` | nvm and Node.js LTS |
 | `oh-my-zsh/` | Oh My Zsh |
 | `openspec/` | openspec |
 | `pi-coding-agent/` | pi-coding-agent |
 | `python/` | Python configuration |
+| `ruby/` | Ruby (via rbenv) |
+| `rust/` | Rust (via rustup) |
+| `sh/` | Shared shell configuration (PATH, XDG, settings) |
 | `ssh/` | SSH configuration (post-quantum warning, 1Password agent) |
 | `terraform/` | tfenv and Terraform |
 | `tmux/` | tmux |
 | `topgrade/` | topgrade (automated updates) |
 | `uv/` | uv (Python package manager) |
 | `vivaldi/` | Vivaldi Browser |
+| `wordpress/` | WordPress shell environment |
 | `zed/` | Zed editor |
 | `zsh/` | ZSH directories |
 
@@ -81,27 +91,38 @@ If you're an AI coding agent (GitHub Copilot, Claude Code, etc.) working on this
 ├── machines/         # Machine-specific configuration
 │   ├── default.json  # Default config (used when no hostname match)
 │   └── <hostname>.json # Per-machine overrides
-├── aws/              # AWS CLI and configuration
-├── sh/               # Shared shell configuration (sourced by both bash and zsh)
-├── bash/             # Bash-specific configuration
 ├── 1password/        # 1Password CLI integration
+├── ansible/          # Ansible installer
+├── aws/              # AWS CLI and configuration
+├── azure/            # Azure CLI installer
+├── bash/             # Bash-specific configuration
+├── bash-it/          # Bash-it framework
 ├── brave/            # Brave browser installer
+├── claude/           # Claude Code CLI installer and configuration
+├── copilot/          # GitHub Copilot CLI installer
+├── docker/           # Docker installer
 ├── gemini/           # Gemini CLI installer
 ├── gh/               # GitHub CLI installer
 ├── ghostty/          # Ghostty terminal installer
 ├── git/              # Git configuration and installer
+├── go/               # Go installer
 ├── jdk/              # JDK configuration
+├── lsimons-agent/    # LLM agent environment configuration
 ├── node/             # nvm and Node.js
 ├── oh-my-zsh/        # Oh My Zsh installer
 ├── openspec/         # openspec installer
 ├── pi-coding-agent/  # Coding agent installer
 ├── python/           # Python configuration
+├── ruby/             # Ruby installer
+├── rust/             # Rust installer
+├── sh/               # Shared shell configuration (sourced by both bash and zsh)
 ├── ssh/              # SSH configuration
 ├── terraform/        # tfenv and Terraform
 ├── tmux/             # tmux installer
 ├── topgrade/         # topgrade installer
 ├── uv/               # uv Python package manager
 ├── vivaldi/          # Vivaldi browser installer
+├── wordpress/        # WordPress shell environment
 ├── zed/              # Zed editor installer
 └── zsh/              # ZSH-specific configuration
 ```
