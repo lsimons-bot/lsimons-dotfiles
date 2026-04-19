@@ -300,6 +300,37 @@ if (-not $SkipClaude) {
 }
 
 # ---------------------------------------------------------------------------
+# Simplewall
+# ---------------------------------------------------------------------------
+
+Invoke-Step "Add Simplewall to user PATH and startup" {
+  $simplewallDir = 'C:\Program Files\simplewall'
+  $simplewallExe = Join-Path $simplewallDir 'simplewall.exe'
+
+  if (-not (Test-Path $simplewallExe)) {
+    Write-WarnMsg "simplewall.exe not found at $simplewallExe -- skipping (run after winget installs it)"
+    return
+  }
+
+  $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+  $segments = if ($userPath) { $userPath -split ';' } else { @() }
+  if ($segments -notcontains $simplewallDir) {
+    $newPath = ($simplewallDir + ';' + $userPath).TrimEnd(';')
+    [Environment]::SetEnvironmentVariable('Path', $newPath, 'User')
+    Write-Ok "added $simplewallDir to user PATH"
+  } else {
+    Write-Ok "$simplewallDir already on user PATH"
+  }
+  if (($env:Path -split ';') -notcontains $simplewallDir) {
+    $env:Path = "$simplewallDir;$env:Path"
+  }
+
+  $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+  Set-RegistryValue -Path $runKey -Name 'simplewall' -Value $simplewallExe -Type 'String'
+  Write-Ok "simplewall added to startup (HKCU Run)"
+}
+
+# ---------------------------------------------------------------------------
 # Workspace
 # ---------------------------------------------------------------------------
 
