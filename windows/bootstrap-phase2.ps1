@@ -42,6 +42,7 @@ param(
   [string]$SshKeyItem = 'op://AI/lsimons-bot ssh key/public key',
   [string]$GitName    = 'Leo-Bot Simons',
   [string]$GitEmail   = 'bot@leosimons.com',
+  [string]$GitDir     = 'C:\git',
   [string[]]$Repos    = @()
 )
 
@@ -152,14 +153,13 @@ Invoke-Step "Configure git identity and SSH commit signing" {
 # ---------------------------------------------------------------------------
 
 if ($Repos.Count -gt 0) {
-  Invoke-Step "Clone repos into ~/git" {
-    $gitDir = Join-Path $env:USERPROFILE 'git'
-    if (-not (Test-Path $gitDir)) { New-Item -ItemType Directory -Force -Path $gitDir | Out-Null }
-    Push-Location $gitDir
+  Invoke-Step "Clone repos into $GitDir" {
+    if (-not (Test-Path $GitDir)) { New-Item -ItemType Directory -Force -Path $GitDir | Out-Null }
+    Push-Location $GitDir
     try {
       foreach ($repo in $Repos) {
         $name = ($repo -split '/')[-1]
-        if (Test-Path (Join-Path $gitDir $name)) {
+        if (Test-Path (Join-Path $GitDir $name)) {
           Write-Ok "already cloned: $name"
           continue
         }

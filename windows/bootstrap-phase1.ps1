@@ -35,7 +35,8 @@ param(
   [switch]$SkipWinget,
   [switch]$SkipScoop,
   [switch]$SkipClaude,
-  [switch]$AllowElevated
+  [switch]$AllowElevated,
+  [string]$GitDir = 'C:\git'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -281,13 +282,14 @@ if (-not $SkipClaude) {
 # Workspace
 # ---------------------------------------------------------------------------
 
-Invoke-Step "Create ~/git workspace" {
-  $gitDir = Join-Path $env:USERPROFILE 'git'
-  if (-not (Test-Path $gitDir)) {
-    New-Item -ItemType Directory -Force -Path $gitDir | Out-Null
-    Write-Ok "created $gitDir"
+Invoke-Step "Create git workspace at $GitDir" {
+  # Default is C:\git so paths don't contain a space (Windows homedirs
+  # often do, e.g. 'C:\Users\Leo Simons\', which breaks some build tools).
+  if (-not (Test-Path $GitDir)) {
+    New-Item -ItemType Directory -Force -Path $GitDir | Out-Null
+    Write-Ok "created $GitDir"
   } else {
-    Write-Ok "$gitDir exists"
+    Write-Ok "$GitDir exists"
   }
 }
 

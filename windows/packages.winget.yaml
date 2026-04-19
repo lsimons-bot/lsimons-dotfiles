@@ -54,7 +54,7 @@ properties:
       directives:
         description: Install Zed editor
       settings:
-        id: Zed-Industries.Zed
+        id: ZedIndustries.Zed
         source: winget
 
     # --- Browser ---
@@ -92,7 +92,7 @@ properties:
       directives:
         description: Install Pareto Security (security audit)
       settings:
-        id: ParetoSecurity.ParetoSecurity
+        id: NiteoGmbH.ParetoSecurity
         source: winget
 
     - resource: Microsoft.WinGet.DSC/WinGetPackage
