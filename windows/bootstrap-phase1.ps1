@@ -34,7 +34,8 @@ param(
   [switch]$DryRun,
   [switch]$SkipWinget,
   [switch]$SkipScoop,
-  [switch]$SkipClaude
+  [switch]$SkipClaude,
+  [switch]$AllowElevated
 )
 
 $ErrorActionPreference = 'Stop'
@@ -71,11 +72,25 @@ Write-Info "lsimons-dotfiles Windows bootstrap-phase1"
 Write-Info "Dotfiles root: $dotfilesRoot"
 if ($DryRun) { Write-Dry "dry-run mode --no changes will be made" }
 
-if (Test-Admin) {
-  Write-WarnMsg "Running as Administrator. Scoop will refuse to install --re-run as your regular user."
-  Write-WarnMsg "winget will self-elevate for individual packages that need it."
-  if (-not $DryRun) {
-    throw "Refusing to continue elevated. Start a non-admin pwsh and re-run."
+$isElevated = Test-Admin
+if ($isElevated) {
+  Write-WarnMsg "This PowerShell session is elevated (token has Administrators group active)."
+  Write-WarnMsg "Scoop refuses to install from an elevated session; winget will self-elevate anyway."
+  if (-not $AllowElevated -and -not $DryRun) {
+    Write-ErrMsg ""
+    Write-ErrMsg "Refusing to continue elevated. Two options:"
+    Write-ErrMsg "  (a) Open a non-admin PowerShell:"
+    Write-ErrMsg "      Start menu -> type PowerShell -> left-click (NOT Run as admin)"
+    Write-ErrMsg "      Verify elevation is off with:"
+    Write-ErrMsg '        $p = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())'
+    Write-ErrMsg '        $p.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)    # must print False'
+    Write-ErrMsg "  (b) Re-run with -AllowElevated to continue without Scoop:"
+    Write-ErrMsg "      .\bootstrap-phase1.ps1 -AllowElevated"
+    throw "Elevated session detected. See guidance above."
+  }
+  if ($AllowElevated) {
+    Write-WarnMsg "-AllowElevated set: will skip Scoop install/import, continue with the rest."
+    $SkipScoop = $true
   }
 }
 
