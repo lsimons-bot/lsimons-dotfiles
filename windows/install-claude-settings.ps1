@@ -69,6 +69,12 @@ Invoke-Step "Install CLAUDE.md" {
     -Dest   (Join-Path $claudeDir 'CLAUDE.md')
 }
 
+Invoke-Step "Install statusline-command.ps1" {
+  Copy-IfChanged `
+    -Source (Join-Path $topicDir 'statusline-command.ps1') `
+    -Dest   (Join-Path $claudeDir 'statusline-command.ps1')
+}
+
 Invoke-Step "Install skills/" {
   $src  = Join-Path $topicDir 'skills'
   $dest = Join-Path $claudeDir 'skills'
@@ -88,8 +94,12 @@ Invoke-Step "Write settings.json" {
 
   $settings = Get-Content $basePath -Raw | ConvertFrom-Json -AsHashtable
 
-  # statusLine uses a .sh script — not runnable on Windows
-  $settings.Remove('statusLine') | Out-Null
+  # Replace the .sh statusLine with the PowerShell equivalent
+  $psScript = Join-Path $claudeDir 'statusline-command.ps1'
+  $settings['statusLine'] = [ordered]@{
+    type    = 'command'
+    command = "pwsh -NoProfile -NonInteractive -File `"$psScript`""
+  }
 
   # Attribution based on git email (mirrors claude/install.py logic)
   $email = git config --get user.email 2>$null
