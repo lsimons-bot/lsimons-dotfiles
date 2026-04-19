@@ -5,10 +5,12 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
-from helpers import info, success, error, app_exists, brew_install
+from helpers import app_exists, brew_install, error, info, install_symlinks, success
 
 
 def main():
+    install_symlinks(Path(__file__).resolve().parent)
+
     info("Installing Zed...")
 
     if app_exists('Zed'):

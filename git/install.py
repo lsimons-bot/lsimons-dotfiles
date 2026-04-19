@@ -12,6 +12,7 @@ from helpers import (
     error,
     get_machine_config,
     info,
+    install_symlinks,
     success,
 )
 
@@ -51,6 +52,8 @@ signingkey = {git_user["signingkey"]}
 
 
 def main():
+    install_symlinks(Path(__file__).resolve().parent)
+
     info("Installing Git...")
 
     if brew_is_installed("git"):

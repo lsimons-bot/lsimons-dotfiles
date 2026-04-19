@@ -6,10 +6,12 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
-from helpers import info, success
+from helpers import info, install_symlinks, success
 
 
 def main():
+    install_symlinks(Path(__file__).resolve().parent)
+
     info("Configuring SSH...")
 
     ssh_dir = Path.home() / '.ssh'

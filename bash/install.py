@@ -6,10 +6,12 @@ import os
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
-from helpers import info, success
+from helpers import info, install_symlinks, success
 
 
 def main():
+    install_symlinks(Path(__file__).resolve().parent)
+
     info("Setting up Bash directories...")
 
     xdg_state = Path(os.environ.get('XDG_STATE_HOME', Path.home() / '.local/state'))

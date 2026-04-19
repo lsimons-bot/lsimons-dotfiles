@@ -8,17 +8,14 @@ Steps:
 2. Install Python via Homebrew (if not present)
 3. Create ~/.dotfiles symlink
 4. Setup XDG directories
-5. Symlink dotfiles to appropriate locations
-6. Run topic-specific installation scripts
+5. Run topic-specific installation scripts (each installs its own symlinks)
 """
 
 import os
 import sys
 import subprocess
 import platform
-import shutil
 from pathlib import Path
-from datetime import datetime
 
 
 class Colors:
@@ -247,107 +244,6 @@ def setup_xdg():
     success("XDG directories created")
 
 
-def backup_file(file_path):
-    """Backup a file before replacing it"""
-    path = Path(file_path)
-    if path.exists() or path.is_symlink():
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        backup_dir = Path.home() / '.dotfiles-backup' / timestamp
-        backup_dir.mkdir(parents=True, exist_ok=True)
-        dest = backup_dir / path.name
-        shutil.move(str(path), str(dest))
-        info(f"Backed up {file_path} to {dest}")
-
-
-def link_file(src, dst):
-    """Link a file to its destination"""
-    src_path = Path(src)
-    dst_path = Path(dst)
-
-    # Check if destination already exists and is correct
-    if dst_path.is_symlink():
-        current_src = dst_path.resolve()
-        if current_src == src_path.resolve():
-            success(f"Already linked: {dst}")
-            return True
-        else:
-            warn(f"Symlink exists but points elsewhere: "
-                 f"{dst} -> {current_src}")
-            backup_file(dst)
-    elif dst_path.exists():
-        warn(f"File exists: {dst}")
-        backup_file(dst)
-
-    # Create parent directory if it doesn't exist
-    dst_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Create symlink
-    dst_path.symlink_to(src_path)
-    success(f"Linked: {dst} -> {src}")
-    return True
-
-
-def load_symlink_mappings(topic_dir):
-    """Load symlink destination mappings from topic's symlinks.txt"""
-    mappings = {}
-    symlinks_file = topic_dir / 'symlinks.txt'
-    if not symlinks_file.exists():
-        return mappings
-
-    home = Path.home()
-    xdg_config_home = Path(os.environ.get('XDG_CONFIG_HOME', home / '.config'))
-
-    for line in symlinks_file.read_text().strip().split('\n'):
-        line = line.strip()
-        if not line or line.startswith('#'):
-            continue
-        if ' -> ' not in line:
-            continue
-
-        src_name, dst_path = line.split(' -> ', 1)
-        src_name = src_name.strip()
-        dst_path = dst_path.strip()
-
-        # Expand variables
-        dst_path = dst_path.replace('$HOME', str(home))
-        dst_path = dst_path.replace('$XDG_CONFIG_HOME', str(xdg_config_home))
-        dst_path = dst_path.replace('~', str(home))
-
-        mappings[src_name] = Path(dst_path)
-
-    return mappings
-
-
-def bootstrap_dotfiles(dotfiles_root):
-    """Symlink dotfiles to appropriate locations"""
-    info("Linking dotfiles...")
-
-    home = Path.home()
-
-    # Load all symlink mappings from topic directories
-    all_mappings = {}
-    for topic_dir in dotfiles_root.iterdir():
-        if topic_dir.is_dir() and not topic_dir.name.startswith('.'):
-            mappings = load_symlink_mappings(topic_dir)
-            for src_name, dst in mappings.items():
-                src_path = topic_dir / src_name
-                if src_path.exists():
-                    all_mappings[src_path] = dst
-
-    for src in dotfiles_root.rglob('*.symlink'):
-        if src.is_file():
-            if src in all_mappings:
-                dst = all_mappings[src]
-            else:
-                # Default: link to home directory with a dot prefix
-                basename = src.stem
-                dst = home / f'.{basename}'
-
-            link_file(src, dst)
-
-    success("Dotfiles linked")
-
-
 def get_topic_dependencies(topic_dir):
     """Read dependencies from a topic's dependencies.txt file"""
     deps_file = topic_dir / 'dependencies.txt'
@@ -490,11 +386,7 @@ def main():
     # Step 6: Setup XDG directories
     setup_xdg()
 
-    # Step 7: Bootstrap dotfiles (symlink .symlink files)
-    info("=" * 50)
-    bootstrap_dotfiles(dotfiles_root)
-
-    # Step 8: Run topic installers
+    # Step 7: Run topic installers (each installs its own .symlink files)
     info("=" * 50)
     if not run_topic_installers(dotfiles_root, python_path):
         error("Some topic installations failed")

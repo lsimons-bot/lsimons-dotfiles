@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
-from helpers import info, success, error, command_exists
+from helpers import command_exists, error, info, install_symlinks, success
 
 
 def install_homebrew_python():
@@ -51,6 +51,8 @@ def install_mise_python():
 
 
 def main():
+    install_symlinks(Path(__file__).resolve().parent)
+
     if not install_homebrew_python():
         return 1
     if not install_mise_python():
