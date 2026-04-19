@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python3 scripts/init.py --name*)",
-      "Bash(python3 script/migrate.py --dry-run*)"
-    ]
-  }
-}
