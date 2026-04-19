@@ -11,6 +11,7 @@ For the rationale (why native-only, why these tools, constraints), see
 |---|---|
 | `bootstrap-phase1.ps1` | Unattended setup: winget + Scoop + registry + profiles + Claude Code |
 | `bootstrap-phase2.ps1` | Credential-coupled setup: SSH key + git signing + optional repo clones |
+| `bootstrap-phase3.ps1` | mise-managed runtimes and CLI tools (node, python, go, rust, …) |
 | `packages.winget.yaml` | Declarative winget manifest (GUI / MSI apps) |
 | `scoopfile.json` | Declarative Scoop manifest (CLI toolchain) |
 | `Microsoft.PowerShell_profile.ps1` | PowerShell profile (copied into `$PROFILE` paths) |
@@ -94,6 +95,24 @@ Optional flags:
 .\bootstrap-phase2.ps1 -DryRun
 .\bootstrap-phase2.ps1 -Repos @('lsimons/lsimons-dotfiles','lsimons/lsimons-arch')
 .\bootstrap-phase2.ps1 -SshKeyItem 'op://Private/my ssh key/public key'
+```
+
+### Phase 3 — mise runtimes
+
+```powershell
+cd ~\git\lsimons-dotfiles\windows
+.\bootstrap-phase3.ps1
+```
+
+Tools that are not yet available for Windows/ARM64 via mise will warn and be skipped.
+
+### Keep tools up to date
+
+`topgrade` (installed via Scoop) updates everything in one shot — Scoop packages,
+winget packages, and mise-managed runtimes:
+
+```powershell
+topgrade
 ```
 
 ### Verify
