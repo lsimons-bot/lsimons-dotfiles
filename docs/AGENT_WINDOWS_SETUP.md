@@ -4,6 +4,8 @@ A Windows 11 ARM64 companion to [AGENT_SETUP.md](./AGENT_SETUP.md). Same goals (
 
 Read [AGENT_SETUP.md](./AGENT_SETUP.md) first — this doc only covers what's different on Windows.
 
+![](./ai-win-vm-green-goodness.png)
+
 ## Why a Windows sandbox?
 
 Testing dotfiles, the AI harness, and developer-environment tooling against a clean, Windows-native setup. Useful for:
