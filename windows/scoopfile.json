@@ -20,6 +20,7 @@
     { "Name": "ripgrep",         "Source": "main" },
     { "Name": "sd",              "Source": "main" },
     { "Name": "starship",        "Source": "main" },
+    { "Name": "topgrade",        "Source": "main" },
     { "Name": "yq",              "Source": "main" },
     { "Name": "zoxide",          "Source": "main" },
     { "Name": "CascadiaCode-NF", "Source": "nerd-fonts" }
