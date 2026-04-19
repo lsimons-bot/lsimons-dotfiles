@@ -15,7 +15,7 @@
     { "Name": "fzf",             "Source": "main" },
     { "Name": "jq",              "Source": "main" },
     { "Name": "just",            "Source": "main" },
-    { "Name": "lazygit",         "Source": "main" },
+    { "Name": "lazygit",         "Source": "extras" },
     { "Name": "mise",            "Source": "main" },
     { "Name": "ripgrep",         "Source": "main" },
     { "Name": "sd",              "Source": "main" },
