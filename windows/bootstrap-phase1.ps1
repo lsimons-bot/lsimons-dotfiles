@@ -98,6 +98,22 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
   throw "winget not found. Install 'App Installer' from the Microsoft Store and retry."
 }
 
+# UAC sanity check: some Windows 11 ARM ISOs ship with EnableLUA=0 baked in.
+# When UAC is off, an admin account cannot spawn a filtered (standard-user)
+# token -- every session runs elevated, which breaks Scoop.
+$uacPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+$enableLua = (Get-ItemProperty -Path $uacPath -Name EnableLUA -ErrorAction SilentlyContinue).EnableLUA
+if ($enableLua -eq 0) {
+  Write-WarnMsg "UAC is disabled (EnableLUA=0). This is not Windows default."
+  Write-WarnMsg "Every session for an admin account runs elevated -- Scoop will refuse to install."
+  Write-WarnMsg "Re-enable UAC (requires admin + reboot):"
+  Write-WarnMsg "  Set-ItemProperty -Path '$uacPath' -Name EnableLUA -Value 1"
+  Write-WarnMsg "  Restart-Computer"
+  if (-not $AllowElevated -and -not $DryRun) {
+    throw "UAC disabled. Re-enable and reboot, or re-run with -AllowElevated."
+  }
+}
+
 # ---------------------------------------------------------------------------
 # User-scope registry tweaks (no admin needed)
 # ---------------------------------------------------------------------------
@@ -145,6 +161,16 @@ Invoke-Step "Apply UI tweaks (dark mode, file extensions, hidden files, accent c
 # ---------------------------------------------------------------------------
 
 if (-not $SkipWinget) {
+  Invoke-Step "Enable winget configure (if not already)" {
+    # winget configure is an 'experimental' feature that must be opted in
+    # once per user. The --enable flag is idempotent.
+    winget configure --enable 2>&1 | Out-Null
+    # Exit code 0 means newly enabled; non-zero may mean already enabled.
+    # Either way, proceed -- the real configure call below will surface
+    # any genuine problem.
+    Write-Ok "winget configure feature enabled"
+  }
+
   Invoke-Step "winget configure (GUI / MSI packages)" {
     $manifest = Join-Path $scriptDir 'packages.winget.yaml'
     if (-not (Test-Path $manifest)) { throw "Manifest not found: $manifest" }
