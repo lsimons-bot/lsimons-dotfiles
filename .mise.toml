@@ -1,3 +1,6 @@
+[tools]
+ruff = "latest"
+
 [tasks.check]
 description = "Run lsimons-dotfiles quality checks (py_compile, ruff, JSON, install.py --dry-run)"
 run = "python3 script/check.py"

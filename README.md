@@ -29,8 +29,11 @@ cd lsimons-dotfiles
 source ~/.zshrc
 ```
 
-Run `python3 script/check.py` (or `mise run check`) to validate the
+Run `mise run check` (or `python3 script/check.py`) to validate the
 repo without touching your system — this is what CI runs on every push.
+Prefer `mise run check`: it bootstraps ruff via `.mise.toml`'s
+`[tools]` section so linting is always covered. The bare `check.py`
+entry point skips ruff with a warning when it's not on PATH.
 
 ## What Gets Installed
 

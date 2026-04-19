@@ -81,6 +81,10 @@ Work is NOT complete until `git push` succeeds.
    `script/install.py --dry-run` (which exercises every topic
    installer without touching the system). It's what CI runs.
 
+   ruff is provisioned via `.mise.toml`'s `[tools]` section, so
+   `mise run check` auto-installs it. Running `python3 script/check.py`
+   directly without mise/ruff on PATH skips ruff with a warning.
+
 2. **Push**:
    ```bash
    git pull --rebase && git push

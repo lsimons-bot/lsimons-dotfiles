@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -68,16 +69,25 @@ def check_py_compile() -> bool:
 
 
 def check_ruff() -> bool:
-    """Run ruff on script/*.py."""
+    """Run ruff on script/*.py.
+
+    Soft-fails (warns and skips) when ruff isn't on PATH, so first-run
+    users without the full toolchain still get the other checks. Use
+    `mise run check` (which installs ruff via .mise.toml's [tools]) or
+    `pip install ruff` to get ruff coverage locally; CI installs it
+    explicitly.
+    """
     targets = sorted(SCRIPT_DIR.glob('*.py'))
     print(f'[check] ruff: {len(targets)} files')
+
+    if shutil.which('ruff') is None:
+        print('[WARN] ruff not on PATH; skipping. '
+              'Install via `mise run check` or `pip install ruff`.')
+        return True
 
     cmd = ['ruff', 'check', *[str(t) for t in targets], '--select=E,F,W']
     try:
         subprocess.run(cmd, check=True)
-    except FileNotFoundError:
-        print('[FAIL] ruff not installed; `pip install ruff`')
-        return False
     except subprocess.CalledProcessError:
         print('[FAIL] ruff reported issues')
         return False
