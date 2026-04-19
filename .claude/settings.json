@@ -7,6 +7,8 @@
       "Bash(python3 script/check.py *)",
       "Bash(mise run check)",
       "Bash(mise run check *)",
+      "Bash(mise run ci-watch)",
+      "Bash(mise run ci-watch *)",
       "Bash(python3 claude/sync-repo-settings.py)",
       "Bash(python3 claude/sync-repo-settings.py *)",
       "Bash(zsh -c 'source ~/.zshrc*)"
