@@ -19,7 +19,7 @@
       "Bash(git commit*)",
       "Bash(git rm*)",
       "Bash(git pull --rebase*)",
-      "Bash(git push*)",
+      "Bash(git push)",
       "Bash(gh issue list*)",
       "Bash(gh issue view*)",
       "Bash(gh issue status)",
@@ -106,6 +106,18 @@
       "Bash(find * -exec *)",
       "Bash(find * -execdir *)"
     ]
+  },
+  "sandbox": {
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "api.github.com",
+        "codeload.github.com",
+        "uploads.github.com",
+        "objects.githubusercontent.com",
+        "raw.githubusercontent.com"
+      ]
+    }
   },
   "statusLine": {
     "type": "command",
