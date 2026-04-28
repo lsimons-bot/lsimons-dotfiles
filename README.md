@@ -73,6 +73,7 @@ The installation script (`./script/install.py`) will:
 | `mise/` | mise (polyglot tool version manager) |
 | `node/` | Node.js + pnpm (via mise) |
 | `oh-my-zsh/` | Oh My Zsh |
+| `opencode/` | OpenCode CLI |
 | `openspec/` | openspec |
 | `pi-coding-agent/` | pi-coding-agent |
 | `python/` | Python (via mise) + XDG config |
