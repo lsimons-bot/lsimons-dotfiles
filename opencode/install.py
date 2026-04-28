@@ -36,18 +36,22 @@ def install_opencode():
 
 
 def configure_opencode():
-    """Configure global AGENTS.md symlink."""
+    """Configure OpenCode symlinks."""
     home = Path.home()
     xdg_config_home = Path(os.environ.get("XDG_CONFIG_HOME", home / ".config"))
     dotfiles = home / ".dotfiles"
     opencode_dir = xdg_config_home / "opencode"
     agents_md = opencode_dir / "AGENTS.md"
+    config_json = opencode_dir / "config.json"
     claude_md_source = dotfiles / "claude" / "CLAUDE.md.symlink"
+    config_json_source = dotfiles / "opencode" / "config.json.symlink"
 
     if not is_dry_run():
         opencode_dir.mkdir(parents=True, exist_ok=True)
 
     link_file(claude_md_source, agents_md)
+    link_file(config_json_source, config_json)
+    info("Create ~/.config/opencode/sbp.ai.key with your sbp.ai API key.")
 
 
 def main():

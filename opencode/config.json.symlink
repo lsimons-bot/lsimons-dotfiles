@@ -1,0 +1,58 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "share": "disabled",
+  "provider": {
+    "litelm": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "sbp",
+      "options": {
+        "baseURL": "https://litellm.sbp.ai/v1",
+        "apiKey": "{file:./sbp.ai.key}"
+      },
+      "models": {
+        "aws/claude-4-6-opus": {
+          "name": "aws/claude-4-6-opus",
+          "limit": {
+            "context": 1000000,
+            "output": 128000
+          }
+        },
+        "aws/claude-4-6-sonnet": {
+          "name": "aws/claude-4-6-sonnet",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          }
+        },
+        "aws/claude-4-5-haiku": {
+          "name": "aws/claude-4-5-haiku",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          }
+        },
+        "azure/gpt-5-1": {
+          "name": "azure/gpt-5-1",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          }
+        },
+        "azure/gpt-5-mini": {
+          "name": "azure/gpt-5-mini",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          }
+        },
+        "azure/gpt-5-nano": {
+          "name": "azure/gpt-5-nano",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          }
+        }
+      }
+    }
+  }
+}
