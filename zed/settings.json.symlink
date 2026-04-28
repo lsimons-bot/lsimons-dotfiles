@@ -7,7 +7,57 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "language_models": {
+    "openai_compatible": {
+      "sbp": {
+        "api_url": "https://litellm.sbp.ai/v1",
+        "available_models": [
+          {
+            "name": "aws/claude-4-6-sonnet",
+            "max_tokens": 200000,
+            "max_output_tokens": 64000,
+            "max_completion_tokens": 200000,
+            "capabilities": {
+              "tools": true,
+              "images": false,
+              "parallel_tool_calls": false,
+              "prompt_cache_key": false,
+              "chat_completions": true
+            }
+          }
+        ]
+      }
+    }
+  },
+  "agent_servers": {
+    "codex-acp": {
+      "type": "registry"
+    },
+    "gemini": {
+      "type": "registry"
+    },
+    "github-copilot-cli": {
+      "type": "registry"
+    },
+    "claude-acp": {
+      "type": "registry"
+    }
+  },
+  "cli_default_open_behavior": "new_window",
+  "project_panel": {
+    "dock": "right"
+  },
+  "outline_panel": {
+    "dock": "right"
+  },
+  "collaboration_panel": {
+    "dock": "right"
+  },
+  "git_panel": {
+    "dock": "right"
+  },
   "agent": {
+    "dock": "left",
     "tool_permissions": {
       "tools": {
         "create_directory": {
@@ -24,14 +74,9 @@
       "effort": "high",
       "enable_thinking": false,
       "provider": "copilot_chat",
-      "model": "gpt-5.4"
+      "model": "gpt-5-mini"
     },
     "favorite_models": [
-      {
-        "provider": "copilot_chat",
-        "model": "claude-opus-4.6",
-        "enable_thinking": false
-      },
       {
         "provider": "copilot_chat",
         "model": "claude-haiku-4.5",
@@ -46,6 +91,23 @@
         "provider": "copilot_chat",
         "model": "gpt-5.4",
         "enable_thinking": false
+      },
+      {
+        "provider": "sbp",
+        "model": "aws/claude-4-6-sonnet",
+        "enable_thinking": false
+      },
+      {
+        "provider": "copilot_chat",
+        "model": "claude-opus-4.6",
+        "enable_thinking": true,
+        "effort": "high"
+      },
+      {
+        "provider": "copilot_chat",
+        "model": "gpt-5-mini",
+        "enable_thinking": false,
+        "effort": "high"
       }
     ],
     "model_parameters": []
