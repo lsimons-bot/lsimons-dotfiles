@@ -2,9 +2,7 @@
 """Installation script for pi-coding-agent"""
 
 import json
-import subprocess
 import sys
-import os
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
@@ -15,50 +13,27 @@ from helpers import (
     info,
     is_dry_run,
     link_file,
+    npm_install_global,
     parse_dry_run,
-    run_cmd,
     success,
     write_file,
 )
 
 
 def install_npm_package():
-    """Install the pi-coding-agent npm package"""
+    """Install the pi-coding-agent npm package via mise-managed npm."""
     info("Installing pi-coding-agent npm package...")
 
-    if not command_exists('npm'):
-        home = str(Path.home() / '.local/share')
-        xdg_data_home = os.environ.get('XDG_DATA_HOME', home)
-        nvm_dir = Path(xdg_data_home) / 'nvm'
+    if command_exists('pi'):
+        success("pi-coding-agent already installed")
+        return 0
 
-        if not (nvm_dir / 'nvm.sh').exists() and not is_dry_run():
-            error("npm not found. Please install Node.js first (run node/install.py)")
-            return 1
-
-    # Check if already installed (via nvm environment)
-    if not is_dry_run():
-        check_script = '''
-            export NVM_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-            which pi 2>/dev/null
-        '''
-        result = subprocess.run(['bash', '-c', check_script], capture_output=True)
-        if result.returncode == 0:
-            success("pi-coding-agent already installed")
-            return 0
-
-    try:
-        install_script = '''
-            export NVM_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-            npm install -g @mariozechner/pi-coding-agent
-        '''
-        run_cmd(['bash', '-c', install_script], check=True)
+    if npm_install_global('@mariozechner/pi-coding-agent'):
         success("pi-coding-agent installed")
         return 0
-    except subprocess.CalledProcessError:
-        error("Failed to install pi-coding-agent")
-        return 1
+
+    error("Failed to install pi-coding-agent")
+    return 1
 
 
 def configure_agent():

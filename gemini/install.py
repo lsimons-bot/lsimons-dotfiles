@@ -6,14 +6,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
 from helpers import (
-    brew_install,
+    brew_is_installed,
+    brew_uninstall,
     command_exists,
     error,
     info,
     is_dry_run,
     link_file,
+    npm_install_global,
     parse_dry_run,
     success,
+    warn,
 )
 
 
@@ -34,9 +37,16 @@ def main():
     parse_dry_run()
     info("Installing Gemini CLI...")
 
+    # Migrate away from the Homebrew gemini-cli, which has a hard-coded
+    # /opt/homebrew/opt/node shebang that breaks once node is managed by mise.
+    if brew_is_installed('gemini-cli'):
+        info("Removing Homebrew gemini-cli (replacing with npm install)...")
+        if not brew_uninstall('gemini-cli'):
+            warn("Failed to uninstall Homebrew gemini-cli; continuing anyway")
+
     if command_exists('gemini'):
         success("Gemini CLI already installed")
-    elif brew_install('gemini-cli'):
+    elif npm_install_global('@google/gemini-cli'):
         success("Gemini CLI installed")
     else:
         error("Failed to install Gemini CLI")

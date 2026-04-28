@@ -157,6 +157,43 @@ def brew_is_installed(package):
     return result.returncode == 0
 
 
+def brew_uninstall(package):
+    """Uninstall a Homebrew package if installed. Respects dry-run.
+
+    Returns True if the package is absent (or successfully removed),
+    False if uninstall failed.
+    """
+    if _DRY_RUN:
+        dry(f"would brew uninstall {package} if installed")
+        return True
+    result = subprocess.run(['brew', 'list', package], capture_output=True)
+    if result.returncode != 0:
+        return True
+    try:
+        subprocess.run(['brew', 'uninstall', package], check=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+def npm_install_global(package):
+    """Install an npm package globally (into the active mise node).
+
+    Returns True on success, False on failure.
+    """
+    if _DRY_RUN:
+        dry(f"would run: npm install -g {package}")
+        return True
+    if not command_exists('npm'):
+        error("npm not found; install the 'node' topic first")
+        return False
+    try:
+        subprocess.run(['npm', 'install', '-g', package], check=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
 def mise_use(tool_spec):
     """Run `mise use -g <tool_spec>`. Respects dry-run.
 
