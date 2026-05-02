@@ -10,14 +10,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
 from helpers import (
+    command_exists,
     dry,
     error,
     info,
     install_symlinks,
     is_dry_run,
+    npm_install_global,
     parse_dry_run,
     run_cmd,
     success,
+    warn,
 )
 
 
@@ -131,6 +134,14 @@ def main():
     except subprocess.CalledProcessError:
         error("Failed to install Claude Code")
         return 1
+
+    # ccusage powers the monthly $-spend segment in the status line.
+    if command_exists('ccusage'):
+        success("ccusage already installed")
+    elif npm_install_global('ccusage'):
+        success("ccusage installed")
+    else:
+        warn("Failed to install ccusage; status line cost segment will be hidden")
 
     # Ensure ~/.claude directory exists
     claude_dir = Path.home() / '.claude'
