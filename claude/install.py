@@ -13,6 +13,7 @@ from helpers import (
     command_exists,
     dry,
     error,
+    get_machine_config,
     info,
     install_symlinks,
     is_dry_run,
@@ -102,6 +103,11 @@ def write_settings(claude_dir, topic_dir):
     settings.setdefault('env', {})['GIT_CONFIG_GLOBAL'] = str(
         xdg_config_home / 'git' / 'config.claude'
     )
+
+    machine_config, hostname = get_machine_config()
+    if machine_config.get('claude', {}).get('removeDenyRules'):
+        info(f"Removing deny rules for machine: {hostname}")
+        settings.get('permissions', {}).pop('deny', None)
 
     if is_dry_run():
         dry(f"would write {settings_path}")
