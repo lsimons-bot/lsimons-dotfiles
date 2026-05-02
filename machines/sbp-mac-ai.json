@@ -10,5 +10,8 @@
     "secrets": {
       "GITHUB_WORDPRESS_TOKEN": "op://AI/GITHUB_TOKEN/password"
     }
+  },
+  "claude": {
+    "removeDenyRules": true
   }
 }
