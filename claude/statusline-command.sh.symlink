@@ -6,6 +6,7 @@ input=$(cat)
 
 # Extract fields (all optional — degrade gracefully)
 model=$(echo "$input"          | jq -r '.model.display_name // "Claude"')
+model="${model// context)/)}"
 cwd=$(echo "$input"            | jq -r '.workspace.current_dir // .cwd // ""')
 output_style=$(echo "$input"   | jq -r '.output_style.name // empty')
 reasoning=$(echo "$input"      | jq -r '.model.reasoning_effort // .reasoning_effort // .model.thinking.type // empty')
@@ -40,6 +41,34 @@ if [ -n "$cwd" ] && command -v git >/dev/null 2>&1; then
     || GIT_OPTIONAL_LOCKS=0 git -C "$cwd" rev-parse --short HEAD 2>/dev/null)
 fi
 
+# Monthly $ spend via ccusage (cached; refreshed in background every 5 min)
+cost_str=""
+if command -v ccusage >/dev/null 2>&1; then
+  cache_file="${TMPDIR:-/tmp}/claude-ccusage-monthly.json"
+  now=$(date +%s)
+  mtime=$(stat -f %m "$cache_file" 2>/dev/null || echo 0)
+  if [ ! -s "$cache_file" ] || [ $(( now - mtime )) -gt 300 ]; then
+    ( ccusage monthly --json >"${cache_file}.tmp" 2>/dev/null \
+        && mv "${cache_file}.tmp" "$cache_file" ) >/dev/null 2>&1 &
+    disown 2>/dev/null
+  fi
+  if [ -s "$cache_file" ]; then
+    current_month=$(date +%Y-%m)
+    monthly_cost=$(jq -r --arg m "$current_month" \
+      '.monthly[]? | select(.month == $m) | .totalCost // empty' \
+      "$cache_file" 2>/dev/null | head -1)
+    if [ -n "$monthly_cost" ] && [ "$monthly_cost" != "null" ]; then
+      cost_int=$(printf '%.0f' "$monthly_cost" 2>/dev/null || echo 0)
+      if   [ "$cost_int" -ge 1250 ]; then cost_color="$RED"
+      elif [ "$cost_int" -ge 750 ];  then cost_color="$YELLOW"
+      else                                cost_color="$GREEN"
+      fi
+      cost_fmt=$(printf '%.0f' "$monthly_cost" 2>/dev/null)
+      cost_str=" ${cost_color}\$${cost_fmt}${RESET}${DIM}/mo${RESET}"
+    fi
+  fi
+fi
+
 # Context bar: colored by usage
 context_str=""
 if [ -n "$used_pct" ] && [ -n "$remaining_pct" ]; then
@@ -68,12 +97,53 @@ if [ -n "$used_pct" ] && [ -n "$remaining_pct" ]; then
   context_str=" ${ctx_color}${bar}${RESET} ${DIM}${tokens_str}${RESET}"
 fi
 
-# Assemble the line
-line="${CYAN}${model}${RESET}"
-[ -n "$reasoning" ]    && line="${line} ${DIM}[${reasoning}]${RESET}"
-[ -n "$output_style" ] && [ "$output_style" != "default" ] && line="${line} ${DIM}(${output_style})${RESET}"
-line="${line} ${DIM}in${RESET} ${BLUE}${short_cwd}${RESET}"
-[ -n "$git_branch" ]   && line="${line} ${DIM}on${RESET} ${MAGENTA}${git_branch}${RESET}"
-line="${line}${context_str}"
+# Three-segment alignment: left | center (context) | right (cost).
+# Claude Code's status-line subprocess has no TTY on stdin/stdout, but the
+# controlling terminal is reachable via /dev/tty.
+term_width=$({ stty size </dev/tty; } 2>/dev/null | awk '{print $2}')
+[ -z "$term_width" ] && term_width=$({ tput cols </dev/tty; } 2>/dev/null)
+[ -z "$term_width" ] && term_width="${COLUMNS:-120}"
 
-printf '%b\n' "$line"
+# Strip the literal \033[...m sequences in our segments to count visible chars.
+vlen() {
+  local stripped
+  stripped=$(printf '%s' "$1" | sed 's/\\033\[[0-9;]*[a-zA-Z]//g')
+  printf '%s' "${#stripped}"
+}
+
+left="${CYAN}${model}${RESET}"
+[ -n "$reasoning" ]    && left="${left} ${DIM}[${reasoning}]${RESET}"
+[ -n "$output_style" ] && [ "$output_style" != "default" ] && left="${left} ${DIM}(${output_style})${RESET}"
+left="${left}   ${BLUE}${short_cwd}${RESET}"
+[ -n "$git_branch" ]   && left="${left} ${DIM}@${RESET} ${MAGENTA}${git_branch}${RESET}"
+
+# Strip the leading space context_str/cost_str carried for the old single-line layout.
+center="${context_str# }"
+right="${cost_str# }"
+
+left_len=$(vlen "$left")
+center_len=$(vlen "$center")
+right_len=$(vlen "$right")
+
+if [ -n "$center" ]; then
+  center_start=$(( (term_width - center_len) / 2 ))
+  pad1=$(( center_start - left_len ))
+  [ "$pad1" -lt 1 ] && pad1=1
+else
+  pad1=0
+fi
+
+if [ -n "$right" ]; then
+  # Reserve a few columns: Claude Code's status pane truncates at the edge.
+  right_margin=4
+  consumed=$(( left_len + pad1 + center_len ))
+  pad2=$(( term_width - right_len - right_margin - consumed ))
+  [ "$pad2" -lt 1 ] && pad2=1
+else
+  pad2=0
+fi
+
+sp1=$(printf '%*s' "$pad1" '')
+sp2=$(printf '%*s' "$pad2" '')
+
+printf '%b\n' "${left}${sp1}${center}${sp2}${right}"
