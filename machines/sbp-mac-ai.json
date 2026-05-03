@@ -13,5 +13,8 @@
   },
   "claude": {
     "removeDenyRules": true
+  },
+  "ssh": {
+    "claudeSigningKeyPasswordRef": "op://Shared/lsimons-bot ssh key sbplt2mkg3xk6/password"
   }
 }
