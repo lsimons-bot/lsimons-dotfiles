@@ -51,7 +51,7 @@
 
 [credential]
 	helper =
-	helper = git-credential-manager
+	helper = manager
 
 [credential "https://dev.azure.com"]
 	useHttpPath = true
