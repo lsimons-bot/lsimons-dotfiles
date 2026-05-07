@@ -44,7 +44,9 @@ Machine-specific config lives in `machines/` as JSON files. Use `get_machine_con
 - Use Homebrew for packages that aren't language runtimes
 - Use `mise use -g <tool>@<version>` for language runtimes and for tools
   that benefit from per-project version pinning (node, python, rust, go,
-  ruby, jdk, pnpm, fnox, etc.)
+  ruby, jdk, fnox, etc.)
+- For pnpm specifically: use `corepack enable pnpm` (mise's aqua backend
+  for pnpm is broken — looks for `pnpm-macos-*` instead of `pnpm-darwin-*`)
 
 ## Adding a New Topic
 

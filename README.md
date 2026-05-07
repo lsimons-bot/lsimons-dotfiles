@@ -71,7 +71,7 @@ The installation script (`./script/install.py`) will:
 | `jdk/` | OpenJDK (via mise) |
 | `lsimons-agent/` | LLM agent environment configuration |
 | `mise/` | mise (polyglot tool version manager) |
-| `node/` | Node.js + pnpm (via mise) |
+| `node/` | Node.js (via mise) + pnpm (via corepack) |
 | `oh-my-zsh/` | Oh My Zsh |
 | `opencode/` | OpenCode CLI |
 | `openspec/` | openspec |
