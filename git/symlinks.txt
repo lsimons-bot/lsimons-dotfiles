@@ -1,2 +1,0 @@
-# Git symlink destinations
-gitconfig.symlink -> $XDG_CONFIG_HOME/git/config
