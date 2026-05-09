@@ -34,3 +34,28 @@ if [ -x "$_dotfiles_ssh_askpass" ] \
 fi
 
 unset _dotfiles_ssh_askpass _dotfiles_claude_key
+
+# Same pattern for the dedicated sbp gitlab auth key — used by Claude
+# sessions to push/pull/clone sbp gitlab repos when 1Password is locked.
+
+_dotfiles_sbp_askpass="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/ssh-askpass-claude-sbp-gitlab.sh"
+_dotfiles_sbp_key="$HOME/.ssh/claude_sbp_gitlab_ed25519"
+
+if [ -x "$_dotfiles_sbp_askpass" ] \
+  && [ -f "$_dotfiles_sbp_key" ] \
+  && [ -n "${SSH_AUTH_SOCK:-}" ] \
+  && command -v op > /dev/null 2>&1 \
+  && command -v ssh-add > /dev/null 2>&1 \
+  && command -v ssh-keygen > /dev/null 2>&1; then
+  _dotfiles_sbp_fp=$(ssh-keygen -lf "$_dotfiles_sbp_key" 2>/dev/null | awk '{print $2}')
+  if [ -n "$_dotfiles_sbp_fp" ] \
+    && ! ssh-add -l 2>/dev/null | grep -q -- "$_dotfiles_sbp_fp"; then
+    DISPLAY="${DISPLAY:-:0}" \
+      SSH_ASKPASS="$_dotfiles_sbp_askpass" \
+      SSH_ASKPASS_REQUIRE=force \
+      ssh-add "$_dotfiles_sbp_key" </dev/null > /dev/null 2>&1
+  fi
+  unset _dotfiles_sbp_fp
+fi
+
+unset _dotfiles_sbp_askpass _dotfiles_sbp_key

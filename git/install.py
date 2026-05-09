@@ -24,6 +24,7 @@ from helpers import (
 
 GPG_SSH_PROGRAM_DEFAULT = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
 CLAUDE_SIGNING_KEY = Path.home() / ".ssh" / "claude_signing_ed25519.pub"
+CLAUDE_SSH_CONFIG = Path.home() / ".ssh" / "config.claude"
 
 
 def _xdg_git_dir():
@@ -109,6 +110,7 @@ def generate_config():
         signingkey=git_user["signingkey"],
         gpg_ssh_program=GPG_SSH_PROGRAM_DEFAULT,
         editor="zed --wait",
+        ssh_command_block="",
     )
     claude_content = _render_config(
         template,
@@ -117,6 +119,7 @@ def generate_config():
         signingkey=str(CLAUDE_SIGNING_KEY),
         gpg_ssh_program="ssh-keygen",
         editor="vim",
+        ssh_command_block=f"\tsshCommand = ssh -F {CLAUDE_SSH_CONFIG}\n",
     )
 
     if _write_real_file(config_path, main_content):

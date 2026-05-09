@@ -24,6 +24,7 @@
 	editor = {editor}
 	autocrlf = input
 	excludesFile = ~/.gitignore
+{ssh_command_block}
 
 [init]
 	defaultBranch = main
