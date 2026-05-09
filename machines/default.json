@@ -3,7 +3,7 @@
     "user": {
       "name": "Leo Simons",
       "email": "mail@leosimons.com",
-      "signingkey": "/Users/lsimons/.ssh/id_rsa.pub"
+      "signingkey": "/Users/lsimons/.ssh/signing_ed25519.pub"
     }
   }
 }
