@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Installation script for ZSH configuration"""
 
-import sys
 import os
+import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
-from helpers import info, install_symlinks, make_dir, parse_dry_run, success
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "script"))
+from helpers import install_symlinks, parse_dry_run
 
 
 def main():
@@ -15,5 +15,5 @@ def main():
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

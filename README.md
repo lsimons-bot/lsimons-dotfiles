@@ -60,10 +60,12 @@ The installation script (`./script/install.py`) will:
 | `bash-it/` | Bash-it framework (prompt, plugins) |
 | `brave/` | Brave Browser |
 | `claude/` | Claude Code CLI and configuration |
+| `colors/` | `pastel` color CLI + docs for theme/palette files across tools |
 | `copilot/` | GitHub Copilot CLI |
 | `docker/` | Docker |
 | `gemini/` | Gemini CLI |
 | `fnox/` | fnox (1Password secret injection, via mise) |
+| `fonts/` | Fonts (Cascadia Code, Iosevka, JetBrains Mono, Lilex, Lilex Nerd Font) |
 | `gh/` | GitHub CLI |
 | `go/` | Go (via mise) |
 | `ghostty/` | Ghostty terminal |

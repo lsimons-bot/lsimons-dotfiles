@@ -1,0 +1,1238 @@
+<!doctype html>
+<html lang="en"><head>
+        <meta charset="utf-8">
+        <title>LSD Warm — source palette</title>
+        <style>
+            :root {
+                color-scheme: light dark;
+                --ink: #1e1408;
+                --paper: #ffffff;
+                --muted: #4a3a20;
+                --rule: #d8cdb6;
+                font-family: ui-sans-serif, system-ui, sans-serif;
+            }
+            body {
+                margin: 2rem 0;
+                padding: 0 50px;
+                background: var(--paper);
+                color: var(--ink);
+            }
+            h1 {
+                margin-top: 0;
+            }
+            h2 {
+                margin-top: 2.5rem;
+                border-bottom: 1px solid var(--rule);
+                padding-bottom: 0.3rem;
+            }
+            h3 {
+                margin-top: 1.5rem;
+                color: var(--muted);
+                font-weight: 600;
+                font-size: 1rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+            p {
+                line-height: 1.55;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                font-size: 0.9rem;
+            }
+            th,
+            td {
+                text-align: left;
+                padding: 0.35rem 0.6rem;
+                border-bottom: 1px solid var(--rule);
+                vertical-align: middle;
+            }
+            th {
+                font-weight: 600;
+                font-size: 0.8rem;
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
+            .swatch {
+                width: 2.4rem;
+                height: 1.6rem;
+                border-radius: 3px;
+                border: 1px solid rgba(0, 0, 0, 0.12);
+                display: inline-block;
+                vertical-align: middle;
+            }
+            .swatch-cell {
+                width: 3rem;
+            }
+            .name {
+                font-weight: 600;
+            }
+            .hex {
+                font-weight: 600;
+            }
+            .desc {
+                color: var(--muted);
+            }
+            .rgb {
+                color: var(--muted);
+                white-space: nowrap;
+            }
+            .contrast {
+                color: var(--muted);
+                white-space: nowrap;
+                font-variant-numeric: tabular-nums;
+            }
+            .contrast .tier {
+                font-size: 0.75rem;
+                padding: 0 0.35rem;
+                border-radius: 2px;
+                margin-left: 0.35rem;
+                vertical-align: middle;
+            }
+            .tier-aaa {
+                background: #2e7d16;
+                color: #fff;
+            }
+            .tier-aa {
+                background: #b87800;
+                color: #fff;
+            }
+            .tier-aa-l {
+                background: #8a7a55;
+                color: #fff;
+            }
+            .tier-fail {
+                background: #d42020;
+                color: #fff;
+            }
+            .oklch textarea {
+                font-family: inherit;
+                font-size: inherit;
+                background: transparent;
+                color: inherit;
+                border: 1px solid var(--rule);
+                border-radius: 3px;
+                padding: 0.2rem 0.4rem;
+                width: 14rem;
+                resize: none;
+                line-height: 1.3;
+                white-space: nowrap;
+            }
+            .oklch textarea:focus {
+                outline: 2px solid #c47a14;
+                outline-offset: -1px;
+                border-color: transparent;
+            }
+            .oklch textarea.invalid {
+                outline: 2px solid #d42020;
+                outline-offset: -1px;
+                border-color: transparent;
+            }
+            .dark-section {
+                background: #1a1206;
+                color: #d4c4a0;
+                border-radius: 6px;
+                padding: 1rem 1.5rem;
+                margin-top: 1rem;
+            }
+            .dark-section h3 {
+                color: #8a7a5c;
+            }
+            .dark-section th {
+                color: #8a7a5c;
+            }
+            .dark-section td {
+                border-bottom-color: #3a2e1a;
+            }
+            .dark-section .desc,
+            .dark-section .rgb,
+            .dark-section .contrast {
+                color: #8a7a5c;
+            }
+            .dark-section .oklch textarea {
+                border-color: #3a2e1a;
+            }
+            .meta {
+                background: rgba(196, 122, 20, 0.08);
+                padding: 1rem 1.25rem;
+                border-radius: 6px;
+                border-left: 3px solid #c47a14;
+            }
+            #status {
+                position: fixed;
+                top: 1rem;
+                right: 1rem;
+                padding: 0.4rem 0.75rem;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                background: #f4ebd6;
+                color: #4a3a20;
+                border: 1px solid #d8cdb6;
+                z-index: 100;
+                pointer-events: none;
+            }
+            #status.saved {
+                background: #e0f0d6;
+                border-color: #2e7d16;
+                color: #2e7d16;
+            }
+            #status.saving {
+                background: #f4ebd6;
+                border-color: #c47a14;
+                color: #c47a14;
+            }
+            #status.error {
+                background: #f6d6d6;
+                border-color: #d42020;
+                color: #d42020;
+            }
+            #status.offline {
+                background: #eee4cc;
+                border-color: #8a7a55;
+                color: #6a5a40;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="status" class="offline">offline (open via colors/serve.py to autosave)</div>
+
+        <h1>LSD Warm — source palette</h1>
+
+        <p class="meta">
+            <strong>OKLCH is the source of truth.</strong> Edit the OKLCH values
+            below (format: <code>L% C H</code> — e.g.
+            <code>64.39% 0.1373 66.7</code>). Swatch, hex, and RGB update live;
+            the hex value is what you mirror into
+            <code>zed/lsd-warm.json.symlink</code>,
+            <code>ghostty/LSD-Warm-{Light,Dark}.symlink</code>, and the
+            <code>clr[]</code> table in <code>oh-my-zsh/p10k.zsh.symlink</code>.
+            See <a href="./README.md">README.md</a> for the workflow.
+        </p>
+
+        <!--
+  EDITING NOTE
+  ------------
+  Each row is `<tr data-name="..."><td>name</td><td class="oklch"><textarea>L% C H</textarea></td><td class="desc">...</td></tr>`.
+  Add, remove, or reorder rows freely — the table headers and the swatch / hex / RGB columns are
+  injected at load by the script at the bottom of this file. OKLCH precision is preserved as written;
+  format is L% (0–100), C (0–~0.4), H (0–360) separated by spaces.
+-->
+
+        <h2>LSD Warm Light</h2>
+
+        <h3>Chrome</h3>
+        <table data-palette="light">
+            <tbody>
+                <tr data-name="bg">
+                    <td>bg</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">98% 0.01 0</textarea>
+                    </td>
+                    <td class="desc">
+                        main background — editor, terminal, toolbar
+                    </td>
+                </tr>
+                <tr data-name="bg_panel">
+                    <td>bg_panel</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">96% 0.02 85</textarea>
+                    </td>
+                    <td class="desc">side panel, sidebar</td>
+                </tr>
+                <tr data-name="bg_chrome">
+                    <td>bg_chrome</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">94% 0.03 85</textarea>
+                    </td>
+                    <td class="desc">title bar, tab bar, status bar</td>
+                </tr>
+                <tr data-name="bg_active_line">
+                    <td>bg_active_line</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">95% 0.03 85</textarea>
+                    </td>
+                    <td class="desc">editor active line</td>
+                </tr>
+                <tr data-name="bg_elevated">
+                    <td>bg_elevated</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">99% 0 0</textarea>
+                    </td>
+                    <td class="desc">elevated surface (popovers, modals)</td>
+                </tr>
+                <tr data-name="bg_element">
+                    <td>bg_element</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">93% 0.03 85</textarea>
+                    </td>
+                    <td class="desc">interactive element resting</td>
+                </tr>
+                <tr data-name="bg_element_hover">
+                    <td>bg_element_hover</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">91% 0.04 85</textarea>
+                    </td>
+                    <td class="desc">interactive element hovered</td>
+                </tr>
+                <tr data-name="bg_element_selected">
+                    <td>bg_element_selected</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">88% 0.05 85</textarea>
+                    </td>
+                    <td class="desc">
+                        interactive element selected, terminal selection
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Text</h3>
+        <table data-palette="light">
+            <tbody>
+                <tr data-name="fg">
+                    <td>fg</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">20% 0.03 80</textarea>
+                    </td>
+                    <td class="desc">primary text</td>
+                </tr>
+                <tr data-name="fg_muted">
+                    <td>fg_muted</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">36% 0.05 80</textarea>
+                    </td>
+                    <td class="desc">secondary text, icon.muted</td>
+                </tr>
+                <tr data-name="fg_dim">
+                    <td>fg_dim</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">47% 0.05 80</textarea>
+                    </td>
+                    <td class="desc">tertiary text, p10k rulers and gaps</td>
+                </tr>
+                <tr data-name="fg_faint">
+                    <td>fg_faint</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">57% 0.05 80</textarea>
+                    </td>
+                    <td class="desc">placeholder, low-emphasis labels</td>
+                </tr>
+                <tr data-name="fg_disabled">
+                    <td>fg_disabled</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">68% 0.05 80</textarea>
+                    </td>
+                    <td class="desc">disabled / hidden text</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Accent</h3>
+        <table data-palette="light">
+            <tbody>
+                <tr data-name="accent">
+                    <td>accent</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">64% 0.13 66</textarea>
+                    </td>
+                    <td class="desc">
+                        signature warm amber — focus, links, active line number
+                    </td>
+                </tr>
+                <tr data-name="accent_bright">
+                    <td>accent_bright</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">74% 0.11 74</textarea>
+                    </td>
+                    <td class="desc">
+                        hover/highlight variant (also used as Dark theme accent)
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Semantic</h3>
+        <table data-palette="light">
+            <tbody>
+                <tr data-name="red">
+                    <td>red</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">48% 0.21 26</textarea>
+                    </td>
+                    <td class="desc">error, deleted, label, property</td>
+                </tr>
+                <tr data-name="green">
+                    <td>green</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">48% 0.1284 174.6</textarea>
+                    </td>
+                    <td class="desc">success, created, strings, link_text</td>
+                </tr>
+                <tr data-name="yellow">
+                    <td>yellow</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">48% 0.1581 94.5</textarea>
+                    </td>
+                    <td class="desc">warning, modified, conflict</td>
+                </tr>
+                <tr data-name="blue">
+                    <td>blue</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">48% 0.1854 255.2</textarea>
+                    </td>
+                    <td class="desc">info, function, constructor, dir</td>
+                </tr>
+                <tr data-name="magenta">
+                    <td>magenta</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">50% 0.2629 359.7</textarea>
+                    </td>
+                    <td class="desc">keyword, preproc</td>
+                </tr>
+                <tr data-name="cyan">
+                    <td>cyan</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">45% 0.1407 197.7</textarea>
+                    </td>
+                    <td class="desc">link_uri, string.escape, regex</td>
+                </tr>
+                <tr data-name="orange">
+                    <td>orange</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">55% 0.1967 46.8</textarea>
+                    </td>
+                    <td class="desc">number, constant, string.special</td>
+                </tr>
+                <tr data-name="red_bright">
+                    <td>red_bright</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">55% 0.21 26</textarea>
+                    </td>
+                    <td class="desc">prompt error char, terminal bright red</td>
+                </tr>
+                <tr data-name="green_bright">
+                    <td>green_bright</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">55% 0.1284 174.6</textarea>
+                    </td>
+                    <td class="desc">prompt OK char, background jobs</td>
+                </tr>
+                <tr data-name="yellow_bright">
+                    <td>yellow_bright</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">55% 0.1581 94.5</textarea>
+                    </td>
+                    <td class="desc">disk warning, modified VCS</td>
+                </tr>
+                <tr data-name="blue_bright">
+                    <td>blue_bright</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">55% 0.1854 255.2</textarea>
+                    </td>
+                    <td class="desc">dir anchor, todo, package version</td>
+                </tr>
+                <tr data-name="magenta_bright">
+                    <td>magenta_bright</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">58% 0.2629 359.7</textarea>
+                    </td>
+                    <td class="desc">elixir / brighter purple variant</td>
+                </tr>
+                <tr data-name="cyan_bright">
+                    <td>cyan_bright</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">55% 0.1407 197.7</textarea>
+                    </td>
+                    <td class="desc">terminal bright cyan</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Borders</h3>
+        <table data-palette="light">
+            <tbody>
+                <tr data-name="border">
+                    <td>border</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">85% 0.033 85</textarea>
+                    </td>
+                    <td class="desc">default border</td>
+                </tr>
+                <tr data-name="border_variant">
+                    <td>border_variant</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="">88% 0.029 84</textarea>
+                    </td>
+                    <td class="desc">subtle border, disabled border</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="dark-section">
+            <h2 style="border-color: #3a2e1a">LSD Warm Dark</h2>
+
+            <h3>Chrome</h3>
+            <table data-palette="dark">
+                <tbody>
+                    <tr data-name="bg">
+                        <td>bg</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">19% 0.04 75</textarea>
+                        </td>
+                        <td class="desc">main background — editor, terminal</td>
+                    </tr>
+                    <tr data-name="bg_panel">
+                        <td>bg_panel</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="invalid">17% 0.04 75</textarea>
+                        </td>
+                        <td class="desc">side panel, sidebar</td>
+                    </tr>
+                    <tr data-name="bg_chrome">
+                        <td>bg_chrome</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="invalid">17% 0.04 75</textarea>
+                        </td>
+                        <td class="desc">title bar, tab bar, status bar</td>
+                    </tr>
+                    <tr data-name="bg_active_line">
+                        <td>bg_active_line</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">22% 0.04 75</textarea>
+                        </td>
+                        <td class="desc">
+                            editor active line, element resting
+                        </td>
+                    </tr>
+                    <tr data-name="bg_elevated">
+                        <td>bg_elevated</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">20% 0.04 80</textarea>
+                        </td>
+                        <td class="desc">
+                            elevated surface (popovers, modals)
+                        </td>
+                    </tr>
+                    <tr data-name="bg_element_hover">
+                        <td>bg_element_hover</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">26% 0.04 75</textarea>
+                        </td>
+                        <td class="desc">
+                            interactive element hovered, border
+                        </td>
+                    </tr>
+                    <tr data-name="bg_element_selected">
+                        <td>bg_element_selected</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">30% 0.04 80</textarea>
+                        </td>
+                        <td class="desc">
+                            interactive element selected, terminal selection
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Text</h3>
+            <table data-palette="dark">
+                <tbody>
+                    <tr data-name="fg">
+                        <td>fg</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">85% 0.04 80</textarea>
+                        </td>
+                        <td class="desc">primary text, terminal foreground</td>
+                    </tr>
+                    <tr data-name="fg_muted">
+                        <td>fg_muted</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">58% 0.04 75</textarea>
+                        </td>
+                        <td class="desc">secondary text, icon.muted</td>
+                    </tr>
+                    <tr data-name="fg_dim">
+                        <td>fg_dim</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">48% 0.04 80</textarea>
+                        </td>
+                        <td class="desc">placeholder, line numbers</td>
+                    </tr>
+                    <tr data-name="fg_disabled">
+                        <td>fg_disabled</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">43% 0.04 75</textarea>
+                        </td>
+                        <td class="desc">
+                            disabled / hidden text, terminal bright black
+                        </td>
+                    </tr>
+                    <tr data-name="fg_terminal_white">
+                        <td>fg_terminal_white</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">95% 0.04 80</textarea>
+                        </td>
+                        <td class="desc">terminal bright white</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Accent</h3>
+            <table data-palette="dark">
+                <tbody>
+                    <tr data-name="accent">
+                        <td>accent</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">74% 0.11 75</textarea>
+                        </td>
+                        <td class="desc">
+                            amber — focus, links, active line number
+                        </td>
+                    </tr>
+                    <tr data-name="accent_warmer">
+                        <td>accent_warmer</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">82% 0.10 80</textarea>
+                        </td>
+                        <td class="desc">
+                            modified, conflict, link_text.hover
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Semantic (terminal.ansi)</h3>
+            <table data-palette="dark">
+                <tbody>
+                    <tr data-name="red">
+                        <td>red</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">70% 0.144 17</textarea>
+                        </td>
+                        <td class="desc">error, deleted, label, property</td>
+                    </tr>
+                    <tr data-name="green">
+                        <td>green</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">70% 0.1284 174.6</textarea>
+                        </td>
+                        <td class="desc">
+                            success, created, strings, link_text
+                        </td>
+                    </tr>
+                    <tr data-name="yellow">
+                        <td>yellow</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="invalid">70% 0.1581 94.5</textarea>
+                        </td>
+                        <td class="desc">
+                            warning, modified, conflict, attribute
+                        </td>
+                    </tr>
+                    <tr data-name="blue">
+                        <td>blue</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="invalid">70% 0.1854 255.2</textarea>
+                        </td>
+                        <td class="desc">
+                            info, function, constructor, renamed
+                        </td>
+                    </tr>
+                    <tr data-name="magenta">
+                        <td>magenta</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="invalid">70% 0.2629 359.7</textarea>
+                        </td>
+                        <td class="desc">keyword, preproc</td>
+                    </tr>
+                    <tr data-name="cyan">
+                        <td>cyan</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="invalid">70% 0.1407 197.7</textarea>
+                        </td>
+                        <td class="desc">link_uri, string.escape, regex</td>
+                    </tr>
+                    <tr data-name="orange">
+                        <td>orange</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="invalid">70% 0.1967 46.8</textarea>
+                        </td>
+                        <td class="desc">number, constant, boolean</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Borders</h3>
+            <table data-palette="dark">
+                <tbody>
+                    <tr data-name="border">
+                        <td>border</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">26% 0.035 80</textarea>
+                        </td>
+                        <td class="desc">default border</td>
+                    </tr>
+                    <tr data-name="border_variant">
+                        <td>border_variant</td>
+                        <td class="oklch">
+                            <textarea rows="1" spellcheck="false" class="">31% 0.040 78</textarea>
+                        </td>
+                        <td class="desc">subtle border</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Reference: Schuberg Philis</h2>
+        <p>
+            Brand palette from
+            <a href="https://brandbook.schubergphilis.com/8d157b10c/p/109ab0-colors">brandbook.schubergphilis.com</a>. See <a href="./sbp-colors.md">sbp-colors.md</a>.
+        </p>
+
+        <h3>Primary</h3>
+        <table data-palette="sbp">
+            <tbody>
+                <tr data-name="sbp_blue">
+                    <td>SBP Blue (primary)</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">60.56% 0.1854 255.2</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="soft_blue">
+                    <td>Soft Blue</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">95.69% 0.0183 250.6</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="tropical_turquoise">
+                    <td>Tropical Turquoise</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">84.62% 0.1407 197.7</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="midnight_dark">
+                    <td>Midnight Dark</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">14.95% 0.0304 246.1</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="space_gray">
+                    <td>Space Gray</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">26.64% 0.0692 253.1</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="joyful_yellow">
+                    <td>Joyful Yellow</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">89.76% 0.1581 94.5</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="white">
+                    <td>White</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">100.00% 0.0000 89.9</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Secondary</h3>
+        <table data-palette="sbp">
+            <tbody>
+                <tr data-name="orange">
+                    <td>Orange</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">70.89% 0.1967 46.8</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="green">
+                    <td>Green</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">72.53% 0.1284 174.6</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="violet">
+                    <td>Violet</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">58.55% 0.2184 281.4</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="magenta">
+                    <td>Magenta</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false" class="invalid">64.80% 0.2629 359.7</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Signal</h3>
+        <p class="desc">
+            Use only for signaling (e.g. positive/negative, true/false), not
+            general design.
+        </p>
+        <table data-palette="sbp">
+            <tbody>
+                <tr data-name="true_green">
+                    <td>True Green</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">83.19% 0.1793 162.7</textarea>
+                    </td>
+                    <td class="desc">positive / true</td>
+                </tr>
+                <tr data-name="false_red">
+                    <td>False Red</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">72.13% 0.1791 9.6</textarea>
+                    </td>
+                    <td class="desc">negative / false</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Reference: Caseum</h2>
+        <p>
+            From
+            <a href="https://github.com/lsimons/caseum/tree/main/docs/design/colors">github.com/lsimons/caseum</a>. AAA-contrast against black/white, color-blind friendly, prints
+            well in grayscale. See
+            <a href="./caseum-colors.md">caseum-colors.md</a>.
+        </p>
+
+        <h3>Main</h3>
+        <table data-palette="caseum">
+            <tbody>
+                <tr data-name="blue">
+                    <td>Blue</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">40.26% 0.1023 262.4</textarea>
+                    </td>
+                    <td class="desc">primary</td>
+                </tr>
+                <tr data-name="green">
+                    <td>Green</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">45.50% 0.1059 134.5</textarea>
+                    </td>
+                    <td class="desc">secondary</td>
+                </tr>
+                <tr data-name="magenta">
+                    <td>Magenta</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">42.03% 0.1229 359.5</textarea>
+                    </td>
+                    <td class="desc">highlight / alert</td>
+                </tr>
+                <tr data-name="brown">
+                    <td>Brown</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">48.63% 0.0816 65.0</textarea>
+                    </td>
+                    <td class="desc">tertiary</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Dark (special / focus)</h3>
+        <table data-palette="caseum">
+            <tbody>
+                <tr data-name="dark_blue">
+                    <td>Dark Blue</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">29.58% 0.0900 262.1</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="dark_green">
+                    <td>Dark Green</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">32.60% 0.0815 134.6</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="dark_magenta">
+                    <td>Dark Magenta</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">31.57% 0.1049 1.5</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="dark_brown">
+                    <td>Dark Brown</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">36.81% 0.0702 62.9</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Light (accent / background / selection / grouping)</h3>
+        <table data-palette="caseum">
+            <tbody>
+                <tr data-name="light_blue">
+                    <td>Light Blue</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">67.83% 0.0413 264.2</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="light_green">
+                    <td>Light Green</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">73.99% 0.0575 126.9</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="light_magenta">
+                    <td>Light Magenta</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">67.83% 0.0520 352.1</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="light_brown">
+                    <td>Light Brown</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">71.36% 0.0360 68.6</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Grayscale</h3>
+        <table data-palette="caseum">
+            <tbody>
+                <tr data-name="black">
+                    <td>Black</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">0.00% 0.0000 0.0</textarea>
+                    </td>
+                    <td class="desc">text on white/light, lines</td>
+                </tr>
+                <tr data-name="dark_grey">
+                    <td>Dark Grey</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">46.40% 0.0000 89.9</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="grey">
+                    <td>Grey</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">59.99% 0.0000 89.9</textarea>
+                    </td>
+                    <td class="desc">
+                        faded / background / disabled / external
+                    </td>
+                </tr>
+                <tr data-name="light_grey">
+                    <td>Light Grey</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">76.36% 0.0000 89.9</textarea>
+                    </td>
+                    <td class="desc"></td>
+                </tr>
+                <tr data-name="white">
+                    <td>White</td>
+                    <td class="oklch">
+                        <textarea rows="1" spellcheck="false">100.00% 0.0000 89.9</textarea>
+                    </td>
+                    <td class="desc">text against main/dark colors</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <script>
+            // OKLCH is the source of truth. Each row carries a textarea with
+            // "L% C H"; this script derives hex / RGB / swatch and re-derives
+            // them on every edit.
+            function parseOklch(text) {
+                const cleaned = text.trim().replace(/^oklch\(|\)$/gi, "");
+                const m = cleaned.match(
+                    /^\s*(-?\d*\.?\d+)\s*%?\s+(-?\d*\.?\d+)\s+(-?\d*\.?\d+)\s*°?\s*$/,
+                );
+                if (!m) return null;
+                return [parseFloat(m[1]), parseFloat(m[2]), parseFloat(m[3])];
+            }
+            function linToSrgb(c) {
+                return c <= 0.0031308
+                    ? 12.92 * c
+                    : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+            }
+            // OKLCH → linear RGB → sRGB. Inverse matrices from
+            // https://bottosson.github.io/posts/oklab/
+            function oklchToRgb([L, C, H]) {
+                const Ln = L / 100;
+                const h = (H * Math.PI) / 180;
+                const a = C * Math.cos(h);
+                const b = C * Math.sin(h);
+                const l_ = Ln + 0.3963377774 * a + 0.2158037573 * b;
+                const m_ = Ln - 0.1055613458 * a - 0.0638541728 * b;
+                const s_ = Ln - 0.0894841775 * a - 1.291485548 * b;
+                const lr = l_ * l_ * l_;
+                const lg = m_ * m_ * m_;
+                const lb = s_ * s_ * s_;
+                let r =
+                    4.0767416621 * lr - 3.3077115913 * lg + 0.2309699292 * lb;
+                let g =
+                    -1.2684380046 * lr + 2.6097574011 * lg - 0.3413193965 * lb;
+                let bl =
+                    -0.0041960863 * lr - 0.7034186147 * lg + 1.707614701 * lb;
+                const outOfGamut =
+                    r < 0 || r > 1 || g < 0 || g > 1 || bl < 0 || bl > 1;
+                r = Math.max(0, Math.min(1, linToSrgb(r)));
+                g = Math.max(0, Math.min(1, linToSrgb(g)));
+                bl = Math.max(0, Math.min(1, linToSrgb(bl)));
+                return {
+                    rgb: [
+                        Math.round(r * 255),
+                        Math.round(g * 255),
+                        Math.round(bl * 255),
+                    ],
+                    outOfGamut,
+                };
+            }
+            function rgbToHex([r, g, b]) {
+                return (
+                    "#" +
+                    [r, g, b]
+                        .map((n) => n.toString(16).padStart(2, "0"))
+                        .join("")
+                );
+            }
+            function srgbToLinear(c) {
+                return c <= 0.04045
+                    ? c / 12.92
+                    : Math.pow((c + 0.055) / 1.055, 2.4);
+            }
+            // WCAG 2.x relative luminance and contrast ratio.
+            // https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio
+            function relLuminance([r, g, b]) {
+                const lr = srgbToLinear(r / 255);
+                const lg = srgbToLinear(g / 255);
+                const lb = srgbToLinear(b / 255);
+                return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
+            }
+            function contrastRatio(L1, L2) {
+                const a = Math.max(L1, L2),
+                    b = Math.min(L1, L2);
+                return (a + 0.05) / (b + 0.05);
+            }
+            function wcagTier(ratio) {
+                if (ratio >= 7) return { label: "AAA", cls: "tier-aaa" };
+                if (ratio >= 4.5) return { label: "AA", cls: "tier-aa" };
+                if (ratio >= 3) return { label: "AA·L", cls: "tier-aa-l" };
+                return { label: "fail", cls: "tier-fail" };
+            }
+            function contrastHtml(rgb, against) {
+                const ratio = contrastRatio(
+                    relLuminance(rgb),
+                    relLuminance(against),
+                );
+                const tier = wcagTier(ratio);
+                return `${ratio.toFixed(2)}<span class="tier ${tier.cls}">${tier.label}</span>`;
+            }
+            function renderRow(tr) {
+                const ta = tr.querySelector(".oklch textarea");
+                if (!ta) return;
+                const parsed = parseOklch(ta.value);
+                const swatchCell = tr.querySelector(".swatch-cell");
+                const hexCell = tr.querySelector(".hex");
+                const rgbCell = tr.querySelector(".rgb");
+                const cBlack = tr.querySelector(".contrast-black");
+                const cWhite = tr.querySelector(".contrast-white");
+                if (!parsed) {
+                    ta.classList.add("invalid");
+                    if (swatchCell)
+                        swatchCell.querySelector(".swatch").style.background =
+                            "transparent";
+                    if (hexCell) hexCell.textContent = "—";
+                    if (rgbCell) rgbCell.textContent = "—";
+                    if (cBlack) cBlack.textContent = "—";
+                    if (cWhite) cWhite.textContent = "—";
+                    return;
+                }
+                const { rgb, outOfGamut } = oklchToRgb(parsed);
+                ta.classList.toggle("invalid", outOfGamut);
+                const hex = rgbToHex(rgb);
+                if (swatchCell)
+                    swatchCell.querySelector(".swatch").style.background = hex;
+                if (hexCell) hexCell.textContent = hex;
+                if (rgbCell)
+                    rgbCell.textContent = `${rgb[0]} ${rgb[1]} ${rgb[2]}`;
+                if (cBlack) cBlack.innerHTML = contrastHtml(rgb, [0, 0, 0]);
+                if (cWhite)
+                    cWhite.innerHTML = contrastHtml(rgb, [255, 255, 255]);
+            }
+            function decorate() {
+                document
+                    .querySelectorAll("table[data-palette]")
+                    .forEach((tbl) => {
+                        if (!tbl.tHead) {
+                            const thead = tbl.createTHead();
+                            thead.innerHTML =
+                                "<tr>" +
+                                '<th class="swatch-cell"></th>' +
+                                "<th>name</th>" +
+                                "<th>OKLCH (editable)</th>" +
+                                "<th>hex</th>" +
+                                "<th>RGB</th>" +
+                                "<th>vs #000</th>" +
+                                "<th>vs #fff</th>" +
+                                "<th>description</th>" +
+                                "</tr>";
+                        }
+                        tbl.querySelectorAll("tr[data-name]").forEach((tr) => {
+                            if (!tr.querySelector(".swatch-cell")) {
+                                const td = document.createElement("td");
+                                td.className = "swatch-cell";
+                                td.innerHTML = '<span class="swatch"></span>';
+                                tr.insertBefore(td, tr.firstElementChild);
+                            }
+                            const oklchCell = tr.querySelector(".oklch");
+                            if (oklchCell && !tr.querySelector(".hex")) {
+                                const tdHex = document.createElement("td");
+                                tdHex.className = "hex";
+                                oklchCell.after(tdHex);
+                                const tdRgb = document.createElement("td");
+                                tdRgb.className = "rgb";
+                                tdHex.after(tdRgb);
+                                const tdCB = document.createElement("td");
+                                tdCB.className = "contrast contrast-black";
+                                tdRgb.after(tdCB);
+                                const tdCW = document.createElement("td");
+                                tdCW.className = "contrast contrast-white";
+                                tdCB.after(tdCW);
+                            }
+                            const ta = tr.querySelector(".oklch textarea");
+                            if (ta) {
+                                ta.addEventListener("input", () => {
+                                    renderRow(tr);
+                                    scheduleSave();
+                                });
+                            }
+                            renderRow(tr);
+                        });
+                    });
+            }
+            decorate();
+
+            // --- Autosave (only active when served via colors/serve.py) ---
+            const status = document.getElementById("status");
+            const isServerMode =
+                location.protocol === "http:" || location.protocol === "https:";
+            function setStatus(cls, text) {
+                status.className = cls;
+                status.textContent = text;
+            }
+            if (isServerMode) setStatus("saved", "connected — autosave on");
+
+            let saveTimer = null;
+            let saving = false;
+            let pending = false;
+            function scheduleSave() {
+                if (!isServerMode) return;
+                if (saveTimer) clearTimeout(saveTimer);
+                saveTimer = setTimeout(doSave, 600);
+            }
+            async function doSave() {
+                if (saving) {
+                    pending = true;
+                    return;
+                }
+                saving = true;
+                setStatus("saving", "saving…");
+                // Clone the DOM, then mirror each live textarea's .value into
+                // the corresponding cloned textarea's textContent (the live
+                // .value isn't reflected in outerHTML otherwise), and strip
+                // runtime-injected cells so the saved file stays in canonical
+                // "edit-me" shape.
+                const clone = document.documentElement.cloneNode(true);
+                const liveTAs = document.querySelectorAll("textarea");
+                const cloneTAs = clone.querySelectorAll("textarea");
+                liveTAs.forEach((live, i) => {
+                    if (cloneTAs[i]) cloneTAs[i].textContent = live.value;
+                });
+                clone
+                    .querySelectorAll(
+                        "thead, .swatch-cell, .hex, .rgb, .contrast",
+                    )
+                    .forEach((el) => el.remove());
+                // Reset the in-memory status pill so it doesn't bake into the saved file.
+                const savedStatus = clone.querySelector("#status");
+                if (savedStatus) {
+                    savedStatus.className = "offline";
+                    savedStatus.textContent =
+                        "offline (open via colors/serve.py to autosave)";
+                }
+                const html = "<!doctype html>\n" + clone.outerHTML + "\n";
+                try {
+                    const r = await fetch("/save", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ html }),
+                    });
+                    if (!r.ok) {
+                        const msg = await r.text().catch(() => "");
+                        setStatus(
+                            "error",
+                            `save failed: ${r.status} ${msg}`.trim(),
+                        );
+                    } else {
+                        const now = new Date().toLocaleTimeString();
+                        setStatus("saved", `saved ${now}`);
+                    }
+                } catch (e) {
+                    setStatus("error", `save failed: ${e.message}`);
+                } finally {
+                    saving = false;
+                    if (pending) {
+                        pending = false;
+                        scheduleSave();
+                    }
+                }
+            }
+            window.addEventListener("beforeunload", (e) => {
+                if (isServerMode && (saving || pending || saveTimer)) {
+                    e.preventDefault();
+                    e.returnValue = "";
+                }
+            });
+        </script>
+
+        <div id="1p-menu-live-region" role="status" aria-live="polite" aria-atomic="true" aria-relevant="all" style="
+                clip: rect(0px, 0px, 0px, 0px);
+                clip-path: inset(50%);
+                height: 1px;
+                overflow: hidden;
+                position: fixed;
+                top: 0px;
+                left: 0px;
+                white-space: nowrap;
+                width: 1px;
+                overflow-wrap: normal;
+            ">
+            1Password menu is available. Press down arrow to select.
+        </div>
+    
+
+<div id="1p-menu-live-region" role="status" aria-live="polite" aria-atomic="true" aria-relevant="all" style="clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; overflow: hidden; position: fixed; top: 0px; left: 0px; white-space: nowrap; width: 1px; overflow-wrap: normal;">1Password menu is available. Press down arrow to select.</div>
+<div id="1p-menu-live-region" role="status" aria-live="polite" aria-atomic="true" aria-relevant="all" style="clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; overflow: hidden; position: fixed; top: 0px; left: 0px; white-space: nowrap; width: 1px; overflow-wrap: normal;">1Password menu is available. Press down arrow to select.</div>
+<div id="1p-menu-live-region" role="status" aria-live="polite" aria-atomic="true" aria-relevant="all" style="clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; overflow: hidden; position: fixed; top: 0px; left: 0px; white-space: nowrap; width: 1px; overflow-wrap: normal;">1Password menu is available. Press down arrow to select.</div></body></html>

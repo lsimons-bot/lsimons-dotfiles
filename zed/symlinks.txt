@@ -1,3 +1,4 @@
 # Zed symlink destinations
 settings.json.symlink -> $XDG_CONFIG_HOME/zed/settings.json
 keymap.json.symlink -> $XDG_CONFIG_HOME/zed/keymap.json
+lsd-warm.json.symlink -> $XDG_CONFIG_HOME/zed/themes/lsd-warm.json

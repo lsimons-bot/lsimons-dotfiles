@@ -7,17 +7,25 @@ import os
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
-from helpers import error, info, is_dry_run, parse_dry_run, run_cmd, success
+from helpers import (
+    brew_install,
+    brew_is_installed,
+    error,
+    info,
+    is_dry_run,
+    parse_dry_run,
+    run_cmd,
+    success,
+)
 
 
-def main():
-    parse_dry_run()
+def install_oh_my_zsh():
     info("Installing Oh My Zsh...")
 
     oh_my_zsh_dir = Path.home() / '.oh-my-zsh'
     if not is_dry_run() and oh_my_zsh_dir.exists():
         success("Oh My Zsh already installed")
-        return 0
+        return True
 
     try:
         env = os.environ.copy()
@@ -34,10 +42,33 @@ def main():
             env=env,
         )
         success("Oh My Zsh installed")
-        return 0
+        return True
     except subprocess.CalledProcessError:
         error("Failed to install Oh My Zsh")
+        return False
+
+
+def install_powerlevel10k():
+    info("Installing powerlevel10k...")
+
+    if brew_is_installed('powerlevel10k'):
+        success("powerlevel10k already installed")
+        return True
+    if brew_install('powerlevel10k'):
+        success("powerlevel10k installed")
+        return True
+    error("Failed to install powerlevel10k")
+    return False
+
+
+def main():
+    parse_dry_run()
+
+    if not install_oh_my_zsh():
         return 1
+    if not install_powerlevel10k():
+        return 1
+    return 0
 
 
 if __name__ == '__main__':

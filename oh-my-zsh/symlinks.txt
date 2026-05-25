@@ -1,0 +1,1 @@
+p10k.zsh.symlink -> ~/.p10k.zsh

@@ -1,0 +1,4 @@
+# Ghostty symlink destinations
+config.symlink -> $HOME/Library/Application Support/com.mitchellh.ghostty/config
+LSD-Warm-Dark.symlink -> $XDG_CONFIG_HOME/ghostty/themes/LSD Warm Dark
+LSD-Warm-Light.symlink -> $XDG_CONFIG_HOME/ghostty/themes/LSD Warm Light

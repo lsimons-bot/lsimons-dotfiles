@@ -8,7 +8,11 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   "proxy": "",
-  "icon_theme": "Colored Zed Icons Theme Light",
+  "icon_theme": {
+    "mode": "light",
+    "light": "Colored Zed Icons Theme Light",
+    "dark": "Colored Zed Icons Theme Light"
+  },
   "language_models": {
     "openai_compatible": {
       "sbp": {
@@ -133,7 +137,7 @@
   "buffer_font_size": 15,
   "theme": {
     "mode": "light",
-    "light": "Claude Warm Light",
-    "dark": "Claude Warm"
+    "light": "LSD Warm Light",
+    "dark": "LSD Warm Dark"
   }
 }
