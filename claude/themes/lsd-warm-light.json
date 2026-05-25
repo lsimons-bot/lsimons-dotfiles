@@ -1,0 +1,40 @@
+{
+  "name": "LSD Warm Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#c17a23",
+    "text": "#241100",
+    "inverseText": "#faf1f3",
+    "inactive": "#947b60",
+    "subtle": "#3e290f",
+    "suggestion": "#594329",
+    "permission": "#906d00",
+    "remember": "#c17a23",
+
+    "success": "#006248",
+    "error": "#a10000",
+    "warning": "#906d00",
+    "merged": "#aa0048",
+
+    "promptBorder": "#c17a23",
+    "planMode": "#0045ae",
+    "autoAccept": "#006248",
+    "bashBorder": "#006168",
+    "ide": "#0045ae",
+    "fastMode": "#906d00",
+
+    "diffAdded": "#006248",
+    "diffRemoved": "#a10000",
+    "diffAddedDimmed": "#006248",
+    "diffRemovedDimmed": "#a10000",
+    "diffAddedWord": "#006248",
+    "diffRemovedWord": "#a10000",
+
+    "userMessageBackground": "#f7e9d6",
+    "userMessageBackgroundHover": "#f1dec5",
+    "messageActionsBackground": "#f7e9d6",
+    "bashMessageBackgroundColor": "#fbecd9",
+    "memoryBackgroundColor": "#fbecd9",
+    "selectionBg": "#ebd3b4"
+  }
+}

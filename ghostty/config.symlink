@@ -32,7 +32,7 @@ font-family = Lilex Nerd Font Mono
 font-size = 15
 # adjust-cell-height = 30%
 
-theme = LSD Warm Dark
+theme = LSD Warm Light
 
 #
 # # Spacing around the equals sign does not matter.

@@ -164,6 +164,13 @@ def main():
     if skills_src.exists():
         link_directory(skills_src, skills_dst)
 
+    # Link themes directory (LSD Warm Light/Dark, etc.). Claude Code picks up
+    # custom themes from ~/.claude/themes/*.json; activate via /theme.
+    themes_src = topic_dir / 'themes'
+    themes_dst = claude_dir / 'themes'
+    if themes_src.exists():
+        link_directory(themes_src, themes_dst)
+
     # Write settings.json with dynamic attribution
     write_settings(claude_dir, topic_dir)
 

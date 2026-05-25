@@ -1,0 +1,40 @@
+{
+  "name": "LSD Warm Dark",
+  "base": "dark",
+  "overrides": {
+    "claude": "#d79e59",
+    "text": "#dfcab2",
+    "inverseText": "#1a0c00",
+    "inactive": "#5e4c38",
+    "subtle": "#8a7761",
+    "suggestion": "#6b5b44",
+    "permission": "#eabb79",
+    "remember": "#d79e59",
+
+    "success": "#007a5e",
+    "error": "#c10032",
+    "warning": "#eabb79",
+    "merged": "#c8005e",
+
+    "promptBorder": "#d79e59",
+    "planMode": "#005fc9",
+    "autoAccept": "#007a5e",
+    "bashBorder": "#007980",
+    "ide": "#005fc9",
+    "fastMode": "#eabb79",
+
+    "diffAdded": "#007a5e",
+    "diffRemoved": "#c10032",
+    "diffAddedDimmed": "#007a5e",
+    "diffRemovedDimmed": "#c10032",
+    "diffAddedWord": "#007a5e",
+    "diffRemovedWord": "#c10032",
+
+    "userMessageBackground": "#1f1000",
+    "userMessageBackgroundHover": "#30200d",
+    "messageActionsBackground": "#1f1000",
+    "bashMessageBackgroundColor": "#261704",
+    "memoryBackgroundColor": "#261704",
+    "selectionBg": "#3a2b16"
+  }
+}
