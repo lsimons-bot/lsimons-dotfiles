@@ -122,29 +122,9 @@ def write_settings(claude_dir, topic_dir):
 
 
 def main():
+    info("Installing Claude Code...")
     parse_dry_run()
     install_symlinks(Path(__file__).resolve().parent)
-
-    info("Installing Claude Code...")
-
-    info("Installing/updating Claude Code via official installer...")
-    try:
-        run_cmd(
-            ["sh", "-c", "curl -fsSL https://claude.ai/install.sh | sh"],
-            check=True,
-        )
-        success("Claude Code installed")
-    except subprocess.CalledProcessError:
-        error("Failed to install Claude Code")
-        return 1
-
-    # ccusage powers the monthly $-spend segment in the status line.
-    if command_exists("ccusage"):
-        success("ccusage already installed")
-    elif npm_install_global("ccusage"):
-        success("ccusage installed")
-    else:
-        warn("Failed to install ccusage; status line cost segment will be hidden")
 
     # Ensure ~/.claude directory exists
     claude_dir = Path.home() / ".claude"
@@ -170,6 +150,25 @@ def main():
 
     # Write settings.json with dynamic attribution
     write_settings(claude_dir, topic_dir)
+
+    info("Installing/updating Claude Code via official installer...")
+    try:
+        run_cmd(
+            ["sh", "-c", "curl -fsSL https://claude.ai/install.sh | sh"],
+            check=True,
+        )
+        success("Claude Code installed")
+    except subprocess.CalledProcessError:
+        error("Failed to install Claude Code")
+        return 1
+
+    # ccusage powers the monthly $-spend segment in the status line.
+    if command_exists("ccusage"):
+        success("ccusage already installed")
+    elif npm_install_global("ccusage"):
+        success("ccusage installed")
+    else:
+        warn("Failed to install ccusage; status line cost segment will be hidden")
 
     return 0
 
