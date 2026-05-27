@@ -129,5 +129,6 @@
   },
   "defaultMode": "acceptEdits",
   "model": "claude-sonnet-4-6",
-  "effortLevel": "high"
+  "effortLevel": "high",
+  "theme": "custom:lsd-warm-light"
 }
