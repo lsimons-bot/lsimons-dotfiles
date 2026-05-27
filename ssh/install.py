@@ -111,7 +111,7 @@ def write_ai_ssh_config():
         "IdentitiesOnly yes\n"
         "IdentityAgent SSH_AUTH_SOCK\n"
         "\n"
-        "Include config\n"
+        "Include config.local\n"
     )
 
     if config_ai_path.exists() and config_ai_path.read_text() == content:

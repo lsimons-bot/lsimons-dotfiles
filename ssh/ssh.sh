@@ -16,7 +16,7 @@ esac
 _dotfiles_ssh_askpass_ai="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/ssh-askpass-ai.sh"
 _dotfiles_ai_key="$HOME/.ssh/ai_ed25519"
 
-if [ -x "$_dotfiles_ssh_askpass" ] \
+if [ -x "$_dotfiles_ssh_askpass_ai" ] \
   && [ -f "$_dotfiles_ai_key" ] \
   && [ -n "${SSH_AUTH_SOCK:-}" ] \
   && command -v op > /dev/null 2>&1 \
@@ -26,11 +26,11 @@ if [ -x "$_dotfiles_ssh_askpass" ] \
   if [ -n "$_dotfiles_ai_fp" ] \
     && ! ssh-add -l 2>/dev/null | grep -q -- "$_dotfiles_ai_fp"; then
     DISPLAY="${DISPLAY:-:0}" \
-      SSH_ASKPASS="$_dotfiles_ssh_askpass" \
+      SSH_ASKPASS="$_dotfiles_ssh_askpass_ai" \
       SSH_ASKPASS_REQUIRE=force \
       ssh-add "$_dotfiles_ai_key" </dev/null > /dev/null 2>&1
   fi
   unset _dotfiles_ai_fp
 fi
 
-unset _dotfiles_ssh_askpass _dotfiles_ai_key
+unset _dotfiles_ssh_askpass_ai _dotfiles_ai_key
