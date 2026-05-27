@@ -7,6 +7,7 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "buffer_font_family": "Lilex Nerd Font",
   "proxy": "",
   "icon_theme": {
     "mode": "light",
@@ -129,6 +130,7 @@
     "metrics": false
   },
   "terminal": {
+    "font_family": "Lilex Nerd Font",
     "env": {
       "PATH": "${HOME}/.local/share/mise/shims:${HOME}/.local/bin:${PATH}"
     }
