@@ -58,7 +58,6 @@ The installation script (`./script/install.py`) will:
 | `azure/` | Azure CLI (`az`) |
 | `bash/` | Bash configuration and directories |
 | `bash-it/` | Bash-it framework (prompt, plugins) |
-| `brave/` | Brave Browser |
 | `claude/` | Claude Code CLI and configuration |
 | `colors/` | `pastel` color CLI + docs for theme/palette files across tools |
 | `copilot/` | GitHub Copilot CLI |
@@ -142,41 +141,13 @@ All tools are configured to respect these directories:
 
 ## Machine-Specific Configuration
 
-The `machines/` directory contains per-machine configuration in JSON format. During installation, `get_machine_config()` in `helpers.py` loads `machines/<short-hostname>.json`, falling back to `machines/default.json`.
-
-Currently used for git user identity:
-- **default.json**: Leo Simons / mail@leosimons.com (main laptops)
-- **sbp-mac-ai.json**: Leo-Bot Simons / bot@leosimons.com (AI coding machine)
+The `machines/` directory contains per-machine configuration in JSON format. During installation, `get_machine_config()` in `helpers.py` loads `machines/<short-hostname>.json`, merging with `machines/default.json`.
 
 To add a new machine, create `machines/<hostname>.json` (use `hostname -s` to get the short hostname).
 
 ## 1Password Integration
 
-Secrets are loaded from 1Password at shell startup, not stored in git.
-
-### Setup
-
-1. Authenticate with 1Password CLI:
-   ```bash
-   op signin
-   ```
-
-2. Add secret references (get these from 1Password app: right-click field, "Copy Secret Reference"):
-   ```bash
-   echo "GITHUB_TOKEN=op://AI/GitHub/personal_access_token/password" >> 1password/.env.1password
-   ```
-
-### Usage
-
-Secrets are automatically loaded when you start a new shell. Helper functions:
-
-```bash
-# Load a single secret
-op_load_secret "op://AI/GitHub/personal_access_token/password"
-
-# Export a secret as an environment variable
-op_export GITHUB_TOKEN "op://AI/GitHub/personal_access_token/password"
-```
+Secrets are loaded from 1Password, not stored in git. See the [1Password topic](./1password).
 
 ## Customization
 
@@ -198,31 +169,6 @@ op_export GITHUB_TOKEN "op://AI/GitHub/personal_access_token/password"
    ```bash
    ~/.dotfiles/script/install.py
    ```
-
-## Troubleshooting
-
-### ZSH not loading configuration
-
-Check symlink:
-```bash
-ls -la ~/.zshrc
-# Should show: ~/.zshrc -> ~/.dotfiles/zsh/zshrc.symlink
-```
-
-### Bash not loading configuration
-
-Check symlinks:
-```bash
-ls -la ~/.bashrc ~/.bash_profile
-# Should show: ~/.bashrc -> ~/.dotfiles/bash/bashrc.symlink
-# Should show: ~/.bash_profile -> ~/.dotfiles/bash/bash_profile.symlink
-```
-
-### 1Password secrets not loading
-
-1. Check CLI is installed: `which op`
-2. Check authentication: `op account list`
-3. Test manually: `op read "op://AI/Example Service/password"`
 
 ### XDG directories not created
 
