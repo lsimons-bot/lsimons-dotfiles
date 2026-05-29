@@ -18,8 +18,13 @@ if (Get-Module -ListAvailable -Name PSReadLine) {
   Import-Module PSReadLine
   Set-PSReadLineOption -HistorySavePath (Join-Path $env:XDG_STATE_HOME 'pwsh\history.txt')
   Set-PSReadLineOption -HistoryNoDuplicates
-  Set-PSReadLineOption -PredictionSource HistoryAndPlugin
-  Set-PSReadLineOption -PredictionViewStyle ListView
+  # Prediction options need PSReadLine 2.2+ (ships with pwsh 7). Windows
+  # PowerShell 5.1 carries 2.0.0, which lacks these parameters -- skip them
+  # there so this shared profile doesn't error on 5.1.
+  if ((Get-Module PSReadLine).Version -ge [version]'2.2.0') {
+    Set-PSReadLineOption -PredictionSource HistoryAndPlugin
+    Set-PSReadLineOption -PredictionViewStyle ListView
+  }
   Set-PSReadLineOption -EditMode Emacs
   Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
   Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
@@ -35,7 +40,10 @@ if (-not $env:SSH_AUTH_SOCK) {
 }
 
 # --- mise (polyglot tool version manager) ---
-if (Get-Command mise -ErrorAction SilentlyContinue) {
+# mise's pwsh chpwd hook requires PowerShell 7+; activating under Windows
+# PowerShell 5.1 only emits a warning, so gate it on the major version.
+if (($PSVersionTable.PSVersion.Major -ge 6) -and
+    (Get-Command mise -ErrorAction SilentlyContinue)) {
   mise activate pwsh | Out-String | Invoke-Expression
 }
 

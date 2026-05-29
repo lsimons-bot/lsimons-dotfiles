@@ -1,7 +1,7 @@
 {
   "$help": "https://aka.ms/terminal-documentation",
   "$schema": "https://aka.ms/terminal-profiles-schema",
-  "defaultProfile": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+  "defaultProfile": "{c3eaeb4a-676b-44b6-94db-ddd57a90009a}",
   "theme": "dark",
   "copyOnSelect": false,
   "copyFormatting": "none",
@@ -20,7 +20,15 @@
       "scrollbarState": "hidden",
       "antialiasingMode": "cleartype"
     },
-    "list": []
+    "list": [
+      {
+        "guid": "{c3eaeb4a-676b-44b6-94db-ddd57a90009a}",
+        "name": "PowerShell",
+        "commandline": "pwsh.exe -NoLogo",
+        "icon": "ms-appx:///ProfileIcons/{574e775e-4f2a-5b96-ac1e-a2962a402336}.png",
+        "startingDirectory": "C:\\git"
+      }
+    ]
   },
   "schemes": [
     {
