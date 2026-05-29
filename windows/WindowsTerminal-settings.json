@@ -17,11 +17,11 @@
         "size": 11
       },
       "cursorShape": "filledBox",
-      "useAcrylic": true,
-      "opacity": 92,
+      "useAcrylic": false,
+      "opacity": 100,
       "padding": "8, 8, 8, 8",
       "scrollbarState": "hidden",
-      "antialiasingMode": "cleartype"
+      "antialiasingMode": "grayscale"
     },
     "list": [
       {
