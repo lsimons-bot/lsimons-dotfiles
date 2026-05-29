@@ -24,6 +24,8 @@
     { "Name": "topgrade",        "Source": "main" },
     { "Name": "yq",              "Source": "main" },
     { "Name": "zoxide",          "Source": "main" },
-    { "Name": "CascadiaCode-NF", "Source": "nerd-fonts" }
+    { "Name": "CascadiaCode-NF", "Source": "nerd-fonts" },
+    { "Name": "Lilex-NF",        "Source": "nerd-fonts" },
+    { "Name": "Lilex-NF-Mono",   "Source": "nerd-fonts" }
   ]
 }

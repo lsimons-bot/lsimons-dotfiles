@@ -129,11 +129,11 @@ function Set-RegistryValue {
   New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $Type -Force | Out-Null
 }
 
-Invoke-Step "Apply UI tweaks (dark mode, file extensions, hidden files, accent color)" {
-  # Dark mode: apps and system
+Invoke-Step "Apply UI tweaks (light mode, file extensions, hidden files, accent color)" {
+  # Light mode: apps and system
   $personalize = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
-  Set-RegistryValue -Path $personalize -Name 'AppsUseLightTheme'   -Value 0
-  Set-RegistryValue -Path $personalize -Name 'SystemUsesLightTheme' -Value 0
+  Set-RegistryValue -Path $personalize -Name 'AppsUseLightTheme'   -Value 1
+  Set-RegistryValue -Path $personalize -Name 'SystemUsesLightTheme' -Value 1
 
   # Explorer: show hidden, show extensions, show full paths in title
   $advanced = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'

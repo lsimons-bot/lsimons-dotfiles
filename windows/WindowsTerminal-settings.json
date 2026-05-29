@@ -2,7 +2,7 @@
   "$help": "https://aka.ms/terminal-documentation",
   "$schema": "https://aka.ms/terminal-profiles-schema",
   "defaultProfile": "{c3eaeb4a-676b-44b6-94db-ddd57a90009a}",
-  "theme": "dark",
+  "theme": "light",
   "copyOnSelect": false,
   "copyFormatting": "none",
   "useAcrylicInTabRow": true,
@@ -13,7 +13,7 @@
         "light": "LSD Warm Light"
       },
       "font": {
-        "face": "CaskaydiaCove Nerd Font",
+        "face": "Lilex Nerd Font Mono",
         "size": 11
       },
       "cursorShape": "filledBox",
