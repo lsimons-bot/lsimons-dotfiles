@@ -3,5 +3,8 @@
 # Use 1Password SSH agent
 IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
 
+# Silence PQC warning again
+WarnWeakCrypto no-pq-kex
+
 # Local overrides: ~/.ssh/config.local
 Include config.local
