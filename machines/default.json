@@ -2,7 +2,8 @@
   "git": {
     "user": {
       "name": "Leo Simons",
-      "email": "mail@leosimons.com"
+      "email": "mail@leosimons.com",
+      "signingkey": null
     }
   }
 }

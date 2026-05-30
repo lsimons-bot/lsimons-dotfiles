@@ -1,8 +1,3 @@
-// Zed settings (Windows sandbox VM)
-//
-// Kept separate from the macOS zed/ topic on purpose -- this VM only needs
-// the editor to look right. The "LSD Warm" theme is installed by
-// bootstrap-phase1.ps1 into %APPDATA%\Zed\themes\lsd-warm.json.
 {
   "telemetry": {
     "diagnostics": false,
