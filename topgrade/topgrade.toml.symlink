@@ -7,3 +7,13 @@
 # so unattended runs continue; container images still upgrade when the
 # daemon happens to be up.
 ignore_failures = ["containers"]
+
+# Never prompt "Retry? (y/N)" on a failed step; keep runs non-interactive.
+no_retry = true
+
+# Clean up temporary/old files at the end of a run.
+cleanup = true
+
+[brew]
+# Run `brew autoremove` after upgrading formulae to drop orphaned deps.
+autoremove = true
