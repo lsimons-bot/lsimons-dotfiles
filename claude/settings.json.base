@@ -132,6 +132,7 @@
     "command": "~/.claude/statusline-command.sh"
   },
   "cleanupPeriodDays": 3650000,
+  "spinnerTipsEnabled": false,
   "defaultMode": "auto",
   "model": "opus[1m]",
   "effortLevel": "high",
