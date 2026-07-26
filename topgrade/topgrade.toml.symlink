@@ -1,0 +1,9 @@
+# topgrade configuration
+# See https://github.com/topgrade-rs/topgrade for the full set of options.
+
+[misc]
+# Docker/Rancher Desktop is usually not running, so the containers step
+# fails to connect to the daemon and prompts to retry. Ignore that failure
+# so unattended runs continue; container images still upgrade when the
+# daemon happens to be up.
+ignore_failures = ["containers"]

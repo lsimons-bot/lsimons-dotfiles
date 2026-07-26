@@ -1,0 +1,2 @@
+# topgrade symlink destinations
+topgrade.toml.symlink -> $XDG_CONFIG_HOME/topgrade.toml

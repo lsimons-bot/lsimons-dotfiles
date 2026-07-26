@@ -5,7 +5,15 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
-from helpers import brew_install, command_exists, error, info, parse_dry_run, success
+from helpers import (
+    brew_install,
+    command_exists,
+    error,
+    info,
+    install_symlinks,
+    parse_dry_run,
+    success,
+)
 
 
 def main():
@@ -14,14 +22,15 @@ def main():
 
     if command_exists('topgrade'):
         success("topgrade already installed")
-        return 0
-
-    if brew_install('topgrade'):
+    elif brew_install('topgrade'):
         success("topgrade installed")
-        return 0
+    else:
+        error("Failed to install topgrade")
+        return 1
 
-    error("Failed to install topgrade")
-    return 1
+    if not install_symlinks(Path(__file__).resolve().parent):
+        return 1
+    return 0
 
 
 if __name__ == '__main__':
