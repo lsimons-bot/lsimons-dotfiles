@@ -82,6 +82,7 @@ The installation script (`./script/install.py`) will:
 | `openspec/` | openspec |
 | `pi-coding-agent/` | pi-coding-agent (settings, LSD Warm themes, git-config-ai routing) |
 | `python/` | Python (via mise) + XDG config |
+| `quarto/` | Quarto (via Homebrew cask) |
 | `ruby/` | Ruby (via mise) |
 | `rust/` | Rust (via mise) + CARGO_HOME |
 | `sh/` | Shared shell configuration (PATH, XDG, settings) |
