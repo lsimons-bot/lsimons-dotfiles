@@ -131,6 +131,7 @@
     "type": "command",
     "command": "~/.claude/statusline-command.sh"
   },
+  "cleanupPeriodDays": 3650000,
   "defaultMode": "auto",
   "model": "opus[1m]",
   "effortLevel": "high",
