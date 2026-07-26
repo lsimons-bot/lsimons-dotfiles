@@ -17,6 +17,7 @@ theme lives so the palette stays in sync as it evolves.
 | **Zed** (editor) | `zed/lsd-warm.json.symlink` | Custom theme JSON containing both `LSD Warm Dark` and `LSD Warm Light` variants. Active theme selected in `zed/settings.json.symlink` (`"theme": ...`). Edit per-token colors under `style.syntax.*`; edit the chrome under the other top-level keys (`background`, `border`, `text`, ...). |
 | **Powerlevel10k** (zsh prompt) | `oh-my-zsh/p10k.zsh.symlink` | All ~95 segment foregrounds route through a `local -A clr=(...)` table near the top of the file, populated from the LSD Warm Light palette. See [p10k.COLORS.md](./p10k.COLORS.md) for the full mapping and re-application recipe (after re-running `p10k configure`). |
 | **Oh My Zsh** prompt | `oh-my-zsh/powerline10k.zsh` | Loads the p10k config above. |
+| **Starlight site** (lsimons.github.io) | `docs/src/styles/custom.css` in the [`lsimons.github.io`](https://github.com/lsimons/lsimons.github.io) repo | Not part of this repo. The <https://lsimons.github.io> landing page maps LSD Warm onto Astro Starlight's CSS custom properties: the accent ramp (`--sl-color-accent-low/accent/high`), the gray ramp (`--sl-color-gray-1..6` dark / `1..7` light), and `--sl-color-white`/`--sl-color-black`. Dark mode is `:root`; light mode is `:root[data-theme='light']`. Light-mode links use a darkened accent (`#8f5610`) for contrast on the snow background, and `--sl-color-accent-low` is a derived tint (no LSD token for it). |
 
 ## Adjusting colors
 
@@ -77,6 +78,10 @@ each has its own file. When changing the palette intentionally:
 4. Update the `clr` table in `oh-my-zsh/p10k.zsh.symlink` to match.
    p10k segment colors are referenced symbolically through that table,
    so individual segment lines rarely need to change.
+5. If the accent or gray tokens changed, mirror them into the Starlight
+   site's `docs/src/styles/custom.css` in the separate `lsimons.github.io`
+   repo (the `--sl-color-*` overrides). Remember the light-mode link
+   accent is a darkened derivative, not a raw LSD token.
 
 For the rationale behind the p10k mapping and how to redo it after a
 fresh `p10k configure` run, see [p10k.COLORS.md](./p10k.COLORS.md).
