@@ -68,7 +68,7 @@ The installation script (`./script/install.py`) will:
 | `gemini/` | Gemini CLI |
 | `fnox/` | fnox (1Password secret injection, via mise) |
 | `fonts/` | Fonts (Cascadia Code, Iosevka, JetBrains Mono, Lilex, Lilex Nerd Font) |
-| `gh/` | GitHub CLI |
+| `gh/` | GitHub CLI + extensions (`gh stack`) |
 | `go/` | Go (via mise) |
 | `ghostty/` | Ghostty terminal |
 | `git/` | Git (via Homebrew) |
