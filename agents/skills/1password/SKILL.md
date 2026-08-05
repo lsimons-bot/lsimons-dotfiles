@@ -9,34 +9,32 @@ Use 1Password for secure secret management.
 
 ## Authentication
 
-You are pre-authenticated using environment variables. Check using `op whoami`:
-
-Good:
-```bash
-$ op whoami
-URL:               https://my.1password.eu
-Integration ID:    XXXXXXXXXXXXXXXXXXXXXXXXX
-User Type:         SERVICE_ACCOUNT
-```
-
-If User Type is not SERVICE_ACCOUNT, ask the user to fix your environment and stop.
-
-You MUST NOT try to sign in, sign out, connect, or use a different account. If you think you need a different account, instead ask the user for help and stop.
+1Password authentication settings come from your environment. Assume it is available, do not attempt signin or debugging signin. You MUST NOT try to sign in, sign out, connect, or use a different account. If you think you need a different account, instead ask the user for help and stop.
 
 ## Vaults
 
-Your service account has access to read and write to one vault named "AI". This is where all your secrets go.
+Which vaults you can reach depends on the environment. Discover them, don't assume:
 
-Good:
 ```bash
-$ op vault list
-ID                            NAME
-idxxxxxxxxxxxxxxxxxxxxxxxx    AI
+op vault list
 ```
 
-You can pass the vault ID "AI" to other commands that need it. For example:
+A common failure is not seeing the vault you expect. If that occurs, specify the
+`OP_ACCOUNT` environment variable, for example:
 
-Good:
+```bash
+OP_ACCOUNT=my.1password.eu op vault list
+```
+
+Other reasons a vault or item may be missing:
+
+- Service account tokens only see vaults explicitly granted at token creation
+  time, and never the built-in Private/Personal vault.
+- Archived items are skipped by `op read`, `op run` and `op inject`.
+
+Pass the vault name or ID to commands that need it. Do so whenever more than one
+vault is reachable — some commands require it:
+
 ```bash
 op item list --vault AI
 ```
@@ -77,18 +75,27 @@ op item get "AWS Credentials" --fields "access key,secret key" --format json
 op read "op://<vault>/<item>/<field>"
 op read "op://AI/GitHub Token/token"
 op read "op://AI/AWS Credentials/access key"
+
+# Capture into a variable without a trailing newline
+TOKEN="$(op read --no-newline 'op://AI/GitHub Token/token')"
 ```
+
+Since CLI 2.30, concealed fields are masked in human-readable output and print
+`[use 'op item get <id> --reveal' to reveal]` instead of the value — while still
+exiting 0, so scripts fail silently. Prefer `op read` or `--format json`, which
+are not masked. Use `--reveal` only when you deliberately want the plaintext in
+human-readable output.
 
 ### Creating and updating items
 
 ```bash
-# Create a new login item
+# Create a new login item, letting 1Password generate the password
 op item create --category Login \
   --title "New Service" \
-  --vault "Private" \
+  --vault "AI" \
   --url "https://example.com" \
-  username=user@example.com \
-  password=<generate-password>
+  --generate-password='letters,digits,symbols,32' \
+  username=user@example.com
 
 # Create item with custom fields
 op item create --category Password \
@@ -110,9 +117,13 @@ op item edit "GitHub Token" token=ghp_newtoken123
 # Add tags to item
 op item edit "AWS Credentials" --tags production,terraform
 
-# Generate and update password
-op item edit "Database Login" password=<generate-password>
+# Rotate a password, letting 1Password generate it
+op item edit "Database Login" --generate-password='letters,digits,symbols,32'
 ```
+
+Never paste a secret you were given as a literal command argument if you can
+avoid it — arguments are visible in process listings and shell history. Prefer
+`--generate-password`, `op run`, or `op inject`.
 
 ## Deleting items
 
@@ -123,13 +134,17 @@ Do not delete items from 1Password. If you think you must delete items, ask the 
 Use secret references to inject 1Password secrets into applications without exposing them:
 
 ```
-# Secret reference syntax
-op://[vault]/[item]/[field]
+# Secret reference syntax; the section is optional
+op://<vault>/<item>/[section]/<field>
 
 # Examples
 op://Private/GitHub Token/token
 op://Work/AWS Credentials/access key
 op://DevOps/Database/password
+
+# Query parameters select an attribute rather than the value
+op://Work/Okta/one-time password?attribute=otp
+op://AI/Deploy Key/private key?ssh-format=openssh
 ```
 
 ```
@@ -142,6 +157,10 @@ op run -- terraform apply
 echo 'DB_PASSWORD=op://Work/Database/password' | op inject
 cat .env.template | op inject > .env
 ```
+
+`op run` masks secrets it injected from the child process's output. Do not
+disable that masking (`--no-masking` / `OP_RUN_NO_MASKING`) — it is what keeps
+secrets out of this transcript.
 
 ## Getting help
 
