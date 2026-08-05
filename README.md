@@ -89,6 +89,7 @@ The installation script (`./script/install.py`) will:
 | `ssh/` | SSH configuration (post-quantum warning, 1Password agent) |
 | `terminal/` | macOS Terminal.app "LSD Warm Light" profile (mirrors Ghostty) |
 | `terraform/` | tfenv and Terraform |
+| `timeout/` | `timeout` command for macOS (via the `aisk/tap` Homebrew tap) |
 | `tmux/` | tmux |
 | `topgrade/` | topgrade (automated updates) |
 | `uv/` | uv (Python package manager) |
