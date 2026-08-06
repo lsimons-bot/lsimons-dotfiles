@@ -11,6 +11,10 @@ run = "python3 script/check.py"
 description = "Run the full dotfiles installer (idempotent). Pass --dry-run to preview."
 run = "python3 script/install.py"
 
+[tasks.skills-update]
+description = "Re-fetch the skills.sh skills declared in agents/skills.txt"
+run = "python3 agents/install.py --update"
+
 [tasks.ci-watch]
 description = "Watch GitHub Actions CI for the current branch; exits non-zero on failure"
 run = """

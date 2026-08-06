@@ -19,7 +19,9 @@ sys.path.insert(0, str(DOTFILES_ROOT))
 from agents.shared import (  # noqa: F401
     AGENTS_MD,
     SKILLS_DIR,
+    SKILLS_MANIFEST,
     build_attribution,
+    load_skills_manifest,
     render_instructions,
 )
 
@@ -101,7 +103,7 @@ def parse_dry_run(argv=None):
     return is_dry_run()
 
 
-def run_cmd(cmd, check=True, capture_output=False, env=None, shell=False):
+def run_cmd(cmd, check=True, capture_output=False, env=None, shell=False, cwd=None):
     """Run a subprocess command, honouring dry-run mode.
 
     In dry-run mode, logs the command and returns a fake successful
@@ -121,6 +123,7 @@ def run_cmd(cmd, check=True, capture_output=False, env=None, shell=False):
         text=True,
         env=env,
         shell=shell,
+        cwd=cwd,
     )
 
 

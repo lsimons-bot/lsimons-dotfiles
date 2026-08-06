@@ -101,6 +101,26 @@ class DeterministicAgentIntegrationTests(unittest.TestCase):
         self.assertTrue({"jq", "node"} <= claude_dependencies)
         self.assertIn("1password", ssh_dependencies)
 
+    def test_agents_topic_needs_node_for_the_skills_cli(self):
+        dependencies = set(
+            (REPO_ROOT / "agents/dependencies.txt").read_text().splitlines()
+        )
+        self.assertIn("node", dependencies)
+
+    def test_skills_gitignore_matches_the_manifest(self):
+        module = load_module("agents_install_test", REPO_ROOT / "agents/install.py")
+        entries = module.load_skills_manifest()
+        self.assertTrue(entries)
+
+        ignored = {
+            line.rstrip("/")
+            for line in (REPO_ROOT / "agents/skills/.gitignore")
+            .read_text()
+            .splitlines()
+            if line and not line.startswith("#")
+        }
+        self.assertEqual(ignored, {name for _repository, name in entries})
+
 
 if __name__ == "__main__":
     unittest.main()

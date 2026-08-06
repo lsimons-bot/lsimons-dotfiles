@@ -28,6 +28,10 @@ no_retry = true
 # Clean up temporary/old files at the end of a run.
 cleanup = true
 
+[commands]
+# Re-fetch the skills.sh skills shared by every coding agent.
+"agent skills" = "python3 ~/.dotfiles/agents/install.py --update"
+
 [brew]
 # Run `brew autoremove` after upgrading formulae to drop orphaned deps.
 autoremove = true

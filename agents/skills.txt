@@ -1,0 +1,13 @@
+# Skills fetched from https://www.skills.sh into agents/skills/.
+#
+# Format: <repository-url> <skill-name>
+#
+# `agents/install.py` installs each entry with the skills.sh CLI
+# (`skills add <repository-url> --skill <skill-name>`). The fetched
+# directories are not vendored in git; `agents/skills/.gitignore` is
+# generated from this file.
+
+https://github.com/vercel-labs/skills find-skills
+https://github.com/anthropics/skills frontend-design
+https://github.com/vercel-labs/agent-browser agent-browser
+https://github.com/vercel-labs/agent-skills web-design-guidelines
