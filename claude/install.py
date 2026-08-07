@@ -11,6 +11,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "script"))
 from helpers import (
     AGENTS_MD,
     SKILLS_DIR,
+    brew_install,
+    brew_is_installed,
     build_attribution,
     command_exists,
     dry,
@@ -28,6 +30,13 @@ from helpers import (
     success,
     warn,
 )
+
+# claude-history is a TUI for reading past sessions: fuzzy search across
+# transcripts, then a scrollable viewer. Terminal scrollback is unreliable
+# for this because the TUI redraws progress boxes in place, so the
+# scrollback holds the residue rather than the conversation.
+CLAUDE_HISTORY_TAP = "raine/claude-history"
+CLAUDE_HISTORY_FORMULA = "raine/claude-history/claude-history"
 
 
 def write_settings(claude_dir, topic_dir):
@@ -76,6 +85,29 @@ def write_settings(claude_dir, topic_dir):
     success(f"Wrote: {settings_path}")
 
 
+def install_claude_history():
+    """Install the claude-history TUI from its Homebrew tap.
+
+    Homebrew refuses to load untrusted third-party taps, so `brew trust`
+    is required before installing the formula.
+    """
+    if brew_is_installed(CLAUDE_HISTORY_FORMULA):
+        success("claude-history already installed")
+        return
+
+    try:
+        run_cmd(["brew", "tap", CLAUDE_HISTORY_TAP])
+        run_cmd(["brew", "trust", "--tap", CLAUDE_HISTORY_TAP])
+    except subprocess.CalledProcessError:
+        warn(f"Failed to tap {CLAUDE_HISTORY_TAP}; skipping claude-history")
+        return
+
+    if brew_install(CLAUDE_HISTORY_FORMULA):
+        success("claude-history installed")
+    else:
+        warn("Failed to install claude-history")
+
+
 def main():
     info("Installing Claude Code...")
     parse_dry_run()
@@ -121,6 +153,8 @@ def main():
         success("ccusage installed")
     else:
         warn("Failed to install ccusage; status line cost segment will be hidden")
+
+    install_claude_history()
 
     return 0
 
