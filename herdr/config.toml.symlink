@@ -1,0 +1,33 @@
+# herdr configuration
+# See `herdr --default-config` for the full annotated defaults.
+
+[theme]
+# Herdr has no on-disk custom theme format: `name` selects a built-in theme
+# and `[theme.custom]` overrides individual tokens on top of it. "terminal"
+# makes the base UI follow the host terminal's ANSI palette, which is already
+# LSD Warm Light (see the ghostty and terminal topics), so the main background
+# matches exactly. The overrides below pin the semantic colors to the exact
+# LSD Warm Light hex values instead of the 16-color ANSI approximations.
+#
+# auto_switch is deliberately off: [theme.custom] is a single set of overrides
+# applied to whichever theme is active, so it cannot follow light/dark.
+name = "terminal"
+
+# LSD Warm Light — canonical source: colors/lsd-colors.json in this repo.
+[theme.custom]
+accent = "#c17a23"       # accent: signature warm amber — focus, links
+panel_bg = "#ffefdd"     # bg_panel: sidebar / side panel
+surface0 = "#f4e6d2"     # bg_element: interactive element resting
+surface1 = "#ebd3b4"     # bg_element_selected: selected element
+surface_dim = "#f7e9d6"  # bg_chrome: title bar, tab bar, status bar
+overlay0 = "#947b60"     # fg_disabled: disabled / hidden text
+overlay1 = "#765e44"     # fg_faint: placeholder, low-emphasis labels
+text = "#241100"         # fg: primary text
+subtext0 = "#594329"     # fg_dim: tertiary text
+mauve = "#aa0048"        # magenta: keyword, preproc
+green = "#006248"        # green: success, created
+yellow = "#694700"       # yellow: warning, modified
+red = "#a10000"          # red: error, deleted
+blue = "#0045ae"         # blue: info, function, dir
+teal = "#006168"         # cyan: link_uri, regex
+peach = "#b52700"        # orange: number, constant

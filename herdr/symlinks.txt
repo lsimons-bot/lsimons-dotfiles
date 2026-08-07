@@ -1,0 +1,2 @@
+# Herdr symlink destinations
+config.toml.symlink -> $XDG_CONFIG_HOME/herdr/config.toml

@@ -72,6 +72,7 @@ The installation script (`./script/install.py`) will:
 | `go/` | Go (via mise) |
 | `ghostty/` | Ghostty terminal |
 | `git/` | Git (via Homebrew) |
+| `herdr/` | herdr terminal agent multiplexer + LSD Warm Light theme |
 | `jdk/` | OpenJDK (via mise) |
 | `jq/` | jq JSON processor (used by the Claude statusline) |
 | `lsimons-agent/` | LLM agent environment configuration |
