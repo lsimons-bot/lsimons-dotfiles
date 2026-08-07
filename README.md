@@ -76,6 +76,7 @@ The installation script (`./script/install.py`) will:
 | `jdk/` | OpenJDK (via mise) |
 | `jq/` | jq JSON processor (used by the Claude statusline) |
 | `lsimons-agent/` | LLM agent environment configuration |
+| `memex/` | memex agent-transcript search + its herdr plugin |
 | `mise/` | mise (polyglot tool version manager) |
 | `node/` | Node.js (via mise) + pnpm (via corepack) |
 | `oh-my-zsh/` | Oh My Zsh |

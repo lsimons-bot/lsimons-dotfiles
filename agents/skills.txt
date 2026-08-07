@@ -11,3 +11,8 @@ https://github.com/vercel-labs/skills find-skills
 https://github.com/anthropics/skills frontend-design
 https://github.com/vercel-labs/agent-browser agent-browser
 https://github.com/vercel-labs/agent-skills web-design-guidelines
+
+# Shipped by the memex CLI (see memex/install.py). `memex setup` installs
+# these too, but it prompts for a TTY, so fetch them declaratively instead.
+https://github.com/nicosuave/memex memex-search
+https://github.com/nicosuave/memex instruction-improver
