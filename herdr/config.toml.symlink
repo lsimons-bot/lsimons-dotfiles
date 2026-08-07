@@ -19,11 +19,17 @@ accent = "#c17a23"       # accent: signature warm amber — focus, links
 panel_bg = "#ffefdd"     # bg_panel: sidebar / side panel
 surface0 = "#f4e6d2"     # bg_element: interactive element resting
 surface1 = "#ebd3b4"     # bg_element_selected: selected element
-surface_dim = "#f7e9d6"  # bg_chrome: title bar, tab bar, status bar
-overlay0 = "#947b60"     # fg_disabled: disabled / hidden text
-overlay1 = "#765e44"     # fg_faint: placeholder, low-emphasis labels
+# surface_dim is dual-purpose: herdr draws every border glyph in it *and* uses
+# it as the title/tab/status bar background. bg_chrome (#f7e9d6) left the
+# borders nearly invisible, so this uses the palette's own `border` instead.
+surface_dim = "#dbcbb9"  # border: pane/panel borders + chrome bar background
+# The dim text ramp is shifted one step darker than the obvious mapping:
+# fg_disabled (#947b60) only reached 2.5:1 against the darker surface_dim
+# chrome bars. Ordering (overlay0 < overlay1 < subtext0 < text) is preserved.
+overlay0 = "#765e44"     # fg_faint: disabled / hidden text — 3.8:1 on chrome
+overlay1 = "#594329"     # fg_dim: placeholder, low-emphasis labels — 5.9:1
 text = "#241100"         # fg: primary text
-subtext0 = "#594329"     # fg_dim: tertiary text
+subtext0 = "#3e290f"     # fg_muted: secondary text — 8.7:1
 mauve = "#aa0048"        # magenta: keyword, preproc
 green = "#006248"        # green: success, created
 yellow = "#694700"       # yellow: warning, modified
@@ -31,3 +37,30 @@ red = "#a10000"          # red: error, deleted
 blue = "#0045ae"         # blue: info, function, dir
 teal = "#006168"         # cyan: link_uri, regex
 peach = "#b52700"        # orange: number, constant
+
+[ui]
+agent_panel_sort = "spaces"
+
+# herdr draws the secondary sidebar labels with the ANSI dim attribute, which
+# the terminal renders by blending ~50% into the row background — overlay0 came
+# out around #a59581 on a selected row, roughly 1.9:1. No palette value fixes
+# that (surviving the halving would need a near-black overlay0, which would
+# wreck the non-dim headers), so opt these tokens out of dim instead. Rows are
+# otherwise herdr's defaults.
+[ui.sidebar.agents]
+rows = [
+    ["state_icon", "workspace", { token = "tab", dim = false }],
+    [{ token = "agent", dim = false }],
+]
+
+[ui.sidebar.spaces]
+rows = [
+    ["state_icon", "workspace"],
+    [{ token = "branch", dim = false }, { token = "git_status", dim = false }],
+]
+
+[ui.toast]
+delivery = "terminal"
+
+[ui.sound]
+enabled = false
