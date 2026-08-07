@@ -133,6 +133,9 @@
     "command": "~/.claude/statusline-command.sh"
   },
   "cleanupPeriodDays": 3650000,
+  "autoCompactEnabled": true,
+  "autoCompactWindow": 150000,
+  "precomputeCompactionEnabled": true,
   "spinnerTipsEnabled": false,
   "model": "sonnet",
   "effortLevel": "medium",
