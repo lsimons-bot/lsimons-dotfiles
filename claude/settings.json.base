@@ -105,7 +105,8 @@
       "Bash(find * -delete*)",
       "Bash(find * -exec *)",
       "Bash(find * -execdir *)"
-    ]
+    ],
+    "defaultMode": "auto"
   },
   "sandbox": {
     "network": {
@@ -133,7 +134,6 @@
   },
   "cleanupPeriodDays": 3650000,
   "spinnerTipsEnabled": false,
-  "defaultMode": "auto",
   "model": "opus[1m]",
   "effortLevel": "high",
   "theme": "custom:lsd-warm-light"
