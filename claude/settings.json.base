@@ -134,7 +134,7 @@
   },
   "cleanupPeriodDays": 3650000,
   "spinnerTipsEnabled": false,
-  "model": "opus[1m]",
-  "effortLevel": "high",
+  "model": "sonnet",
+  "effortLevel": "medium",
   "theme": "custom:lsd-warm-light"
 }
