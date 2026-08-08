@@ -26,6 +26,13 @@ Cursor, Cline, Warp, Amp, ...) pick up the same set.
 Add, update or remove skills in `lsimons-skills`; nothing here needs to
 change. `install.py` warns and exits non-zero if the checkout is missing.
 
+The one exception is `sbp-brandbook`, which is not open source and so isn't
+part of `lsimons-skills`. It lives in the private
+[`sbp-skills`](https://github.com/lsimons/sbp-skills) checkout instead,
+expected at `../sbp-skills`, and `install.py` symlinks it into
+`lsimons-skills/skills/sbp-brandbook` so it still reaches every agent through
+the same shared mechanism.
+
 The `vercel-agent-browser` skill is only a discovery stub, so the installer
 also installs the `agent-browser` CLI and its Chrome build (~180 MB,
 downloaded once).

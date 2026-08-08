@@ -12,6 +12,11 @@ AGENTS_MD = AGENTS_DIR / "AGENTS.md"
 # this repository.
 SKILLS_DIR = DOTFILES_ROOT.parent / "lsimons-skills" / "skills"
 
+# sbp-brandbook is not open source, so it lives in the private sbp-skills
+# checkout instead of lsimons-skills. It's symlinked into SKILLS_DIR so it
+# still reaches every agent through the same shared mechanism.
+SBP_BRANDBOOK_SRC = DOTFILES_ROOT.parent / "sbp-skills" / "skills" / "sbp-brandbook"
+
 _ATTRIBUTION_RE = re.compile(
     r"<!-- attribution:start -->.*?<!-- attribution:end -->", re.DOTALL
 )

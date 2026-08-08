@@ -28,6 +28,7 @@ from helpers import (
     success,
     warn,
 )
+from shared import SBP_BRANDBOOK_SRC
 
 # Agents without a dedicated topic (Zed, Cursor, Cline, Warp, Amp, ...)
 # read skills from these shared locations instead of an agent-specific
@@ -59,6 +60,23 @@ def install_agent_browser():
         warn("`agent-browser install` failed; run it by hand to fetch Chrome")
 
 
+def link_sbp_brandbook():
+    """Link the private sbp-brandbook skill into the vendored skills collection.
+
+    Unlike the rest of the collection, sbp-brandbook is not open source, so
+    it lives in the private sbp-skills checkout instead of lsimons-skills.
+    """
+    if not SBP_BRANDBOOK_SRC.is_dir() and not is_dry_run():
+        warn(
+            f"sbp-brandbook skill not found at {SBP_BRANDBOOK_SRC}; "
+            "clone the sbp-skills repository next to this one and re-run"
+        )
+        return False
+
+    link_directory(SBP_BRANDBOOK_SRC, SKILLS_DIR / "sbp-brandbook")
+    return True
+
+
 def link_skills():
     """Link the vendored skills collection into the shared locations."""
     if not SKILLS_DIR.is_dir() and not is_dry_run():
@@ -69,9 +87,11 @@ def link_skills():
         )
         return False
 
+    ok = link_sbp_brandbook()
+
     for skills_dir in UNIVERSAL_SKILL_DIRS:
         link_directory(SKILLS_DIR, skills_dir)
-    return True
+    return ok
 
 
 def main():
