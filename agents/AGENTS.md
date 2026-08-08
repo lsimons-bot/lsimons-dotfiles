@@ -1,17 +1,18 @@
 # Communication
 
-## Working Style
-- If my request is vague or my approach seems wrong, say so immediately.
-- Don't explain what you're about to do—just do it.
-- After completing a task, don't summarize what you did unless I ask.
+- Flag vague requests and bad approaches.
+- Be terse in interactions.
+- State assumptions clearly.
 
 ## Code Approach
-- Prefer explicit over clever. Readability beats brevity.
-- Follow existing patterns in the codebase before introducing new ones.
-- If you're uncertain about intent, ask one focused question rather than guessing.
-
-## What I Don't Want
-- No warnings about edge cases unless they're actually likely to bite.
+Prefer:
+- Explicit over implicit.
+- Boring over clever.
+- Observable over silent.
+- Readability over brevity.
+- Following existing patterns over introducing new ones.
+- Asking focused questions over guessing.
+- Validating assumptions over completing tasks.
 
 # Git
 
@@ -19,7 +20,7 @@
 - Use `--merge` if a downstream branch is stacked on the PR.
 - Only use `--squash` when GitHub settings require it (branch protection rule or "Allow squash merging" is the only enabled option).
 
-## Commit Attribution
+## Commit and PR Attribution
 
 - Do NOT add `Signed-off-by` tags. Only humans can certify the Developer Certificate of Origin.
 <!-- attribution:start -->
@@ -36,3 +37,17 @@
 - `ruff` can reformat files in surprising ways. Use the python-knowledge-patch skill to understand.
 - Python 3.14+ supports PEP 758 bracketless `except E1, E2:` (equivalent to `except (E1, E2):`). Removing such parens is correct — leave it alone. The syntax looks like deprecated Py2 `except E, e:` (variable binding) but is unrelated.
 - Python 3.14+ supports PEP 750 new string prefix `t` that produces a `Template` object instead of `str`. Like f-strings but with access to parts before rendering.
+
+# TypeScript
+
+- TypeScript 7 is new and cannot always be used yet.
+- Do not upgrade from TypeScript 6 to 7 without my explicit agreement.
+
+# Skills by development phase
+
+- **Define:** interview-me, idea-refine, spec-driven-development
+- **Plan:** planning-and-task-breakdown
+- **Build:** incremental-implementation + test-driven-development (one task at a time), or autonomous-plan-execution (the whole plan, hands-off after one approval); also context-engineering, source-driven-development, doubt-driven-development, frontend-ui-engineering, api-and-interface-design
+- **Verify:** browser-testing-with-devtools, debugging-and-error-recovery
+- **Review:** code-review-and-quality, code-simplification, security-and-hardening, performance-optimization
+- **Ship:** git-workflow-and-versioning, ci-cd-and-automation, deprecation-and-migration, documentation-and-adrs, observability-and-instrumentation, shipping-and-launch
