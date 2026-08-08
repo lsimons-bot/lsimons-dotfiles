@@ -17,28 +17,30 @@ https://github.com/vercel-labs/agent-skills web-design-guidelines
 https://github.com/nicosuave/memex memex-search
 https://github.com/nicosuave/memex instruction-improver
 
-# Addy Osmani's agent-skills collection (https://skills.addy.ie).
-https://github.com/addyosmani/agent-skills api-and-interface-design
-https://github.com/addyosmani/agent-skills browser-testing-with-devtools
-https://github.com/addyosmani/agent-skills ci-cd-and-automation
-https://github.com/addyosmani/agent-skills code-review-and-quality
-https://github.com/addyosmani/agent-skills code-simplification
-https://github.com/addyosmani/agent-skills context-engineering
-https://github.com/addyosmani/agent-skills debugging-and-error-recovery
-https://github.com/addyosmani/agent-skills deprecation-and-migration
-https://github.com/addyosmani/agent-skills documentation-and-adrs
-https://github.com/addyosmani/agent-skills doubt-driven-development
-https://github.com/addyosmani/agent-skills frontend-ui-engineering
-https://github.com/addyosmani/agent-skills git-workflow-and-versioning
-https://github.com/addyosmani/agent-skills idea-refine
-https://github.com/addyosmani/agent-skills incremental-implementation
-https://github.com/addyosmani/agent-skills interview-me
-https://github.com/addyosmani/agent-skills observability-and-instrumentation
-https://github.com/addyosmani/agent-skills performance-optimization
-https://github.com/addyosmani/agent-skills planning-and-task-breakdown
-https://github.com/addyosmani/agent-skills security-and-hardening
-https://github.com/addyosmani/agent-skills shipping-and-launch
-https://github.com/addyosmani/agent-skills source-driven-development
-https://github.com/addyosmani/agent-skills spec-driven-development
-https://github.com/addyosmani/agent-skills test-driven-development
-https://github.com/addyosmani/agent-skills using-agent-skills
+# Fork of Addy Osmani's agent-skills collection (https://skills.addy.ie),
+# cleaned up with an added skill based on his slash commands.
+https://github.com/lsimons/osmani-agent-skills api-and-interface-design
+https://github.com/lsimons/osmani-agent-skills autonomous-plan-execution
+https://github.com/lsimons/osmani-agent-skills browser-testing-with-devtools
+https://github.com/lsimons/osmani-agent-skills ci-cd-and-automation
+https://github.com/lsimons/osmani-agent-skills code-review-and-quality
+https://github.com/lsimons/osmani-agent-skills code-simplification
+https://github.com/lsimons/osmani-agent-skills context-engineering
+https://github.com/lsimons/osmani-agent-skills debugging-and-error-recovery
+https://github.com/lsimons/osmani-agent-skills deprecation-and-migration
+https://github.com/lsimons/osmani-agent-skills documentation-and-adrs
+https://github.com/lsimons/osmani-agent-skills doubt-driven-development
+https://github.com/lsimons/osmani-agent-skills frontend-ui-engineering
+https://github.com/lsimons/osmani-agent-skills git-workflow-and-versioning
+https://github.com/lsimons/osmani-agent-skills idea-refine
+https://github.com/lsimons/osmani-agent-skills incremental-implementation
+https://github.com/lsimons/osmani-agent-skills interview-me
+https://github.com/lsimons/osmani-agent-skills observability-and-instrumentation
+https://github.com/lsimons/osmani-agent-skills performance-optimization
+https://github.com/lsimons/osmani-agent-skills planning-and-task-breakdown
+https://github.com/lsimons/osmani-agent-skills security-and-hardening
+https://github.com/lsimons/osmani-agent-skills shipping-and-launch
+https://github.com/lsimons/osmani-agent-skills source-driven-development
+https://github.com/lsimons/osmani-agent-skills spec-driven-development
+https://github.com/lsimons/osmani-agent-skills test-driven-development
+https://github.com/lsimons/osmani-agent-skills using-agent-skills
