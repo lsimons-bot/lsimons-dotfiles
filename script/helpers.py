@@ -19,9 +19,7 @@ sys.path.insert(0, str(DOTFILES_ROOT))
 from agents.shared import (  # noqa: F401
     AGENTS_MD,
     SKILLS_DIR,
-    SKILLS_MANIFEST,
     build_attribution,
-    load_skills_manifest,
     render_instructions,
 )
 

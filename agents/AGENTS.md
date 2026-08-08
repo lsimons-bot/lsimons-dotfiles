@@ -45,9 +45,9 @@ Prefer:
 
 # Skills by development phase
 
-- **Define:** interview-me, idea-refine, spec-driven-development
-- **Plan:** planning-and-task-breakdown
-- **Build:** incremental-implementation + test-driven-development (one task at a time), or autonomous-plan-execution (the whole plan, hands-off after one approval); also context-engineering, source-driven-development, doubt-driven-development, frontend-ui-engineering, api-and-interface-design
-- **Verify:** browser-testing-with-devtools, debugging-and-error-recovery
-- **Review:** code-review-and-quality, code-simplification, security-and-hardening, performance-optimization
-- **Ship:** git-workflow-and-versioning, ci-cd-and-automation, deprecation-and-migration, documentation-and-adrs, observability-and-instrumentation, shipping-and-launch
+- **Define:** ao-interview-me, ao-idea-refine, ao-spec-driven-development
+- **Plan:** ao-planning-and-task-breakdown
+- **Build:** ao-incremental-implementation + ao-test-driven-development (one task at a time), or ao-autonomous-plan-execution (the whole plan, hands-off after one approval); also ao-context-engineering, ao-source-driven-development, ao-doubt-driven-development, ao-frontend-ui-engineering, ao-api-and-interface-design
+- **Verify:** ao-browser-testing-with-devtools, ao-debugging-and-error-recovery
+- **Review:** ao-code-review-and-quality, ao-code-simplification, ao-security-and-hardening, ao-performance-optimization
+- **Ship:** ao-git-workflow-and-versioning, ao-ci-cd-and-automation, ao-deprecation-and-migration, ao-documentation-and-adrs, ao-observability-and-instrumentation, ao-shipping-and-launch

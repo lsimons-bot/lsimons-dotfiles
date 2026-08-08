@@ -24,6 +24,10 @@ $topicDir     = Join-Path $dotfilesRoot 'claude'
 $agentsDir    = Join-Path $dotfilesRoot 'agents'
 $claudeDir    = Join-Path $env:USERPROFILE '.claude'
 
+# Skills live in the lsimons-skills checkout next to this repository, not in
+# agents/. See agents/README.md.
+$skillsDir    = Join-Path (Split-Path -Parent $dotfilesRoot) 'lsimons-skills' 'skills'
+
 function Write-Info    { param($m) Write-Host "[INFO]    $m" -ForegroundColor Blue }
 function Write-Step    { param($m) Write-Host "[STEP]    $m" -ForegroundColor Cyan }
 function Write-Ok      { param($m) Write-Host "[OK]      $m" -ForegroundColor Green }
@@ -77,8 +81,12 @@ Invoke-Step "Install statusline-command.ps1" {
 }
 
 Invoke-Step "Install skills/" {
-  $src  = Join-Path $agentsDir 'skills'
+  $src  = $skillsDir
   $dest = Join-Path $claudeDir 'skills'
+  if (-not (Test-Path $src)) {
+    Write-WarnMsg "no skills collection at $src -- clone lsimons-skills next to this repository"
+    return
+  }
   if (-not (Test-Path $dest)) {
     New-Item -ItemType Directory -Force -Path $dest | Out-Null
   }

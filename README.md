@@ -53,7 +53,7 @@ The installation script (`./script/install.py`) will:
 | Topic | Installs |
 |-------|----------|
 | `1password/` | 1Password app and CLI (`op`) |
-| `agents/` | Shared coding-agent instructions, [skills.sh](https://www.skills.sh) skills, and repository config sync |
+| `agents/` | Shared coding-agent instructions, links to the [lsimons-skills](https://github.com/lsimons/lsimons-skills) collection, and repository config sync |
 | `ansible/` | Ansible and related tools |
 | `aws/` | AWS CLI (`awscli`) + default `~/.aws/config`; `saml2aws` configured with the Browser provider for Okta OIE |
 | `azure/` | Azure CLI (`az`) |

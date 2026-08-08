@@ -68,7 +68,7 @@ class DeterministicAgentIntegrationTests(unittest.TestCase):
     def test_windows_installer_uses_shared_agent_sources(self):
         installer = (REPO_ROOT / "windows/install-claude-settings.ps1").read_text()
         self.assertIn("Join-Path $agentsDir 'AGENTS.md'", installer)
-        self.assertIn("Join-Path $agentsDir 'skills'", installer)
+        self.assertIn("'lsimons-skills' 'skills'", installer)
         self.assertNotIn("CLAUDE.md.symlink", installer)
 
     def test_gemini_routes_git_through_ai_config(self):
@@ -101,25 +101,18 @@ class DeterministicAgentIntegrationTests(unittest.TestCase):
         self.assertTrue({"jq", "node"} <= claude_dependencies)
         self.assertIn("1password", ssh_dependencies)
 
-    def test_agents_topic_needs_node_for_the_skills_cli(self):
+    def test_agents_topic_needs_node_for_the_agent_browser_cli(self):
         dependencies = set(
             (REPO_ROOT / "agents/dependencies.txt").read_text().splitlines()
         )
         self.assertIn("node", dependencies)
 
-    def test_skills_gitignore_matches_the_manifest(self):
-        module = load_module("agents_install_test", REPO_ROOT / "agents/install.py")
-        entries = module.load_skills_manifest()
-        self.assertTrue(entries)
-
-        ignored = {
-            line.rstrip("/")
-            for line in (REPO_ROOT / "agents/skills/.gitignore")
-            .read_text()
-            .splitlines()
-            if line and not line.startswith("#")
-        }
-        self.assertEqual(ignored, {name for _repository, name in entries})
+    def test_skills_come_from_the_sibling_lsimons_skills_checkout(self):
+        module = load_module("agents_shared_test", REPO_ROOT / "agents/shared.py")
+        self.assertEqual(
+            module.SKILLS_DIR, REPO_ROOT.parent / "lsimons-skills" / "skills"
+        )
+        self.assertFalse((REPO_ROOT / "agents/skills").exists())
 
 
 if __name__ == "__main__":

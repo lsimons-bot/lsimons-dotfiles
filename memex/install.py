@@ -11,8 +11,9 @@ in the plugin, so every herdr session kicks off a background incremental
 index. Run `memex index-service enable` by hand if a always-on daemon is
 ever wanted instead.
 
-The memex-search and instruction-improver skills are installed through
-`agents/skills.txt`, not `memex setup`, which prompts for a TTY.
+The memex-search and instruction-improver skills are vendored in the
+lsimons-skills repository (see `agents/README.md`), not installed by
+`memex setup`, which prompts for a TTY.
 """
 
 import subprocess
