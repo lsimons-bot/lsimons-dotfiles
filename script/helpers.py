@@ -662,6 +662,37 @@ def find_ssh_key(name):
     return None
 
 
+def get_provider_credential(provider):
+    """Return the (op_account, op_ref) 1Password reference for a provider.
+
+    Reads ``providers.<provider>`` from the CURRENT machine's config
+    (``get_machine_config()``), mirroring how ``find_ssh_key`` reads
+    per-machine SSH key config. There is no fallback to another
+    machine's account/reference: a machine with no ``providers.<provider>``
+    entry must fail closed rather than silently borrow credentials
+    configured for a different machine.
+
+    Raises ValueError with an actionable message if the current machine
+    has no (complete) configuration for ``provider``.
+    """
+    machine_config, hostname = get_machine_config()
+    entry = machine_config.get("providers", {}).get(provider)
+    if not entry:
+        raise ValueError(
+            f"no {provider!r} provider credential configured for machine "
+            f"{hostname!r}. Add providers.{provider}.op_account/op_ref to "
+            f"machines/{hostname}.json (see machines/ documentation)."
+        )
+    op_account = entry.get("op_account")
+    op_ref = entry.get("op_ref")
+    if not op_account or not op_ref:
+        raise ValueError(
+            f"providers.{provider} for machine {hostname!r} is missing "
+            "op_account or op_ref."
+        )
+    return op_account, op_ref
+
+
 def op_secret(value):
     """Normalise a 1Password secret reference.
 

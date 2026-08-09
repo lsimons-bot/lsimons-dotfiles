@@ -101,7 +101,7 @@ def validate_machine_data(data, source, *, require_git=False) -> list[str]:
             _machine_error(errors, source, f'{path}.{key}', 'unknown key')
         return True
 
-    object_at(data, '$', {'git', 'ssh', 'claude'})
+    object_at(data, '$', {'git', 'ssh', 'claude', 'providers'})
     if require_git and 'git' not in data:
         _machine_error(errors, source, '$.git', 'required key missing')
 
@@ -167,6 +167,24 @@ def validate_machine_data(data, source, *, require_git=False) -> list[str]:
                                 f'{path}.{key}',
                                 f'must be a {expected_type.__name__}',
                             )
+
+    if 'providers' in data and object_at(
+        data['providers'], '$.providers', {'litellm'}
+    ):
+        providers = data['providers']
+        credential_fields = {'op_account': str, 'op_ref': str}
+        for provider in providers:
+            path = f'$.providers.{provider}'
+            entry = providers[provider]
+            if not object_at(entry, path, set(credential_fields)):
+                continue
+            for key, expected_type in credential_fields.items():
+                if key not in entry:
+                    _machine_error(errors, source, f'{path}.{key}', 'required key missing')
+                elif type(entry[key]) is not expected_type:
+                    _machine_error(
+                        errors, source, f'{path}.{key}', f'must be a {expected_type.__name__}'
+                    )
     return errors
 
 

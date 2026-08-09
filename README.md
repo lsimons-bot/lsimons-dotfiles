@@ -156,6 +156,38 @@ The `machines/` directory contains per-machine configuration in JSON format. Dur
 
 **Every machine must be enrolled before installing.** `machines/default.json` intentionally has no SSH keys and no git signing key, so `get_machine_config()` refuses to fall back to it for a hostname with no dedicated file — the installer exits with an error instead of silently generating a git config with commit signing enabled but no signing key, or a 1Password SSH agent config with no exposed keys. To enroll a new machine, create `machines/<hostname>.json` (use `hostname -s` to get the short hostname) before running the installer.
 
+### Provider credentials (`providers`)
+
+Some tools (currently the Codex and OpenCode shell wrappers, see
+`codex/codex.sh` and `opencode/opencode.sh`) need an LLM provider API key
+that lives in 1Password under a different account on different machines
+— e.g. the SBP work account on a work laptop, a personal account
+elsewhere. This is configured per machine under `providers`, mirroring
+the shape of the existing `ssh.keys[].op_account`/`op_vault` fields:
+
+```json
+{
+  "providers": {
+    "litellm": {
+      "op_account": "schubergphilis",
+      "op_ref": "op://Employee/litellm-pat/token"
+    }
+  }
+}
+```
+
+- `op_account` is passed to `op read --account`.
+- `op_ref` is a full `op://vault/item/field` reference.
+- Only a reference is stored here, never the secret itself.
+
+Resolution happens at **call time**: `codex()`/`opencode()` invoke
+`script/provider_credential.py <provider>`, which reads the CURRENT
+machine's config (via `get_machine_config()`/`get_provider_credential()`
+in `helpers.py`) and prints the account/reference for `op read` to
+consume. A machine with no `providers.<provider>` entry configured fails
+closed — the wrapper returns a non-zero exit and an explicit error
+instead of falling back to another machine's account or reference.
+
 ## 1Password Integration
 
 Secrets are loaded from 1Password, not stored in git. See the [1Password topic](./1password).

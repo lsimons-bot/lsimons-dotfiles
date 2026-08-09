@@ -4,6 +4,12 @@
       "signingkey": "sbp_lsimons_id_ed25519"
     }
   },
+  "providers": {
+    "litellm": {
+      "op_account": "schubergphilis",
+      "op_ref": "op://Employee/litellm-pat/token"
+    }
+  },
   "ssh": {
     "aiKey": "sbp_lsimons_ai_ed25519",
     "keys": [

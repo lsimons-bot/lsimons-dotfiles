@@ -42,6 +42,44 @@ class MachineValidationTests(unittest.TestCase):
             "machine.json:$.claude.removeDenyRules: must be a boolean", errors
         )
 
+    def test_validation_accepts_valid_providers_entry(self):
+        errors = check.validate_machine_data(
+            {
+                "providers": {
+                    "litellm": {
+                        "op_account": "schubergphilis",
+                        "op_ref": "op://Employee/litellm-pat/token",
+                    }
+                }
+            },
+            "machine.json",
+        )
+        self.assertEqual(errors, [])
+
+    def test_validation_rejects_providers_missing_op_ref(self):
+        errors = check.validate_machine_data(
+            {"providers": {"litellm": {"op_account": "schubergphilis"}}},
+            "machine.json",
+        )
+        self.assertIn(
+            "machine.json:$.providers.litellm.op_ref: required key missing", errors
+        )
+
+    def test_validation_rejects_unknown_providers_field(self):
+        errors = check.validate_machine_data(
+            {
+                "providers": {
+                    "litellm": {
+                        "op_account": "schubergphilis",
+                        "op_ref": "op://Employee/litellm-pat/token",
+                        "literal_secret": "nope",
+                    }
+                }
+            },
+            "machine.json",
+        )
+        self.assertTrue(any("literal_secret: unknown key" in error for error in errors))
+
     def test_validation_rejects_duplicate_and_non_signing_key_references(self):
         default = {
             "git": {
