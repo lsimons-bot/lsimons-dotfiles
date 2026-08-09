@@ -104,6 +104,12 @@ def main():
     parse_dry_run()
     info("Installing 1Password CLI...")
 
+    # Fail fast, before touching any files, if this machine isn't enrolled
+    # (get_machine_config() exits with an error in that case). The result
+    # is cached, so install_1password_ssh_agent_config() below reuses it
+    # for free.
+    get_machine_config()
+
     migrate_legacy_config_dir()
     install_1password_ssh_agent_config()
 

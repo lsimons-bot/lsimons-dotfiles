@@ -154,7 +154,7 @@ All tools are configured to respect these directories:
 
 The `machines/` directory contains per-machine configuration in JSON format. During installation, `get_machine_config()` in `helpers.py` loads `machines/<short-hostname>.json`, merging with `machines/default.json`.
 
-To add a new machine, create `machines/<hostname>.json` (use `hostname -s` to get the short hostname).
+**Every machine must be enrolled before installing.** `machines/default.json` intentionally has no SSH keys and no git signing key, so `get_machine_config()` refuses to fall back to it for a hostname with no dedicated file — the installer exits with an error instead of silently generating a git config with commit signing enabled but no signing key, or a 1Password SSH agent config with no exposed keys. To enroll a new machine, create `machines/<hostname>.json` (use `hostname -s` to get the short hostname) before running the installer.
 
 ## 1Password Integration
 

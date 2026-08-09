@@ -302,6 +302,13 @@ def check_install_dry_run() -> bool:
                 'XDG_DATA_HOME': str(home / '.local/share'),
                 'XDG_CACHE_HOME': str(home / '.cache'),
                 'XDG_STATE_HOME': str(home / '.local/state'),
+                # This runner's real hostname is never enrolled in
+                # machines/, and installers now fail fast on unenrolled
+                # hostnames (see get_machine_config()). Point at
+                # machines/default.json itself so the dry run exercises
+                # the normal "hostname has a dedicated file" path
+                # instead of tripping that check.
+                'DOTFILES_MACHINE_HOSTNAME': 'default',
             }
         )
         try:

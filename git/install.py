@@ -187,6 +187,12 @@ def main():
 
     info("Installing Git...")
 
+    # Fail fast, before touching any files, if this machine isn't enrolled
+    # (get_machine_config() exits with an error in that case). The result
+    # is cached, so generate_config()/generate_allowed_signers() below reuse
+    # it for free.
+    get_machine_config()
+
     migrate_legacy_files()
     generate_config()
     generate_allowed_signers()

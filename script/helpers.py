@@ -577,33 +577,71 @@ def install_symlinks(topic_dir):
 
 __machine_config = None
 
+# Overrides which machine profile get_machine_config() loads, instead of the
+# real short hostname. Mainly useful for tests and for the CI/`script/check.py`
+# dry-run smoke test, which must behave the same on every runner regardless
+# of its (never-enrolled) hostname. Not meant as a way to dodge enrollment on
+# a real machine.
+MACHINE_HOSTNAME_ENV = "DOTFILES_MACHINE_HOSTNAME"
+
 
 def get_machine_config():
     """Load machine-specific configuration.
 
-    Always loads machines/default.json, then merges machines/<hostname>.json
-    on top if it exists.
+    Always loads machines/default.json, then requires and merges in
+    machines/<hostname>.json, where <hostname> is the current machine's
+    short hostname (or the DOTFILES_MACHINE_HOSTNAME environment variable,
+    if set).
+
+    A hostname with no dedicated machines/<hostname>.json is an unenrolled
+    machine. We refuse to silently fall back to machines/default.json for
+    it, because default.json intentionally has no SSH keys and no git
+    signing key: falling back would make git/install.py generate a config
+    with commit signing enabled but no signing key (every commit fails to
+    sign) and would make 1password/install.py regenerate the SSH agent
+    config with zero key entries (suppressing the agent's normal "expose
+    all signed-in keys" fallback). Both are security-relevant and must
+    fail loudly instead.
 
     Returns:
         tuple: (config_dict, hostname)
+
+    Raises:
+        SystemExit: if this hostname has no dedicated machine config file.
     """
     global __machine_config
 
     if __machine_config is not None:
         return __machine_config
 
-    hostname = get_short_hostname()
+    hostname = os.environ.get(MACHINE_HOSTNAME_ENV) or get_short_hostname()
     machines_dir = DOTFILES_ROOT / "machines"
+
+    host_config_file = machines_dir / f"{hostname}.json"
+    if not host_config_file.exists():
+        error(
+            f"No machine config for hostname '{hostname}': "
+            f"{host_config_file} does not exist."
+        )
+        error(
+            "This machine has not been enrolled. Falling back to "
+            "machines/default.json is not safe here: it has no SSH keys "
+            "and no git signing key, which would silently disable commit "
+            "signing and the 1Password SSH agent's key exposure."
+        )
+        error(
+            f"Enroll this machine by creating {host_config_file} (see "
+            "'Machine-Specific Configuration' in README.md)."
+        )
+        sys.exit(1)
 
     # Always load default first
     with open(machines_dir / "default.json") as f:
         config = json.load(f)
 
-    # Merge hostname-specific config if it exists
-    host_config_file = machines_dir / f"{hostname}.json"
-    if host_config_file.exists():
-        with open(host_config_file) as f:
-            config = _deep_merge(config, json.load(f))
+    # Merge the required hostname-specific config on top
+    with open(host_config_file) as f:
+        config = _deep_merge(config, json.load(f))
 
     __machine_config = config, hostname
     return __machine_config
