@@ -13,6 +13,12 @@ allow/deny/ask lists are merged with generated permissions and deduplicated.
 
 The goal is to whitelist the specific task-runner invocations that exist in
 each repo today, instead of blanket-approving `mise run` / `mise tasks run`.
+
+Ownership of each generated path is "regenerate always, never destroy
+without a backup": there is no ownership marker and no merge with
+hand-edited content. Before writing or removing a generated path, anything
+already there (a file or a symlink) is backed up via this repo's existing
+`helpers.backup_file` convention. See `write_generated` for details.
 """
 
 from __future__ import annotations
@@ -23,6 +29,9 @@ import sys
 from pathlib import Path
 
 import tomllib
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "script"))
+from helpers import backup_file, set_dry_run
 
 
 def parse_tasks(mise_toml: Path) -> list[str]:
@@ -91,28 +100,56 @@ DOTFILES_REPO = Path(__file__).resolve().parents[1]
 
 
 def write_generated(target: Path, rendered: str, dry_run: bool) -> None:
-    """Write or remove one generated config file."""
-    if dry_run:
-        if rendered:
-            print(f"--- {target} ---")
-            print(rendered, end="")
-        elif target.exists():
-            print(f"would remove: {target}")
-        return
+    """Write or remove one generated config file.
+
+    This is "regenerate always, never destroy without a backup": there is no
+    ownership marker and no attempt to merge unmanaged content. Instead,
+    anything already at `target` — a hand-maintained file *or* a symlink —
+    is backed up first, using this repo's existing backup convention
+    (`helpers.backup_file`, which moves it under
+    `~/.dotfiles-backup/<timestamp>/...`, preserving its relative location
+    and never clobbering a previous run's backup).
+
+    A symlink at `target` is always backed up and replaced with a plain
+    file, even if the generated content happens to match what it currently
+    resolves to — we never write through an existing symlink, since that
+    could silently redirect the write outside this repo. A regular file is
+    only backed up when its content actually differs from what would be
+    generated.
+
+    When there is nothing to generate, any existing file or symlink is
+    backed up and then removed, rather than being deleted outright.
+
+    In dry-run mode, `backup_file` reports what it would back up and this
+    function reports what it would write or remove, without touching the
+    filesystem.
+    """
+    is_symlink = target.is_symlink()
+    exists = is_symlink or target.exists()
 
     if not rendered:
-        if target.exists():
-            target.unlink()
-            print(f"removed:   {target}")
+        if exists:
+            backup_file(target)
+            print(f"{'would remove' if dry_run else 'removed'}:   {target}")
+        return
+
+    if exists and not is_symlink:
+        existing = target.read_text()
+        if existing == rendered:
+            print(f"unchanged: {target}")
+            return
+
+    if exists:
+        backup_file(target)
+
+    if dry_run:
+        print(f"--- {target} ---")
+        print(rendered, end="")
         return
 
     target.parent.mkdir(parents=True, exist_ok=True)
-    existing = target.read_text() if target.exists() else None
-    if existing == rendered:
-        print(f"unchanged: {target}")
-    else:
-        target.write_text(rendered)
-        print(f"wrote:     {target}")
+    target.write_text(rendered)
+    print(f"wrote:     {target}")
 
 
 def sync_repo(repo: Path, claude_overrides_dir: Path, dry_run: bool) -> bool:
@@ -175,6 +212,7 @@ def main() -> int:
         ),
     )
     args = parser.parse_args()
+    set_dry_run(args.dry_run)
 
     claude_overrides_dir = Path(__file__).resolve().parent / "overrides" / "claude"
 
