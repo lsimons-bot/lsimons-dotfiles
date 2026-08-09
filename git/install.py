@@ -224,12 +224,14 @@ def main():
         error("Failed to install git-lfs")
         return 1
 
-    # `git lfs install --skip-repo` wires the filter.lfs.* smudge/clean/process
-    # config that config.template already hardcodes into every generated global
-    # config, so on this repo's machines it's a no-op once run once. We still
-    # run it every time (cheap, idempotent) as the belt-and-suspenders init
-    # step git-lfs itself expects, rather than relying solely on the template.
-    run_cmd(["git", "lfs", "install", "--skip-repo"], capture_output=True)
+    # config.template already hardcodes the filter.lfs.* config this sets, so
+    # it's idempotent, but git-lfs still expects this init step to run.
+    result = run_cmd(
+        ["git", "lfs", "install", "--skip-repo"], check=False, capture_output=True
+    )
+    if result.returncode != 0:
+        error(f"Failed to initialize git-lfs: {result.stderr.strip()}")
+        return 1
     if lfs_already_installed:
         success("git-lfs already initialized")
     else:
