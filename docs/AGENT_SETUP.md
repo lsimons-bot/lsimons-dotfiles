@@ -174,3 +174,6 @@ python install.py
 - [Little Snitch - Network monitor](https://www.obdev.at/products/littlesnitch/)
 - [pi-coding-agent](https://shittycodingagent.ai/)
 - [Pareto Security](https://paretosecurity.com/mac)
+- [Agent sandbox trust model](./AGENT_SANDBOX_TRUST_MODEL.md) — what the
+  Claude/Codex sandbox itself (as distinct from this VM) is allowed to
+  touch on the host, and why

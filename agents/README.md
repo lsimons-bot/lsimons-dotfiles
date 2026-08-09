@@ -37,6 +37,14 @@ The `vercel-agent-browser` skill is only a discovery stub, so the installer
 also installs the `agent-browser` CLI and its Chrome build (~180 MB,
 downloaded once).
 
+## Sandbox trust model
+
+The generated Claude/Codex configs grant sandboxed agent processes
+broad host access: read of the private SSH signing key and unrestricted
+Unix-domain socket access. This is deliberate, not a gap — see
+[`docs/AGENT_SANDBOX_TRUST_MODEL.md`](../docs/AGENT_SANDBOX_TRUST_MODEL.md)
+for the reasoning and accepted risk on each.
+
 Preview configuration for every repository under `~/git/lsimons`:
 
 ```sh
