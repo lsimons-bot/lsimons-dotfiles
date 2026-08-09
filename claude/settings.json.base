@@ -132,6 +132,7 @@
     "command": "~/.claude/statusline-command.sh"
   },
   "cleanupPeriodDays": 3650000,
+  "disableClaudeAiConnectors": true,
   "autoCompactEnabled": false,
   "spinnerTipsEnabled": false,
   "model": "sonnet",
