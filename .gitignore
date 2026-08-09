@@ -30,6 +30,7 @@ __pycache__/
 local/
 *.local
 .claude/settings.local.json
+.claude/worktrees/
 agents/skills/.system/
 
 # Python cache
