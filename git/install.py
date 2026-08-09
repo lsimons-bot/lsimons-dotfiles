@@ -18,6 +18,7 @@ from helpers import (
     info,
     is_dry_run,
     parse_dry_run,
+    run_cmd,
     success,
     warn,
     write_file,
@@ -213,6 +214,26 @@ def main():
     else:
         error("Failed to install git-filter-repo")
         return 1
+
+    lfs_already_installed = brew_is_installed("git-lfs")
+    if lfs_already_installed:
+        success("git-lfs already installed")
+    elif brew_install("git-lfs"):
+        success("git-lfs installed")
+    else:
+        error("Failed to install git-lfs")
+        return 1
+
+    # `git lfs install --skip-repo` wires the filter.lfs.* smudge/clean/process
+    # config that config.template already hardcodes into every generated global
+    # config, so on this repo's machines it's a no-op once run once. We still
+    # run it every time (cheap, idempotent) as the belt-and-suspenders init
+    # step git-lfs itself expects, rather than relying solely on the template.
+    run_cmd(["git", "lfs", "install", "--skip-repo"], capture_output=True)
+    if lfs_already_installed:
+        success("git-lfs already initialized")
+    else:
+        success("git-lfs initialized")
 
     return 0
 

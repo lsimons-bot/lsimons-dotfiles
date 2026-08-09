@@ -71,7 +71,7 @@ The installation script (`./script/install.py`) will:
 | `gh/` | GitHub CLI + extensions (`gh stack`) |
 | `go/` | Go (via mise) |
 | `ghostty/` | Ghostty terminal |
-| `git/` | Git (via Homebrew) |
+| `git/` | Git (via Homebrew) + Git Credential Manager, git-filter-repo, Git LFS (installed and initialized) |
 | `herdr/` | herdr terminal agent multiplexer + LSD Warm Light theme |
 | `jdk/` | OpenJDK (via mise) |
 | `jq/` | jq JSON processor (used by the Claude statusline) |
