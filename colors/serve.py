@@ -311,6 +311,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         except OSError as e:
             self.send_error(404, str(e))
             return
+        # Fail loudly rather than silently serving the page without a
+        # token: a silent no-op here would make autosave fail with a
+        # confusing 403 on every save instead of an obvious error up
+        # front.
+        if "<head>" not in html:
+            self.send_error(
+                500, f"{TARGET_HTML.name} has no literal '<head>' tag to inject into"
+            )
+            return
         meta_tag = f'<meta name="{SAVE_TOKEN_META_NAME}" content="{self.save_token}">'
         html = html.replace("<head>", "<head>" + meta_tag, 1)
         body = html.encode("utf-8")
@@ -340,7 +349,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_error(400, f"expected Content-Type: {REQUIRED_SAVE_CONTENT_TYPE}")
             return
         token = self.headers.get(SAVE_TOKEN_HEADER, "")
-        if not self.save_token or not secrets.compare_digest(token, self.save_token):
+        # Compare as bytes, not str: http.server decodes headers as
+        # latin-1, so a header value with a byte > 0x7F is a valid str
+        # (any latin-1 byte decodes cleanly) but not ASCII, and
+        # secrets.compare_digest raises TypeError on non-ASCII str
+        # inputs. Encoding first keeps this check inside the ordinary
+        # reject-with-4xx path instead of crashing.
+        if not self.save_token or not secrets.compare_digest(
+            token.encode("utf-8"), self.save_token.encode("utf-8")
+        ):
             self.send_error(403, "missing or invalid save token")
             return
 

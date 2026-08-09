@@ -143,6 +143,21 @@ class ColorsServeSaveEndpointTests(unittest.TestCase):
         self.assertLess(resp.status, 500)
         self.assertNotEqual(self._saved_html(), VALID_HTML_A)
 
+    def test_non_ascii_token_rejected_without_crashing(self):
+        # Regression test: http.server decodes headers as latin-1, so a
+        # header value with a byte > 0x7F is a valid Python str but not
+        # ASCII. secrets.compare_digest raises TypeError on non-ASCII str
+        # (not bytes) input -- previously this crashed the request
+        # (unhandled exception, empty response) instead of yielding a
+        # clean 4xx.
+        headers = self._valid_headers()
+        headers["X-LSD-Save-Token"] = "café"
+        body = json.dumps({"html": VALID_HTML_A}).encode()
+        resp = self._post(body, headers)
+        self.assertGreaterEqual(resp.status, 400)
+        self.assertLess(resp.status, 500)
+        self.assertNotEqual(self._saved_html(), VALID_HTML_A)
+
     def test_valid_save_succeeds_and_regenerates_sidecars(self):
         body = json.dumps({"html": VALID_HTML_A}).encode()
         resp = self._post(body, self._valid_headers())
@@ -166,6 +181,24 @@ class ColorsServeSaveEndpointTests(unittest.TestCase):
         self.assertIn(f'content="{self.token}"', page)
         self.assertIn('name="lsd-save-token"', page)
 
+    def test_get_fails_loudly_when_head_tag_missing(self):
+        # If lsd-colors.html ever loses its literal "<head>" tag (e.g. an
+        # attribute gets added), token injection must fail loudly rather
+        # than silently serving a page with no token -- which would make
+        # every autosave fail with a confusing 403.
+        serve.TARGET_HTML.write_text(
+            "<!doctype html>\n<html><body>no head tag</body></html>\n",
+            encoding="utf-8",
+        )
+        conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=5)
+        try:
+            conn.request("GET", "/")
+            resp = conn.getresponse()
+            resp.read()
+        finally:
+            conn.close()
+        self.assertEqual(resp.status, 500)
+
     def test_concurrent_saves_use_separate_temp_files_and_dont_corrupt(self):
         bodies = [
             json.dumps({"html": VALID_HTML_A}).encode(),
@@ -187,6 +220,29 @@ class ColorsServeSaveEndpointTests(unittest.TestCase):
         self.assertIn(final, (VALID_HTML_A, VALID_HTML_B))
         leftovers = list(Path(self.tmpdir).glob("*.tmp"))
         self.assertEqual(leftovers, [])
+
+
+class SaveTokenStrippedFromSavedPageTests(unittest.TestCase):
+    """Guard the JS-side stripping of the injected token meta tag.
+
+    doSave() in colors/lsd-colors.html clones the live document and must
+    remove the server-injected <meta name="lsd-save-token"> before
+    serializing, so a stale token never gets baked into the file on disk
+    (the injected token changes every server restart). This can't be
+    exercised without a real browser, so this is a source-level
+    regression guard: it fails loudly if someone edits the clone-cleanup
+    selector list and drops the token-meta removal.
+    """
+
+    def test_clone_cleanup_strips_save_token_meta(self):
+        html_path = REPO_ROOT / "colors" / "lsd-colors.html"
+        source = html_path.read_text(encoding="utf-8")
+        self.assertIn(
+            'meta[name="lsd-save-token"]',
+            source,
+            "doSave()'s clone-cleanup selector must remove the injected "
+            "save-token <meta> tag before saving",
+        )
 
 
 if __name__ == "__main__":
