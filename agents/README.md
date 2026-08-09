@@ -54,3 +54,15 @@ python3 agents/sync-repo-config.py --dry-run
 Pass repository paths to sync only those repositories. The generated files are
 `.claude/settings.json`, `.codex/rules/mise.rules`, and
 `.opencode/opencode.json`.
+
+These paths are fully generated: there is no ownership marker and no merge
+with hand-edited content, so every run regenerates them from scratch. To
+avoid destroying anything irrecoverably, whatever already exists at a
+generated path — a hand-edited file *or* a symlink — is backed up first,
+using this repo's usual backup convention (`helpers.backup_file`, under
+`~/.dotfiles-backup/<timestamp>/...`). A symlink is always backed up and
+replaced with a plain file, since writing through it could otherwise land
+outside the target repo. When there's nothing to generate for a path, the
+existing file/symlink is backed up and then removed rather than deleted
+outright. `--dry-run` reports what would be backed up and written/removed
+without changing anything.

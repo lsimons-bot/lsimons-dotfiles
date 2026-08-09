@@ -31,7 +31,7 @@ from pathlib import Path
 import tomllib
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "script"))
-from helpers import backup_file, set_dry_run
+from helpers import backup_file, is_dry_run, set_dry_run
 
 
 def parse_tasks(mise_toml: Path) -> list[str]:
@@ -99,7 +99,7 @@ def build_opencode_config(tasks: list[str]) -> dict:
 DOTFILES_REPO = Path(__file__).resolve().parents[1]
 
 
-def write_generated(target: Path, rendered: str, dry_run: bool) -> None:
+def write_generated(target: Path, rendered: str) -> None:
     """Write or remove one generated config file.
 
     This is "regenerate always, never destroy without a backup": there is no
@@ -120,10 +120,13 @@ def write_generated(target: Path, rendered: str, dry_run: bool) -> None:
     When there is nothing to generate, any existing file or symlink is
     backed up and then removed, rather than being deleted outright.
 
-    In dry-run mode, `backup_file` reports what it would back up and this
-    function reports what it would write or remove, without touching the
-    filesystem.
+    Dry-run mode is read from `helpers.is_dry_run()` (set once, in `main`,
+    via `helpers.set_dry_run`) rather than a separate parameter here, so
+    there is a single source of truth: `backup_file` reports what it would
+    back up and this function reports what it would write or remove,
+    without touching the filesystem.
     """
+    dry_run = is_dry_run()
     is_symlink = target.is_symlink()
     exists = is_symlink or target.exists()
 
@@ -152,7 +155,7 @@ def write_generated(target: Path, rendered: str, dry_run: bool) -> None:
     print(f"wrote:     {target}")
 
 
-def sync_repo(repo: Path, claude_overrides_dir: Path, dry_run: bool) -> bool:
+def sync_repo(repo: Path, claude_overrides_dir: Path) -> bool:
     # This repository maintains its native agent config by hand.
     if repo.resolve() == DOTFILES_REPO:
         return False
@@ -172,11 +175,10 @@ def sync_repo(repo: Path, claude_overrides_dir: Path, dry_run: bool) -> bool:
         if claude_settings["permissions"]
         else ""
     )
-    write_generated(repo / ".claude" / "settings.json", claude_rendered, dry_run)
+    write_generated(repo / ".claude" / "settings.json", claude_rendered)
     write_generated(
         repo / ".codex" / "rules" / "mise.rules",
         build_codex_rules(tasks),
-        dry_run,
     )
     opencode_rendered = (
         json.dumps(build_opencode_config(tasks), indent=2) + "\n" if tasks else ""
@@ -184,7 +186,6 @@ def sync_repo(repo: Path, claude_overrides_dir: Path, dry_run: bool) -> bool:
     write_generated(
         repo / ".opencode" / "opencode.json",
         opencode_rendered,
-        dry_run,
     )
     return True
 
@@ -226,7 +227,7 @@ def main() -> int:
 
     touched = 0
     for repo in candidates:
-        if sync_repo(repo, claude_overrides_dir, args.dry_run):
+        if sync_repo(repo, claude_overrides_dir):
             touched += 1
 
     if touched == 0:

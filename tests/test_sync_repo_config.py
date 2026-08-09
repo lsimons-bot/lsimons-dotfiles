@@ -71,7 +71,7 @@ class WriteGeneratedBackupTests(unittest.TestCase):
                 mock.patch.object(helpers, "HOME", home),
                 mock.patch.object(helpers, "NOW", "timestamp"),
             ):
-                module.write_generated(target, "generated content", False)
+                module.write_generated(target, "generated content")
 
             self.assertEqual(target.read_text(), "generated content")
             backup = (
@@ -95,7 +95,7 @@ class WriteGeneratedBackupTests(unittest.TestCase):
                 mock.patch.object(helpers, "HOME", home),
                 mock.patch.object(helpers, "NOW", "timestamp"),
             ):
-                module.write_generated(target, "generated rules", False)
+                module.write_generated(target, "generated rules")
 
             # The write landed on a plain file at `target`, not through the
             # symlink to `elsewhere`.
@@ -122,7 +122,7 @@ class WriteGeneratedBackupTests(unittest.TestCase):
                 mock.patch.object(helpers, "HOME", home),
                 mock.patch.object(helpers, "NOW", "timestamp"),
             ):
-                module.write_generated(target, "", False)
+                module.write_generated(target, "")
 
             self.assertFalse(target.exists())
             backup = (
@@ -143,9 +143,9 @@ class WriteGeneratedBackupTests(unittest.TestCase):
                 mock.patch.object(helpers, "HOME", home),
                 mock.patch.object(helpers, "NOW", "timestamp"),
             ):
-                module.write_generated(target, "version two", False)
+                module.write_generated(target, "version two")
                 target.write_text("version three (hand-edited again)")
-                module.write_generated(target, "version four", False)
+                module.write_generated(target, "version four")
 
             self.assertEqual(target.read_text(), "version four")
             backup_dir = home / ".dotfiles-backup" / "timestamp" / "repo" / ".claude"
@@ -168,7 +168,7 @@ class WriteGeneratedBackupTests(unittest.TestCase):
                 mock.patch.object(helpers, "NOW", "timestamp"),
             ):
                 helpers.set_dry_run(True)
-                module.write_generated(target, "generated content", True)
+                module.write_generated(target, "generated content")
 
             self.assertEqual(target.read_text(), "hand-written content")
             self.assertFalse((home / ".dotfiles-backup").exists())
@@ -186,7 +186,7 @@ class WriteGeneratedBackupTests(unittest.TestCase):
                 mock.patch.object(helpers, "NOW", "timestamp"),
             ):
                 helpers.set_dry_run(True)
-                module.write_generated(target, "", True)
+                module.write_generated(target, "")
 
             self.assertTrue(target.exists())
             self.assertEqual(target.read_text(), "stale content")
@@ -204,7 +204,7 @@ class WriteGeneratedBackupTests(unittest.TestCase):
                 mock.patch.object(helpers, "HOME", home),
                 mock.patch.object(helpers, "NOW", "timestamp"),
             ):
-                module.write_generated(target, "same content", False)
+                module.write_generated(target, "same content")
 
             self.assertEqual(target.read_text(), "same content")
             self.assertFalse((home / ".dotfiles-backup").exists())
