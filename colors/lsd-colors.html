@@ -1131,6 +1131,17 @@
             const status = document.getElementById("status");
             const isServerMode =
                 location.protocol === "http:" || location.protocol === "https:";
+            // Per-process secret injected by serve.py into GET responses
+            // (see colors/serve.py's docstring) — proves the save request
+            // came from a page this server actually served, not another
+            // tab. Absent when opened directly from disk (isServerMode
+            // false), in which case autosave never fires anyway.
+            const saveTokenMeta = document.querySelector(
+                'meta[name="lsd-save-token"]',
+            );
+            const saveToken = saveTokenMeta
+                ? saveTokenMeta.getAttribute("content")
+                : "";
             function setStatus(cls, text) {
                 status.className = cls;
                 status.textContent = text;
@@ -1165,7 +1176,7 @@
                 });
                 clone
                     .querySelectorAll(
-                        "thead, .swatch-cell, .hex, .rgb, .contrast",
+                        'thead, .swatch-cell, .hex, .rgb, .contrast, meta[name="lsd-save-token"]',
                     )
                     .forEach((el) => el.remove());
                 // Reset the in-memory status pill so it doesn't bake into the saved file.
@@ -1179,7 +1190,10 @@
                 try {
                     const r = await fetch("/save", {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-LSD-Save-Token": saveToken,
+                        },
                         body: JSON.stringify({ html }),
                     });
                     if (!r.ok) {
