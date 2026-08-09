@@ -7,6 +7,7 @@ CURRENT machine's config, with fail-closed behaviour and no fallback
 to another machine's credential.
 """
 
+import os
 import subprocess
 import sys
 import unittest
@@ -102,11 +103,13 @@ class GetProviderCredentialTests(unittest.TestCase):
 class ProviderCredentialCliTests(unittest.TestCase):
     """Exercise the CLI shell wrappers actually invoke, end-to-end.
 
-    These run against whatever machine config is active in this repo
-    checkout (i.e. no per-machine match, since CI hostnames won't match
-    anything in machines/*.json), so they only assert the argument
-    handling and fail-closed contract that codex.sh/opencode.sh depend
-    on: no stdout and a non-zero exit code on failure.
+    test_unknown_provider pins DOTFILES_MACHINE_HOSTNAME to an enrolled
+    machine (machines/paddo.json) that has no providers.<provider> entry.
+    Without that, the test would depend on whatever host it happens to
+    run on: an unenrolled hostname (e.g. any CI runner) fails closed at
+    the machine-enrollment check in get_machine_config() before the
+    provider is ever looked up, so the error message it asserts on
+    would never appear.
     """
 
     def test_missing_argument_exits_nonzero(self):
@@ -119,11 +122,13 @@ class ProviderCredentialCliTests(unittest.TestCase):
 
     def test_unknown_provider_exits_nonzero_with_no_stdout(self):
         script = REPO_ROOT / "script" / "provider_credential.py"
+        env = {**os.environ, "DOTFILES_MACHINE_HOSTNAME": "paddo"}
         result = subprocess.run(
             [sys.executable, str(script), "totally-unsupported-provider"],
             capture_output=True,
             text=True,
             check=False,
+            env=env,
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(result.stdout, "")
