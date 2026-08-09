@@ -133,6 +133,11 @@
   },
   "cleanupPeriodDays": 3650000,
   "disableClaudeAiConnectors": true,
+  "skillOverrides": {
+    "dataviz": "off",
+    "claude-api": "off",
+    "update-config": "off"
+  },
   "autoCompactEnabled": false,
   "spinnerTipsEnabled": false,
   "model": "sonnet",
