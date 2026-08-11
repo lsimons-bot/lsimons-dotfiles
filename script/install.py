@@ -21,6 +21,31 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Checked before importing helpers, which imports tomllib (new in 3.11).
+# macOS ships Python 3.9.6 in the Command Line Tools, so on a genuinely
+# fresh machine this script would otherwise die on an opaque
+# `ModuleNotFoundError: No module named 'tomllib'` before reaching step 2
+# above — the step that installs a newer Python. Fail with an instruction
+# instead.
+#
+# Only the standard library sets this floor: the syntax here is still
+# 3.9-compatible, so this guard itself parses on the stock interpreter
+# and can report the problem.
+MIN_PYTHON = (3, 11)
+if sys.version_info < MIN_PYTHON:
+    sys.stderr.write(
+        "lsimons-dotfiles needs Python {}.{} or newer, but this is {}.\n"
+        "  interpreter: {}\n"
+        "Install a newer Python first, then re-run this script:\n"
+        "  brew install python\n".format(
+            MIN_PYTHON[0],
+            MIN_PYTHON[1],
+            platform.python_version(),
+            sys.executable,
+        )
+    )
+    raise SystemExit(1)
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from helpers import (
     dry,
