@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -92,23 +93,29 @@ def check_ruff() -> bool:
 def check_shellcheck() -> bool:
     """Run ShellCheck over the topic shell configuration.
 
-    Scoped to ``.sh`` and ``.bash`` deliberately:
+    Scoped to ``.sh``, ``.bash`` and ``*.sh.symlink`` deliberately:
 
     * ``.zsh`` files are excluded because ShellCheck has no zsh dialect
       and cannot check them at all.
-    * ``*.symlink`` files fall outside these two suffixes and so are
-      excluded for free. That is deliberate, not an oversight: the shell
-      entry points (``bashrc.symlink`` and friends) source their topic
-      files through a computed path, which is SC1090 by construction —
-      real, but not fixable, so gating on it would only teach us to
-      ignore the check.
+    * Most of ``*.symlink`` is excluded because **it is not shell**:
+      those files are JSON, TOML and ghostty config, and pointing a
+      shell linter at them produces parse errors rather than findings.
+      The ``.sh.symlink`` naming convention marks the ones that *are*
+      shell, and those are checked.
+    * The two shell entry points ``bash/bashrc.symlink`` and
+      ``bash/bash_profile.symlink`` are the remaining exception. They
+      source their topic files through a computed path, which is
+      SC1090/SC1091 by construction — real, but not fixable, so gating
+      on them would only teach us to ignore the check.
 
     ``.sh`` files are sourced by both bash and zsh, so they are checked
     as bash: of the two real target shells it is the stricter one that
     ShellCheck can actually model. POSIX ``-s sh`` would be wrong here —
     it rejects ``local``, which both target shells support.
     """
-    targets = sorted(_walk_files('.sh') + _walk_files('.bash'))
+    targets = sorted(
+        _walk_files('.sh') + _walk_files('.bash') + _walk_files('.sh.symlink')
+    )
     print(f'[check] shellcheck: {len(targets)} files')
     if not targets:
         print('[ok]   shellcheck (no shell files)')
@@ -132,9 +139,14 @@ def check_actionlint() -> bool:
 
     actionlint delegates ``run:`` block linting to ShellCheck and
     **silently skips it, still exiting 0, when ShellCheck is not on
-    PATH**. That is why ``shellcheck`` runs first in ``CHECKS`` and is a
-    hard failure: without it this check quietly covers less than it
-    appears to.
+    PATH**. Verified in both directions: a ``run:`` block with an
+    unquoted expansion reports SC2086 with shellcheck present, and
+    nothing at all under ``actionlint -shellcheck=``.
+
+    Relying on ``CHECKS`` order to guarantee shellcheck is present is not
+    enough — ``--only actionlint`` and ``--skip shellcheck`` both bypass
+    it. So this check resolves shellcheck itself and refuses to report a
+    pass it cannot back up.
     """
     workflows = REPO_ROOT / '.github' / 'workflows'
     if not workflows.is_dir():
@@ -142,8 +154,20 @@ def check_actionlint() -> bool:
         return True
     print('[check] actionlint: .github/workflows')
 
+    shellcheck = shutil.which('shellcheck')
+    if shellcheck is None:
+        print(
+            '[FAIL] shellcheck not on PATH; actionlint would skip every `run:` '
+            'block and still exit 0. Run checks with `mise run check`.'
+        )
+        return False
+
     try:
-        subprocess.run(['actionlint'], check=True, cwd=REPO_ROOT)
+        # Passed explicitly rather than left to PATH lookup, so the
+        # binary checked above is provably the one actionlint uses.
+        subprocess.run(
+            ['actionlint', f'-shellcheck={shellcheck}'], check=True, cwd=REPO_ROOT
+        )
     except FileNotFoundError:
         print('[FAIL] actionlint not on PATH; run checks with `mise run check`')
         return False
@@ -420,7 +444,6 @@ def check_install_dry_run() -> bool:
 CHECKS = {
     'py_compile': check_py_compile,
     'ruff': check_ruff,
-    # shellcheck must precede actionlint: see check_actionlint's docstring.
     'shellcheck': check_shellcheck,
     'actionlint': check_actionlint,
     'json': check_json,

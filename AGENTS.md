@@ -108,9 +108,12 @@ Work is NOT complete until every change is committed, pushed, and CI passes.
    versions CI uses. Running `python3 script/check.py` without them on
    PATH **fails** — it does not skip them.
 
-   shellcheck covers `.sh` and `.bash` only: shellcheck has no zsh
-   dialect, and the `*.symlink` shell entry points source topic files
-   through a computed path, which is SC1090 by construction.
+   shellcheck covers `.sh`, `.bash` and `*.sh.symlink`. `.zsh` is out of
+   scope because shellcheck has no zsh dialect. Most other `*.symlink`
+   files are out of scope because they are not shell at all — they are
+   JSON, TOML and ghostty config. The exceptions are `bashrc.symlink`
+   and `bash_profile.symlink`, which source topic files through a
+   computed path and so are SC1090/SC1091 by construction.
 
 2. **Commit**: stage and commit every change from this session. Do not leave the working tree dirty.
    ```bash
