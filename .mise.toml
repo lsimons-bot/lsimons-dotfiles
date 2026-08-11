@@ -1,11 +1,32 @@
 # mise: https://mise.jdx.dev/
 
+# Tools are exact-pinned on purpose: an upstream compromise must never
+# arrive here by auto-download. Bump these deliberately, not implicitly.
+# `zizmor` must be kept in step with the `version:` input of
+# zizmorcore/zizmor-action in .github/workflows/ci.yml, otherwise
+# `mise run audit` stops being a real mirror of the CI job.
 [tools]
-ruff = "latest"
+actionlint = "1.7.12"
+ruff = "0.16.1"
+shellcheck = "0.11.0"
+zizmor = "1.29.0"
 
 [tasks.check]
-description = "Compile and lint all Python, validate JSON/machines, run tests, and dry-run install"
+description = "Compile and lint Python and shell, lint workflows, validate JSON/machines, run tests, and dry-run install"
 run = "python3 script/check.py"
+
+[tasks.audit]
+description = "Audit GitHub Actions workflows and dependabot config with zizmor"
+# GH_TOKEN enables the online audits (impostor-commit,
+# known-vulnerable-actions). Without it zizmor warns and silently falls
+# back to offline, which is an unverified result rather than a pass.
+# `--collect` is deliberately omitted: the default already collects every
+# input kind while respecting .gitignore.
+run = "GH_TOKEN=$(gh auth token 2>/dev/null) zizmor --strict-collection ."
+
+[tasks.ci]
+description = "Everything CI runs, in the same order: check, then the workflow audit"
+depends = ["check", "audit"]
 
 [tasks.install]
 description = "Run the full dotfiles installer (idempotent). Pass --dry-run to preview."
