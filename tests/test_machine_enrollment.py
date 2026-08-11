@@ -10,6 +10,7 @@ exposure.
 
 import importlib.util
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -45,6 +46,11 @@ def _reset_machine_cache():
 def _write_json(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data))
+
+
+def _completed_process(returncode=0, stderr=""):
+    """Stand-in for a run_cmd() result, so tests never shell out for real."""
+    return subprocess.CompletedProcess(args=[], returncode=returncode, stderr=stderr)
 
 
 class GetMachineConfigTests(unittest.TestCase):
@@ -167,9 +173,20 @@ class GitInstallerEnrollmentTests(unittest.TestCase):
             mock.patch.object(git_installer, "generate_config") as generate,
             mock.patch.object(git_installer, "generate_allowed_signers") as signers,
             mock.patch.object(git_installer, "brew_is_installed", return_value=True),
+            # main() ends by shelling out to `git lfs install --skip-repo`.
+            # Left unmocked that is a real subprocess: it fails this test on
+            # any machine without git-lfs, and on a machine *with* git-lfs it
+            # writes filter.lfs.* into the user's global ~/.gitconfig. A unit
+            # test must neither depend on nor mutate host state.
+            mock.patch.object(
+                git_installer, "run_cmd", return_value=_completed_process()
+            ) as run_cmd,
         ):
             result = git_installer.main()
 
+        run_cmd.assert_called_once_with(
+            ["git", "lfs", "install", "--skip-repo"], check=False, capture_output=True
+        )
         self.assertEqual(result, 0)
         migrate.assert_called_once()
         generate.assert_called_once()
