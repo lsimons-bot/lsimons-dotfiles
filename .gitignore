@@ -1,7 +1,7 @@
 # Dotfiles .gitignore
 
 # Backup directory (created during installation)
-.dotfiles-backup/
+/.dotfiles-backup/
 
 # macOS
 .DS_Store
@@ -27,11 +27,14 @@ __pycache__/
 .idea/
 
 # Local customizations (user-specific, not in git)
-local/
+#
+# `local/` is root-anchored on purpose. Unanchored it matches a directory
+# named `local` at ANY depth, so a future topic directory such as
+# `share/local/` or `bin/local/` would silently never reach git — the kind
+# of pattern that is invisible in a working checkout and only shows up as
+# a CI failure on a fresh clone.
+/local/
 *.local
 .claude/settings.local.json
 .claude/worktrees/
 agents/skills/.system/
-
-# Python cache
-__pycache__/
