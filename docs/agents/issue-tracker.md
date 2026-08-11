@@ -72,7 +72,23 @@ and upgrade to Homebrew Python for everything afterward."
 That conclusion was wrong at the moment it was written. The Command Line
 Tools `python3` is 3.9.6; `script/install.py` imports `helpers`, which
 imports `tomllib` (new in 3.11), so it could not start at all. The
-`tomllib` import had landed five weeks before the issue was closed. One
-`/usr/bin/python3 script/install.py` would have shown it.
+`tomllib` import landed 2026-07-03 — two weeks before the issue was even
+*created* (2026-07-19), and five weeks before it was closed (2026-08-08).
+One `/usr/bin/python3 script/install.py` would have shown it.
 
 Before closing an issue as "already works", run the thing.
+
+### The triage verdict lives in the comment, not in the API field
+
+If you query issue state programmatically, note that #9's triage comment
+records `Category: invalid` / `Outcome: wontfix` while GitHub's own
+`stateReason` on that issue is `COMPLETED`, not `NOT_PLANNED`. The comment
+is the source of truth for this project's triage decisions; the field was
+never kept in step.
+
+```bash
+gh issue view <n> --comments          # the verdict
+gh issue view <n> --json stateReason  # NOT a reliable proxy for it
+```
+
+Making the two agree would be a cleanup task in its own right.
