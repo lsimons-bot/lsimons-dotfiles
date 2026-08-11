@@ -96,18 +96,19 @@ def check_shellcheck() -> bool:
 
     * ``.zsh`` files are excluded because ShellCheck has no zsh dialect
       and cannot check them at all.
-    * ``*.symlink`` files are excluded because the shell entry points
-      (``bashrc.symlink`` and friends) source their topic files through
-      a computed path, which is SC1090 by construction — real, but not
-      fixable, so gating on it would just teach us to ignore the check.
+    * ``*.symlink`` files fall outside these two suffixes and so are
+      excluded for free. That is deliberate, not an oversight: the shell
+      entry points (``bashrc.symlink`` and friends) source their topic
+      files through a computed path, which is SC1090 by construction —
+      real, but not fixable, so gating on it would only teach us to
+      ignore the check.
 
     ``.sh`` files are sourced by both bash and zsh, so they are checked
     as bash: of the two real target shells it is the stricter one that
     ShellCheck can actually model. POSIX ``-s sh`` would be wrong here —
     it rejects ``local``, which both target shells support.
     """
-    targets = _walk_files('.sh') + _walk_files('.bash')
-    targets = sorted(t for t in targets if not t.name.endswith('.symlink'))
+    targets = sorted(_walk_files('.sh') + _walk_files('.bash'))
     print(f'[check] shellcheck: {len(targets)} files')
     if not targets:
         print('[ok]   shellcheck (no shell files)')
