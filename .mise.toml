@@ -18,12 +18,27 @@ run = "python3 script/check.py"
 
 [tasks.audit]
 description = "Audit GitHub Actions workflows and dependabot config with zizmor"
-# GH_TOKEN enables the online audits (impostor-commit,
-# known-vulnerable-actions). Without it zizmor warns and silently falls
-# back to offline, which is an unverified result rather than a pass.
+# GH_TOKEN enables zizmor's online audits (impostor-commit,
+# known-vulnerable-actions). Without it zizmor warns and falls back to
+# offline, which is an unverified result rather than a pass -- so this
+# task stops rather than printing a green it cannot back up. Inlining
+# `$(gh auth token 2>/dev/null)` would swallow exactly that case, so the
+# token is checked before it is used.
+#
 # `--collect` is deliberately omitted: the default already collects every
-# input kind while respecting .gitignore.
-run = "GH_TOKEN=$(gh auth token 2>/dev/null) zizmor --strict-collection ."
+# input kind (workflows, actions, dependabot, pre-commit) while
+# respecting .gitignore.
+run = """
+token=$(gh auth token 2>/dev/null) || true
+if [ -z "$token" ]; then
+  echo "mise run audit: no GitHub token from 'gh auth token'." >&2
+  echo "zizmor's online audits (impostor-commit, known-vulnerable-actions)" >&2
+  echo "would silently not run, which is an unverified result, not a pass." >&2
+  echo "Run 'gh auth login' first." >&2
+  exit 1
+fi
+GH_TOKEN="$token" zizmor --strict-collection .
+"""
 
 [tasks.ci]
 description = "Everything CI runs, in the same order: check, then the workflow audit"
