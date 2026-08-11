@@ -34,15 +34,11 @@ from pathlib import Path
 MIN_PYTHON = (3, 11)
 if sys.version_info < MIN_PYTHON:
     sys.stderr.write(
-        "lsimons-dotfiles needs Python {}.{} or newer, but this is {}.\n"
-        "  interpreter: {}\n"
+        f"lsimons-dotfiles needs Python {MIN_PYTHON[0]}.{MIN_PYTHON[1]} or newer, "
+        f"but this is {platform.python_version()}.\n"
+        f"  interpreter: {sys.executable}\n"
         "Install a newer Python first, then re-run this script:\n"
-        "  brew install python\n".format(
-            MIN_PYTHON[0],
-            MIN_PYTHON[1],
-            platform.python_version(),
-            sys.executable,
-        )
+        "  brew install python\n"
     )
     raise SystemExit(1)
 
