@@ -111,6 +111,16 @@ First attempt to run `git` will prompt download/install of XCode Developer Tools
 Second run may stutter a bit.
 So, open up a fresh new Ghostty, and run `python3 script/install.py` once again.
 
+**Python prerequisite.** The `python3` that Xcode Command Line Tools
+provides is 3.9, and the installer needs 3.11 or newer, so on a genuinely
+fresh machine both runs above stop with a version error. The installer
+normally installs Homebrew itself, but it cannot get that far on 3.9 — so
+bootstrap those two by hand first:
+
+1. Install Homebrew — see https://brew.sh
+2. `brew install python`
+3. `python3 script/install.py`
+
 To save disk space:
 ```bash
 brew cleanup --prune=all

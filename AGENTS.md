@@ -6,10 +6,29 @@ Personal dotfiles repository for macOS. Topic-based structure inspired by [holma
 
 ## Quick Reference
 
-- **Install**: `mise run install` (or `./script/install.py`)
+- **Install**: `mise run install` (or `./script/install.py`) — needs Python 3.11+
 - **Preview install**: `mise run install -- --dry-run`
 - **Quality checks**: `mise run check` (or `python3 script/check.py`)
+- **Workflow audit**: `mise run audit` (zizmor)
+- **Everything CI runs**: `mise run ci` (= `check` + `audit`)
+- **Watch CI**: `mise run ci-watch`
 - **Test ZSH**: `zsh -c 'source ~/.zshrc && echo "Success"'`
+
+`mise run install` installs the dotfiles onto **this machine**. It is not
+a "fetch the project's dependencies" task, and must never run in CI.
+
+### Git remote
+
+Use GitHub with `gh`.
+
+### Issue tracker
+
+Use GitHub issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix.
+See `docs/agents/issue-tracker.md`.
 
 ## Structure
 
@@ -79,13 +98,19 @@ Work is NOT complete until every change is committed, pushed, and CI passes.
    git diff                   # check for secrets
    ```
 
-   `check.py` runs `py_compile`, `ruff`, JSON validation, and
-   `script/install.py --dry-run` (which exercises every topic
-   installer without touching the system). It's what CI runs.
+   `check.py` runs `py_compile`, `ruff`, `shellcheck`, `actionlint`,
+   JSON validation, the unit tests, and `script/install.py --dry-run`
+   (which exercises every topic installer without touching the system).
+   It's what CI runs.
 
-   ruff is provisioned via `.mise.toml`'s `[tools]` section, so
-   `mise run check` auto-installs it. Running `python3 script/check.py`
-   directly without mise/ruff on PATH skips ruff with a warning.
+   ruff, shellcheck and actionlint are exact-pinned in `.mise.toml`'s
+   `[tools]` section, so `mise run check` provisions them at the same
+   versions CI uses. Running `python3 script/check.py` without them on
+   PATH **fails** — it does not skip them.
+
+   shellcheck covers `.sh` and `.bash` only: shellcheck has no zsh
+   dialect, and the `*.symlink` shell entry points source topic files
+   through a computed path, which is SC1090 by construction.
 
 2. **Commit**: stage and commit every change from this session. Do not leave the working tree dirty.
    ```bash

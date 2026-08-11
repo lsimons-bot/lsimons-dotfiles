@@ -39,6 +39,9 @@ if sys.version_info < MIN_PYTHON:
         f"  interpreter: {sys.executable}\n"
         "Install a newer Python first, then re-run this script:\n"
         "  brew install python\n"
+        "If Homebrew is not installed yet either, install it first -- see\n"
+        "https://brew.sh. This script installs Homebrew itself, but cannot\n"
+        "get far enough to do so on this interpreter.\n"
     )
     raise SystemExit(1)
 

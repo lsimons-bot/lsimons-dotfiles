@@ -30,14 +30,22 @@ cd lsimons-dotfiles
 source ~/.zshrc
 ```
 
+The installer needs **Python 3.11 or newer**. macOS only ships 3.9 in
+the Command Line Tools, so on a fresh machine run `brew install python`
+first; the installer says so and stops if the interpreter is too old.
+
 Once mise is installed you can also use `mise run install` (add
 `-- --dry-run` to preview) and `mise run check` for subsequent runs.
 
 Run `mise run check` (or `python3 script/check.py`) to validate the
 repo without touching your system — this is what CI runs on every push.
-Prefer `mise run check`: it bootstraps ruff via `.mise.toml`'s
-`[tools]` section so linting is always covered. The bare `check.py`
-entry point skips ruff with a warning when it's not on PATH.
+Prefer `mise run check`: it provisions ruff, shellcheck and actionlint
+from `.mise.toml`'s `[tools]` section at exactly the versions CI uses.
+The bare `check.py` entry point fails, rather than skipping, when those
+tools are not on PATH.
+
+`mise run ci` runs everything CI runs — `check` plus the zizmor
+workflow audit — and `mise run ci-watch` follows the real run on GitHub.
 
 ## What Gets Installed
 
@@ -69,6 +77,7 @@ The installation script (`./script/install.py`) will:
 | `fnox/` | fnox (1Password secret injection, via mise) |
 | `fonts/` | Fonts (Cascadia Code, Iosevka, JetBrains Mono, Lilex, Lilex Nerd Font) |
 | `gh/` | GitHub CLI + extensions (`gh stack`) |
+| `glab/` | GitLab CLI (`glab`) |
 | `go/` | Go (via mise) |
 | `ghostty/` | Ghostty terminal |
 | `git/` | Git (via Homebrew) + Git Credential Manager, git-filter-repo, Git LFS (installed and initialized) |
@@ -110,7 +119,7 @@ If you're an AI coding agent (GitHub Copilot, Claude Code, etc.) working on this
 .
 ├── script/           # Installation scripts and helpers
 │   ├── install.py    # Main installer (supports --dry-run)
-│   ├── check.py      # Validation checks (py_compile, ruff, JSON, install dry-run)
+│   ├── check.py      # Validation checks (py_compile, ruff, shellcheck, actionlint, JSON, tests, install dry-run)
 │   └── helpers.py    # Shared functions for topic installers
 ├── machines/         # Machine-specific configuration
 │   ├── default.json  # Default config (used when no hostname match)
@@ -213,6 +222,22 @@ Secrets are loaded from 1Password, not stored in git. See the [1Password topic](
    ~/.dotfiles/script/install.py
    ```
 
+## Troubleshooting
+
+### `ModuleNotFoundError: No module named 'tomllib'`
+
+The installer needs Python 3.11 or newer, and macOS ships 3.9 in the
+Command Line Tools. Install a newer Python and re-run:
+
+```bash
+brew install python
+./script/install.py
+```
+
+On a machine with no Homebrew either, install Homebrew first (see
+https://brew.sh). The installer does that itself normally, but it cannot
+get that far on Python 3.9.
+
 ### XDG directories not created
 
 Re-run installer:
@@ -220,9 +245,17 @@ Re-run installer:
 ~/.dotfiles/script/install.py
 ```
 
+## Security
+
+This is a personal project. Do not depend on it, and in particular do
+not depend on its security. There is no support.
+
+To report a vulnerability, use the "Report a vulnerability" button under
+this repository's Security tab on GitHub.
+
 ## License
 
-See [LICENSE.md](./LICENSE.md) file.
+Apache License 2.0. See the [LICENSE](./LICENSE) file.
 
 ## Inspiration
 
