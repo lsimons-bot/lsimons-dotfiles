@@ -8,10 +8,16 @@ Checks, in order:
 
   1. Compile every Python file in memory (without creating ``__pycache__``)
   2. Ruff linting for every Python file
-  3. JSON validity and machine configuration validation
-  4. Standard-library unit tests
-  5. Installer dry-run: ``python3 script/install.py --dry-run``
+  3. ShellCheck over every ``.sh`` and ``.bash`` file
+  4. actionlint over the GitHub Actions workflows
+  5. JSON validity and machine configuration validation
+  6. Standard-library unit tests
+  7. Installer dry-run: ``python3 script/install.py --dry-run``
      (exercises every topic installer with dry-run propagated)
+
+Every external tool used here is exact-pinned in ``.mise.toml``, so
+``mise run check`` provisions all of them. Running this script bare,
+without those tools on PATH, fails loudly rather than skipping silently.
 
 Exits non-zero if any check fails.
 """
@@ -80,6 +86,70 @@ def check_ruff() -> bool:
         print('[FAIL] ruff reported issues')
         return False
     print('[ok]   ruff')
+    return True
+
+
+def check_shellcheck() -> bool:
+    """Run ShellCheck over the topic shell configuration.
+
+    Scoped to ``.sh`` and ``.bash`` deliberately:
+
+    * ``.zsh`` files are excluded because ShellCheck has no zsh dialect
+      and cannot check them at all.
+    * ``*.symlink`` files are excluded because the shell entry points
+      (``bashrc.symlink`` and friends) source their topic files through
+      a computed path, which is SC1090 by construction — real, but not
+      fixable, so gating on it would just teach us to ignore the check.
+
+    ``.sh`` files are sourced by both bash and zsh, so they are checked
+    as bash: of the two real target shells it is the stricter one that
+    ShellCheck can actually model. POSIX ``-s sh`` would be wrong here —
+    it rejects ``local``, which both target shells support.
+    """
+    targets = _walk_files('.sh') + _walk_files('.bash')
+    targets = sorted(t for t in targets if not t.name.endswith('.symlink'))
+    print(f'[check] shellcheck: {len(targets)} files')
+    if not targets:
+        print('[ok]   shellcheck (no shell files)')
+        return True
+
+    cmd = ['shellcheck', '--shell=bash', *[str(t) for t in targets]]
+    try:
+        subprocess.run(cmd, check=True, cwd=REPO_ROOT)
+    except FileNotFoundError:
+        print('[FAIL] shellcheck not on PATH; run checks with `mise run check`')
+        return False
+    except subprocess.CalledProcessError:
+        print('[FAIL] shellcheck reported issues')
+        return False
+    print('[ok]   shellcheck')
+    return True
+
+
+def check_actionlint() -> bool:
+    """Lint the GitHub Actions workflows with actionlint.
+
+    actionlint delegates ``run:`` block linting to ShellCheck and
+    **silently skips it, still exiting 0, when ShellCheck is not on
+    PATH**. That is why ``shellcheck`` runs first in ``CHECKS`` and is a
+    hard failure: without it this check quietly covers less than it
+    appears to.
+    """
+    workflows = REPO_ROOT / '.github' / 'workflows'
+    if not workflows.is_dir():
+        print('[ok]   actionlint (no workflows)')
+        return True
+    print('[check] actionlint: .github/workflows')
+
+    try:
+        subprocess.run(['actionlint'], check=True, cwd=REPO_ROOT)
+    except FileNotFoundError:
+        print('[FAIL] actionlint not on PATH; run checks with `mise run check`')
+        return False
+    except subprocess.CalledProcessError:
+        print('[FAIL] actionlint reported issues')
+        return False
+    print('[ok]   actionlint')
     return True
 
 
@@ -349,6 +419,9 @@ def check_install_dry_run() -> bool:
 CHECKS = {
     'py_compile': check_py_compile,
     'ruff': check_ruff,
+    # shellcheck must precede actionlint: see check_actionlint's docstring.
+    'shellcheck': check_shellcheck,
+    'actionlint': check_actionlint,
     'json': check_json,
     'tests': check_tests,
     'install': check_install_dry_run,
