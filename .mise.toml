@@ -1,5 +1,9 @@
 # mise: https://mise.jdx.dev/
 
+[settings]
+minimum_release_age = "7d"
+lockfile = true
+
 # Tools are exact-pinned on purpose: an upstream compromise must never
 # arrive here by auto-download. Bump these deliberately, not implicitly.
 # `zizmor` must be kept in step with the `version:` input of
@@ -7,8 +11,8 @@
 # `mise run audit` stops being a real mirror of the CI job.
 [tools]
 actionlint = "1.7.12"
-python = "3.14.6"
-ruff = "0.16.1"
+python = "3.14.7"
+ruff = "0.16.2"
 shellcheck = "0.11.0"
 zizmor = "1.29.0"
 
