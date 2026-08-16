@@ -98,6 +98,7 @@ The installation script (`./script/install.py`) will:
 | `rust/` | Rust (via mise) + CARGO_HOME |
 | `sh/` | Shared shell configuration (PATH, XDG, settings) |
 | `ssh/` | SSH configuration (post-quantum warning, 1Password agent) |
+| `swiftdialog/` | swiftDialog (via Homebrew cask; skipped if already present, e.g. via MDM) |
 | `terminal/` | macOS Terminal.app "LSD Warm Light" profile (mirrors Ghostty) |
 | `terraform/` | tfenv and Terraform |
 | `timeout/` | `timeout` command for macOS (via the `aisk/tap` Homebrew tap) |
