@@ -29,8 +29,11 @@ no_retry = true
 cleanup = true
 
 [commands]
-# Re-fetch the skills.sh skills shared by every coding agent.
-"agent skills" = "python3 ~/.dotfiles/agents/install.py --update"
+# Re-link the vendored skills collection into the shared agent locations
+# and keep the CLIs those skills drive up to date. The skills themselves
+# live in the sibling lsimons-skills checkout; this only refreshes the
+# links and the tools, so it is cheap and idempotent.
+"agent skills" = "python3 ~/.dotfiles/agents/install.py"
 
 [brew]
 # Run `brew autoremove` after upgrading formulae to drop orphaned deps.
