@@ -1,6 +1,5 @@
 """Shared coding-agent configuration and rendering."""
 
-import re
 from pathlib import Path
 
 AGENTS_DIR = Path(__file__).resolve().parent
@@ -17,31 +16,28 @@ SKILLS_DIR = DOTFILES_ROOT.parent / "lsimons-skills" / "skills"
 # still reaches every agent through the same shared mechanism.
 SBP_BRANDBOOK_SRC = DOTFILES_ROOT.parent / "sbp-skills" / "skills" / "sbp-brandbook"
 
-_ATTRIBUTION_RE = re.compile(
-    r"<!-- attribution:start -->.*?<!-- attribution:end -->", re.DOTALL
-)
+# AGENTS.md carries the human-as-co-author line verbatim, which is what every
+# machine but the bot's own wants. Rendering only has to swap it out when the
+# bot is the one committing, so the line itself is the substitution anchor.
+DEFAULT_ATTRIBUTION = "Co-Authored-By: lsimons-bot <bot@leosimons.com>"
+BOT_ATTRIBUTION = "Co-Authored-By: Leo Simons <mail@leosimons.com>"
 
 
 def build_attribution(email):
     """Return the Co-Authored-By attribution line for the given git email."""
     if email == "bot@leosimons.com":
-        return "Co-Authored-By: Leo Simons <mail@leosimons.com>"
-    return "Co-Authored-By: lsimons-bot <bot@leosimons.com>"
+        return BOT_ATTRIBUTION
+    return DEFAULT_ATTRIBUTION
 
 
 def render_instructions(email):
-    """Render global instructions with an explicit attribution line.
+    """Render global instructions with the attribution line for this machine.
 
     Every agent gets the literal line in its instructions, including Claude
     Code: its built-in `attribution` setting produced trailers that disagreed
     with these instructions, so it is left unset.
     """
-    attribution = build_attribution(email)
-    block = (
-        "- End **both** commit messages and PR descriptions with exactly this "
-        "attribution line. Do NOT emit your own built-in co-author trailer "
-        "(e.g. `Co-authored-by: Copilot`, `Co-authored-by: opencode`) — use "
-        "this line instead, and do not remove or skip it:\n"
-        f"  `{attribution}`"
-    )
-    return _ATTRIBUTION_RE.sub(block, AGENTS_MD.read_text(), count=1)
+    text = AGENTS_MD.read_text()
+    if DEFAULT_ATTRIBUTION not in text:
+        raise ValueError(f"{AGENTS_MD} no longer contains {DEFAULT_ATTRIBUTION!r}")
+    return text.replace(DEFAULT_ATTRIBUTION, build_attribution(email))

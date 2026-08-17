@@ -56,20 +56,9 @@ function Copy-IfChanged {
   Write-Ok "wrote $Dest"
 }
 
-function Get-AttributionBlock {
-  # Mirrors build_attribution() / render_instructions() in agents/shared.py.
-  $email = git config --get user.email 2>$null
-  Write-Info "git email: $(if ($email) { $email } else { '(unset)' })"
-  $attr = if ($email -eq 'bot@leosimons.com') {
-    'Co-Authored-By: Leo Simons <mail@leosimons.com>'
-  } else {
-    'Co-Authored-By: lsimons-bot <bot@leosimons.com>'
-  }
-  return @"
-- End **both** commit messages and PR descriptions with exactly this attribution line. Do NOT emit your own built-in co-author trailer (e.g. ``Co-authored-by: Copilot``, ``Co-authored-by: opencode``) - use this line instead, and do not remove or skip it:
-  ``$attr``
-"@.Trim()
-}
+# Mirrors DEFAULT_ATTRIBUTION / BOT_ATTRIBUTION in agents/shared.py.
+$defaultAttribution = 'Co-Authored-By: lsimons-bot <bot@leosimons.com>'
+$botAttribution     = 'Co-Authored-By: Leo Simons <mail@leosimons.com>'
 
 Write-Info "Installing Claude Code settings from claude/ topic"
 if ($DryRun) { Write-Dry "dry-run mode -- no changes will be made" }
@@ -84,13 +73,22 @@ Invoke-Step "Ensure $claudeDir exists" {
 }
 
 Invoke-Step "Install CLAUDE.md" {
-  # Mirrors render_agents_md() in script/helpers.py: substitute the attribution
-  # placeholder with the literal Co-Authored-By line for this machine.
-  $source = Join-Path $agentsDir 'AGENTS.md'
-  $dest   = Join-Path $claudeDir 'CLAUDE.md'
-  $content = (Get-Content $source -Raw) -replace `
-    '(?s)<!-- attribution:start -->.*?<!-- attribution:end -->', `
-    (Get-AttributionBlock)
+  # Mirrors render_instructions() in agents/shared.py: AGENTS.md carries the
+  # default attribution line verbatim, so only the bot's own machine needs a
+  # substitution.
+  $source  = Join-Path $agentsDir 'AGENTS.md'
+  $dest    = Join-Path $claudeDir 'CLAUDE.md'
+  $content = Get-Content $source -Raw
+  if ($content -notmatch [regex]::Escape($defaultAttribution)) {
+    throw "$source no longer contains '$defaultAttribution'"
+  }
+
+  $email = git config --get user.email 2>$null
+  Write-Info "git email: $(if ($email) { $email } else { '(unset)' })"
+  if ($email -eq 'bot@leosimons.com') {
+    $content = $content.Replace($defaultAttribution, $botAttribution)
+  }
+
   Set-Content -Path $dest -Value $content -Encoding utf8
   Write-Ok "wrote $dest"
 }

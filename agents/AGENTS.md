@@ -41,9 +41,8 @@ Outside those conditions, ask first.
 ## Commit and PR Attribution
 
 - Do NOT add `Signed-off-by` tags. Only humans can certify the Developer Certificate of Origin.
-<!-- attribution:start -->
-- End **both** commit messages and PR descriptions with a `Co-Authored-By` attribution line for the bot identity, and do not remove or skip it. Do NOT emit your own built-in co-author trailer (e.g. `Co-authored-by: Copilot`, `Co-authored-by: opencode`).
-<!-- attribution:end -->
+- End **both** commit messages and PR descriptions with exactly this attribution line, and do not remove or skip it. Do NOT emit your own built-in co-author trailer (e.g. `Co-authored-by: Copilot`, `Co-authored-by: opencode`) — use this line instead:
+  `Co-Authored-By: lsimons-bot <bot@leosimons.com>`
 - In addition, include an `Assisted-by` tag:
   `Assisted-by: AGENT_NAME:MODEL_VERSION`
   Example: `Assisted-by: Claude:claude-sonnet-4-6`
