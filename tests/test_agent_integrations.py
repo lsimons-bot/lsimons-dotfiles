@@ -46,8 +46,12 @@ class DeterministicAgentIntegrationTests(unittest.TestCase):
             )
             self.assertEqual(settings["shellCommandPrefix"], expected)
 
-    def test_claude_settings_leave_attribution_unset(self):
-        """Claude gets the attribution line from its instructions, not settings."""
+    def test_claude_settings_switch_the_builtin_attribution_off(self):
+        """Empty strings disable the built-in trailer; omitting the key does not.
+
+        Claude gets its attribution line from the compiled instructions, so the
+        harness must not add one of its own.
+        """
         module = load_module("claude_install_test", REPO_ROOT / "claude/install.py")
         with tempfile.TemporaryDirectory() as tmpdir:
             claude_dir = Path(tmpdir)
@@ -60,7 +64,7 @@ class DeterministicAgentIntegrationTests(unittest.TestCase):
                 module.write_settings(claude_dir, REPO_ROOT / "claude")
 
             settings = json.loads((claude_dir / "settings.json").read_text())
-            self.assertNotIn("attribution", settings)
+            self.assertEqual(settings["attribution"], {"commit": "", "pr": ""})
 
     def test_rendered_instructions_carry_the_attribution_for_this_machine(self):
         module = load_module("agents_shared_test", REPO_ROOT / "agents/shared.py")

@@ -35,7 +35,8 @@ def render_instructions(email):
 
     Every agent gets the literal line in its instructions, including Claude
     Code: its built-in `attribution` setting produced trailers that disagreed
-    with these instructions, so it is left unset.
+    with these instructions, so it is switched off (see `write_settings()` in
+    claude/install.py) and the instructions are the only source of trailers.
     """
     text = AGENTS_MD.read_text()
     if DEFAULT_ATTRIBUTION not in text:

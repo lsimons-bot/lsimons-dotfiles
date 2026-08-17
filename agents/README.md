@@ -6,7 +6,10 @@ This directory is the shared source of truth for coding-agent configuration:
 - `shared.py` owns shared paths, attribution policy, and instruction rendering.
   Every agent — Claude Code included — gets the same rendered instructions with
   the literal `Co-Authored-By` line, rather than a harness-native attribution
-  setting, so there is one place that decides what a trailer looks like.
+  setting, so there is one place that decides what a trailer looks like. Claude
+  Code's own `attribution` setting is explicitly set to empty strings to switch
+  its built-in trailer off; omitting the key restores the default trailer
+  instead of removing it.
 - `install.py` links the skills collection into the shared skill locations.
 - `overrides/<agent>/` contains agent-specific per-repository additions.
 - `sync-repo-config.py` generates native per-repository configuration from

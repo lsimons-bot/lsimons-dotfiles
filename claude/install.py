@@ -37,7 +37,14 @@ CLAUDE_HISTORY_FORMULA = "raine/claude-history/claude-history"
 
 
 def write_settings(claude_dir, topic_dir):
-    """Write ~/.claude/settings.json from the base config plus machine tweaks."""
+    """Write ~/.claude/settings.json from the base config plus machine tweaks.
+
+    The base config sets `attribution` to empty strings. JSON takes no
+    comments, so the reason lives here: that is the documented off-switch for
+    Claude Code's built-in `Co-Authored-By: Claude` trailer. Dropping the key
+    does not disable the trailer, it restores the default one, which would
+    fight the attribution line in the compiled instructions.
+    """
     base_file = topic_dir / "settings.json.base"
     settings_path = claude_dir / "settings.json"
 
