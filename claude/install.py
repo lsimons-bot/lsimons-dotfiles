@@ -9,23 +9,20 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "script"))
 from helpers import (
-    AGENTS_MD,
     SKILLS_DIR,
     brew_install,
     brew_is_installed,
-    build_attribution,
     command_exists,
     dry,
     error,
-    get_git_email,
     get_machine_config,
     info,
     install_symlinks,
     is_dry_run,
     link_directory,
-    link_file,
     npm_install_global,
     parse_dry_run,
+    render_agents_md,
     run_cmd,
     success,
     warn,
@@ -40,23 +37,12 @@ CLAUDE_HISTORY_FORMULA = "raine/claude-history/claude-history"
 
 
 def write_settings(claude_dir, topic_dir):
-    """Write ~/.claude/settings.json from base config plus dynamic attribution."""
+    """Write ~/.claude/settings.json from the base config plus machine tweaks."""
     base_file = topic_dir / "settings.json.base"
     settings_path = claude_dir / "settings.json"
 
     with open(base_file) as f:
         settings = json.load(f)
-
-    email = get_git_email()
-    if email:
-        info(f"Detected git email: {email}")
-    else:
-        info("No git email found; using default attribution")
-    attribution_text = build_attribution(email)
-    settings["attribution"] = {
-        "commit": attribution_text,
-        "pr": attribution_text,
-    }
 
     # Route git in Claude sessions to the Claude-specific git config
     # (signs with an on-disk SSH key instead of op-ssh-sign).
@@ -122,7 +108,7 @@ def main():
 
     topic_dir = Path(__file__).resolve().parent
 
-    link_file(AGENTS_MD, claude_dir / "CLAUDE.md")
+    render_agents_md(claude_dir / "CLAUDE.md")
     link_directory(SKILLS_DIR, claude_dir / "skills")
 
     # Link themes directory (LSD Warm Light/Dark, etc.). Claude Code picks up
@@ -132,7 +118,6 @@ def main():
     if themes_src.exists():
         link_directory(themes_src, themes_dst)
 
-    # Write settings.json with dynamic attribution
     write_settings(claude_dir, topic_dir)
 
     info("Installing/updating Claude Code via official installer...")

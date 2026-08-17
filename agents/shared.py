@@ -30,7 +30,12 @@ def build_attribution(email):
 
 
 def render_instructions(email):
-    """Render global instructions for agents without attribution settings."""
+    """Render global instructions with an explicit attribution line.
+
+    Every agent gets the literal line in its instructions, including Claude
+    Code: its built-in `attribution` setting produced trailers that disagreed
+    with these instructions, so it is left unset.
+    """
     attribution = build_attribution(email)
     block = (
         "- End **both** commit messages and PR descriptions with exactly this "

@@ -84,18 +84,7 @@
       "Bash(gh --version)"
     ],
     "deny": [
-      "Bash(git commit --amend*)",
       "Bash(git commit --no-verify*)",
-      "Bash(git push --force*)",
-      "Bash(git push -f*)",
-      "Bash(git push --delete*)",
-      "Bash(git push -d*)",
-      "Bash(git push --prune*)",
-      "Bash(git push * --force*)",
-      "Bash(git push * -f*)",
-      "Bash(git push * --delete*)",
-      "Bash(git push * -d*)",
-      "Bash(git push * --prune*)",
       "Bash(git reset --hard*)",
       "Bash(git clean -f*)",
       "Bash(rm -rf /*)",

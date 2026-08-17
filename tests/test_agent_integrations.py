@@ -46,12 +46,12 @@ class DeterministicAgentIntegrationTests(unittest.TestCase):
             )
             self.assertEqual(settings["shellCommandPrefix"], expected)
 
-    def test_claude_uses_default_attribution_without_git_email(self):
+    def test_claude_settings_leave_attribution_unset(self):
+        """Claude gets the attribution line from its instructions, not settings."""
         module = load_module("claude_install_test", REPO_ROOT / "claude/install.py")
         with tempfile.TemporaryDirectory() as tmpdir:
             claude_dir = Path(tmpdir)
             with (
-                patch.object(module, "get_git_email", return_value=None),
                 patch.object(module, "get_machine_config", return_value=({}, "test")),
                 patch.object(module, "is_dry_run", return_value=False),
                 patch.object(module, "info"),
@@ -60,16 +60,32 @@ class DeterministicAgentIntegrationTests(unittest.TestCase):
                 module.write_settings(claude_dir, REPO_ROOT / "claude")
 
             settings = json.loads((claude_dir / "settings.json").read_text())
-            expected = "Co-Authored-By: lsimons-bot <bot@leosimons.com>"
-            self.assertEqual(
-                settings["attribution"], {"commit": expected, "pr": expected}
-            )
+            self.assertNotIn("attribution", settings)
+
+    def test_claude_instructions_carry_the_literal_attribution_line(self):
+        module = load_module("agents_shared_test", REPO_ROOT / "agents/shared.py")
+        rendered = module.render_instructions(None)
+        self.assertIn("Co-Authored-By: lsimons-bot <bot@leosimons.com>", rendered)
+        self.assertNotIn("attribution:start", rendered)
+
+    def test_history_rewrites_are_governed_by_instructions_not_deny_rules(self):
+        instructions = (REPO_ROOT / "agents/AGENTS.md").read_text()
+        self.assertIn("## Preserving History", instructions)
+        deny = json.loads((REPO_ROOT / "claude/settings.json.base").read_text())[
+            "permissions"
+        ]["deny"]
+        for rule in deny:
+            self.assertNotIn("--amend", rule)
+            self.assertNotIn("--force", rule)
+            self.assertNotIn("--delete", rule)
 
     def test_windows_installer_uses_shared_agent_sources(self):
         installer = (REPO_ROOT / "windows/install-claude-settings.ps1").read_text()
         self.assertIn("Join-Path $agentsDir 'AGENTS.md'", installer)
         self.assertIn("'lsimons-skills' 'skills'", installer)
         self.assertNotIn("CLAUDE.md.symlink", installer)
+        self.assertIn("attribution:start", installer)
+        self.assertNotIn("$settings['attribution']", installer)
 
     def test_gemini_routes_git_through_ai_config(self):
         shell_config = (REPO_ROOT / "gemini/gemini.sh").read_text()

@@ -4,9 +4,9 @@
     Install Claude Code settings from the claude/ dotfiles topic.
 
 .DESCRIPTION
-    Copies the shared agent instructions and skills, then builds Claude Code
-    settings.json from the claude/ topic with dynamic commit attribution
-    derived from the configured git user email. Idempotent.
+    Compiles the shared agent instructions (with the commit attribution line
+    for the configured git user email) and copies the skills, then builds
+    Claude Code settings.json from the claude/ topic. Idempotent.
 
 .PARAMETER DryRun
     Print what would happen without making changes.
@@ -56,6 +56,21 @@ function Copy-IfChanged {
   Write-Ok "wrote $Dest"
 }
 
+function Get-AttributionBlock {
+  # Mirrors build_attribution() / render_instructions() in agents/shared.py.
+  $email = git config --get user.email 2>$null
+  Write-Info "git email: $(if ($email) { $email } else { '(unset)' })"
+  $attr = if ($email -eq 'bot@leosimons.com') {
+    'Co-Authored-By: Leo Simons <mail@leosimons.com>'
+  } else {
+    'Co-Authored-By: lsimons-bot <bot@leosimons.com>'
+  }
+  return @"
+- End **both** commit messages and PR descriptions with exactly this attribution line. Do NOT emit your own built-in co-author trailer (e.g. ``Co-authored-by: Copilot``, ``Co-authored-by: opencode``) - use this line instead, and do not remove or skip it:
+  ``$attr``
+"@.Trim()
+}
+
 Write-Info "Installing Claude Code settings from claude/ topic"
 if ($DryRun) { Write-Dry "dry-run mode -- no changes will be made" }
 
@@ -69,9 +84,15 @@ Invoke-Step "Ensure $claudeDir exists" {
 }
 
 Invoke-Step "Install CLAUDE.md" {
-  Copy-IfChanged `
-    -Source (Join-Path $agentsDir 'AGENTS.md') `
-    -Dest   (Join-Path $claudeDir 'CLAUDE.md')
+  # Mirrors render_agents_md() in script/helpers.py: substitute the attribution
+  # placeholder with the literal Co-Authored-By line for this machine.
+  $source = Join-Path $agentsDir 'AGENTS.md'
+  $dest   = Join-Path $claudeDir 'CLAUDE.md'
+  $content = (Get-Content $source -Raw) -replace `
+    '(?s)<!-- attribution:start -->.*?<!-- attribution:end -->', `
+    (Get-AttributionBlock)
+  Set-Content -Path $dest -Value $content -Encoding utf8
+  Write-Ok "wrote $dest"
 }
 
 Invoke-Step "Install statusline-command.ps1" {
@@ -123,20 +144,6 @@ Invoke-Step "Write settings.json" {
   $settings['statusLine'] = [ordered]@{
     type    = 'command'
     command = "pwsh -NoProfile -NonInteractive -File `"$psScript`""
-  }
-
-  # Attribution based on git email (mirrors claude/install.py logic)
-  $email = git config --get user.email 2>$null
-  if ($email) {
-    Write-Info "git email: $email"
-    $attr = if ($email -eq 'bot@leosimons.com') {
-      'Co-Authored-By: Leo Simons <mail@leosimons.com>'
-    } else {
-      'Co-Authored-By: lsimons-bot <bot@leosimons.com>'
-    }
-    $settings['attribution'] = [ordered]@{ commit = $attr; pr = $attr }
-  } else {
-    Write-WarnMsg "no git email configured -- skipping attribution"
   }
 
   $settings | ConvertTo-Json -Depth 10 | Set-Content -Path $settingsPath -Encoding utf8
