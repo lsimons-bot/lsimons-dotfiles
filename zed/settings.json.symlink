@@ -54,6 +54,10 @@
     }
   },
   "cli_default_open_behavior": "new_window",
+  "file_types": {
+    // Quarto sources are Markdown with a YAML header.
+    "Markdown": ["qmd"]
+  },
   "project_panel": {
     "dock": "right"
   },
