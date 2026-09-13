@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Installation script for AWS CLI + saml2aws"""
 
+import os
 import re
 import subprocess
 import sys
@@ -116,8 +117,13 @@ def main():
     if not command_exists("pnpm") and not is_dry_run():
         error("pnpm not found; install the 'node' topic first")
         return 1
+    # pnpm is a corepack shim (see the node topic). The first invocation
+    # after `corepack enable pnpm` downloads the pnpm binary, and corepack
+    # asks "Do you want to continue? [Y/n]" before doing so. Installers
+    # must be non-interactive, so opt out of that prompt.
+    env = {**os.environ, "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0"}
     try:
-        run_cmd(["pnpm", "dlx", "playwright", "install", "chromium"])
+        run_cmd(["pnpm", "dlx", "playwright", "install", "chromium"], env=env)
         success("Playwright Chromium driver installed")
     except subprocess.CalledProcessError:
         error("Failed to install Playwright's Chromium driver")
