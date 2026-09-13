@@ -175,6 +175,7 @@ The installation script (`./script/install.py`) will:
 | `lsimons-agent/` | LLM agent environment configuration |
 | `memex/` | memex agent-transcript search + its herdr plugin |
 | `mise/` | mise (polyglot tool version manager) |
+| `moonlight/` | Moonlight streaming client, for reaching any machine that hosts Sunshine. **Desktop only** |
 | `node/` | Node.js (via mise) + pnpm (via corepack) |
 | `oh-my-zsh/` | Oh My Zsh + powerlevel10k |
 | `omarchy/` | LSD Warm Dark/Light Omarchy themes, an extra Hyprland keybinding layer, and Omarchy's default-app selection. **Linux only** |
@@ -187,6 +188,8 @@ The installation script (`./script/install.py`) will:
 | `rust/` | Rust (via mise) + CARGO_HOME |
 | `sh/` | Shared shell configuration (PATH, XDG, settings) |
 | `ssh/` | SSH configuration (post-quantum warning, 1Password agent) |
+| `sshd/` | OpenSSH server: `authorized_keys` from the machine config, keys-only login, port 22 in ufw. **Opt-in per machine** via `remoteAccess.sshd`; Linux only |
+| `sunshine/` | Sunshine remote-desktop host (`sunshine-bin`, VA-API driver, user service, ufw). **Opt-in per machine** via `remoteAccess.sunshine`; Linux only |
 | `swiftdialog/` | swiftDialog (via Homebrew cask; skipped if already present, e.g. via MDM). **macOS only** |
 | `terminal/` | macOS Terminal.app "LSD Warm Light" profile (mirrors Ghostty). **macOS only** |
 | `terraform/` | tfenv and Terraform |
@@ -333,6 +336,39 @@ in `helpers.py`) and prints the account/reference for `op read` to
 consume. A machine with no `providers.<provider>` entry configured fails
 closed — the wrapper returns a non-zero exit and an explicit error
 instead of falling back to another machine's account or reference.
+
+### Remote access (`remoteAccess`)
+
+Hosting SSH or a Sunshine desktop stream is opt-in per machine, since
+either opens a port on whatever network the machine sits on:
+
+```json
+{
+  "remoteAccess": {
+    "allowFrom": "192.168.2.0/24",
+    "sshd": true,
+    "sunshine": true,
+    "vaapiDriver": "libva-intel-driver"
+  }
+}
+```
+
+- `sshd` runs the `sshd/` topic: OpenSSH server enabled, `authorized_keys`
+  generated from this machine's `ssh.keys` entries with `auth: true`,
+  and password/root login disabled once at least one key is present.
+- `sunshine` runs the `sunshine/` topic: the prebuilt `sunshine-bin`, its
+  systemd user unit, and its ports in ufw. Pair each Moonlight client once
+  from `https://localhost:47990` on the host itself (the web UI rejects
+  other origins).
+- `vaapiDriver` names the VA-API package for the host's GPU so Sunshine
+  encodes in hardware: `libva-intel-driver` for Intel up to Haswell,
+  `intel-media-driver` for Broadwell and later; AMD needs nothing extra.
+- `allowFrom` scopes every ufw rule the two topics add to one CIDR,
+  normally the home LAN. Omit it to allow from anywhere the firewall
+  already permits.
+
+The `moonlight/` client topic has no switch: it installs on every desktop
+that packages Moonlight.
 
 ## 1Password Integration
 

@@ -1,0 +1,4 @@
+# Sunshine streams a live Hyprland session; nothing to host under WSL.
+# Hosting from a Mac is not configured here (yet): none of the enrolled
+# Macs are meant to be streamed from.
+linux-desktop

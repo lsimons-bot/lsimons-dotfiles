@@ -1,0 +1,3 @@
+# The OpenSSH server as a systemd service. macOS has Remote Login in
+# System Settings for this, and under WSL the Windows host owns port 22.
+linux-desktop

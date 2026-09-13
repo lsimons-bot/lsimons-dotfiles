@@ -196,7 +196,7 @@ def validate_machine_data(data, source, *, require_git=False) -> list[str]:
             _machine_error(errors, source, f'{path}.{key}', 'unknown key')
         return True
 
-    object_at(data, '$', {'git', 'ssh', 'claude', 'providers'})
+    object_at(data, '$', {'git', 'ssh', 'claude', 'providers', 'remoteAccess'})
     if require_git and 'git' not in data:
         _machine_error(errors, source, '$.git', 'required key missing')
 
@@ -280,6 +280,25 @@ def validate_machine_data(data, source, *, require_git=False) -> list[str]:
                     _machine_error(
                         errors, source, f'{path}.{key}', f'must be a {expected_type.__name__}'
                     )
+    if 'remoteAccess' in data and object_at(
+        data['remoteAccess'],
+        '$.remoteAccess',
+        {'allowFrom', 'sshd', 'sunshine', 'vaapiDriver'},
+    ):
+        remote = data['remoteAccess']
+        for key, expected_type in (
+            ('allowFrom', str),
+            ('sshd', bool),
+            ('sunshine', bool),
+            ('vaapiDriver', str),
+        ):
+            if key in remote and type(remote[key]) is not expected_type:
+                _machine_error(
+                    errors,
+                    source,
+                    f'$.remoteAccess.{key}',
+                    f'must be a {expected_type.__name__}',
+                )
     return errors
 
 

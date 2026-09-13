@@ -617,6 +617,88 @@ def _no_package_for_platform(label, optional):
     return False
 
 
+def sudo_write_file(path, content, mode="0644"):
+    """Write `content` to a root-owned `path` through sudo, honouring dry-run.
+
+    Only writes when the content differs, so a re-run neither prompts for
+    a password nor touches the file's mtime. Returns True when the file
+    was (re)written, False when it was already up to date or the write
+    failed; failures are reported.
+    """
+    path = Path(path)
+    try:
+        if path.read_text() == content:
+            success(f"{path} already up to date")
+            return False
+    except (FileNotFoundError, PermissionError):
+        pass
+    if _DRY_RUN:
+        dry(f"would write {path} ({len(content)} bytes) via sudo")
+        return True
+    try:
+        subprocess.run(["sudo", "install", "-d", "-m", "0755", str(path.parent)], check=True)
+        subprocess.run(
+            ["sudo", "tee", str(path)], input=content, text=True,
+            stdout=subprocess.DEVNULL, check=True,
+        )
+        subprocess.run(["sudo", "chmod", mode, str(path)], check=True)
+    except subprocess.CalledProcessError as exc:
+        error(f"Failed to write {path}: {exc}")
+        return False
+    success(f"Wrote {path}")
+    return True
+
+
+def systemctl_enable(unit, user=False):
+    """`systemctl enable --now <unit>`, as the user or via sudo. Respects dry-run.
+
+    Idempotent: enabling an enabled, running unit is a no-op for systemd.
+    Returns True on success.
+    """
+    cmd = ["systemctl", "--user"] if user else ["sudo", "systemctl"]
+    cmd += ["enable", "--now", unit]
+    result = run_cmd(cmd, check=False, capture_output=True)
+    if result.returncode != 0:
+        error(f"{' '.join(cmd)} failed: {(result.stderr or '').strip()}")
+        return False
+    success(f"{unit} enabled")
+    return True
+
+
+def ufw_allow(port, proto, comment, from_cidr=None):
+    """Open `port`/`proto` in ufw, optionally only from `from_cidr`.
+
+    ufw itself is idempotent ("Skipping adding existing rule"), so this
+    needs no read-back, which would require sudo just to look. Machines
+    without ufw (macOS, servers using nftables directly) are skipped with
+    a warning rather than failed: the firewall is not this topic's to
+    install. Returns True unless ufw is present and the rule failed.
+    """
+    if not command_exists("ufw"):
+        warn(f"ufw is not installed; not opening {port}/{proto} for {comment}")
+        return True
+    cmd = ["sudo", "ufw", "allow"]
+    if from_cidr:
+        cmd += ["from", from_cidr, "to", "any"]
+    cmd += ["port", str(port), "proto", proto, "comment", comment]
+    result = run_cmd(cmd, check=False, capture_output=True)
+    if result.returncode != 0:
+        error(f"{' '.join(cmd)} failed: {(result.stderr or '').strip()}")
+        return False
+    success(f"ufw allows {port}/{proto} ({comment})" + (f" from {from_cidr}" if from_cidr else ""))
+    return True
+
+
+def get_remote_access_config():
+    """This machine's `remoteAccess` block, or {} when it has none.
+
+    Hosting SSH or a Sunshine stream is opt-in per machine; see
+    'Machine-Specific Configuration' in README.md for the keys.
+    """
+    config, _ = get_machine_config()
+    return config.get("remoteAccess", {})
+
+
 def npm_install_global(package):
     """Install an npm package globally (into the active mise node).
 

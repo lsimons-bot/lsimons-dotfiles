@@ -1,0 +1,4 @@
+# Moonlight is a desktop streaming client; there is no display to stream
+# to under WSL or on a headless server.
+macos
+linux-desktop
