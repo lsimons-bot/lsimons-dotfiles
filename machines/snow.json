@@ -39,8 +39,7 @@
   "remoteAccess": {
     "allowFrom": "192.168.2.0/24",
     "sshd": true,
-    "sunshine": false,
-    "vaapiDriver": "libva-intel-driver"
+    "wayvnc": true
   },
   "omarchy": {
     "terminalFontSize": 14

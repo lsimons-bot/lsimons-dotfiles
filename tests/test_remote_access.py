@@ -1,10 +1,11 @@
-"""Tests for the opt-in remote-access topics (sshd, sunshine) and the
+"""Tests for the opt-in remote-access topics (sshd, wayvnc) and the
 `remoteAccess` machine-config block that gates them.
 
 The costly mistakes here are all lock-outs or surprise exposure: turning
 off password login before a key is authorized, running the host topics
-on a machine that never asked for them, and a typo in the machine config
-silently disabling the gate. So that is what these cover.
+on a machine that never asked for them, a typo in the machine config
+silently disabling the gate, and wayvnc (which has no auth of its own)
+listening anywhere but the tailnet. So that is what these cover.
 """
 
 import importlib.util
@@ -29,7 +30,7 @@ def load_module(name, path):
 
 
 sshd = load_module("dotfiles_sshd", REPO_ROOT / "sshd" / "install.py")
-sunshine = load_module("dotfiles_sunshine", REPO_ROOT / "sunshine" / "install.py")
+wayvnc = load_module("dotfiles_wayvnc", REPO_ROOT / "wayvnc" / "install.py")
 
 KEY_A = "ssh-ed25519 AAAAexampleA a@example"
 KEY_B = "ssh-ed25519 AAAAexampleB b@example"
@@ -42,8 +43,7 @@ class RemoteAccessSchemaTests(unittest.TestCase):
                 "remoteAccess": {
                     "allowFrom": "192.168.2.0/24",
                     "sshd": True,
-                    "sunshine": True,
-                    "vaapiDriver": "libva-intel-driver",
+                    "wayvnc": True,
                 }
             },
             "machine.json",
@@ -52,10 +52,10 @@ class RemoteAccessSchemaTests(unittest.TestCase):
 
     def test_rejects_stringly_typed_flags_and_unknown_keys(self):
         errors = check.validate_machine_data(
-            {"remoteAccess": {"sshd": "yes", "moonlight": True}}, "machine.json"
+            {"remoteAccess": {"sshd": "yes", "sunshine": True}}, "machine.json"
         )
         self.assertIn("machine.json:$.remoteAccess.sshd: must be a bool", errors)
-        self.assertIn("machine.json:$.remoteAccess.moonlight: unknown key", errors)
+        self.assertIn("machine.json:$.remoteAccess.sunshine: unknown key", errors)
 
 
 class GateTests(unittest.TestCase):
@@ -66,11 +66,11 @@ class GateTests(unittest.TestCase):
             self.assertEqual(sshd.main(), 0)
         install.assert_not_called()
 
-    def test_sunshine_skips_when_not_enabled(self):
-        with mock.patch.object(sunshine, "parse_dry_run"), mock.patch.object(
-            sunshine, "get_remote_access_config", return_value={"sshd": True}
-        ), mock.patch.object(sunshine, "install_sunshine") as install:
-            self.assertEqual(sunshine.main(), 0)
+    def test_wayvnc_skips_when_not_enabled(self):
+        with mock.patch.object(wayvnc, "parse_dry_run"), mock.patch.object(
+            wayvnc, "get_remote_access_config", return_value={"sshd": True}
+        ), mock.patch.object(wayvnc, "install_wayvnc") as install:
+            self.assertEqual(wayvnc.main(), 0)
         install.assert_not_called()
 
 
@@ -137,29 +137,40 @@ class HardeningTests(unittest.TestCase):
         self.assertEqual(run.call_args.args[0][:3], ["sudo", "systemctl", "reload"])
 
 
-class SunshineTests(unittest.TestCase):
-    def test_udev_is_reloaded_only_on_a_fresh_install(self):
-        with mock.patch.object(sunshine, "ensure_package", return_value=True), mock.patch.object(
-            sunshine, "pacman_is_installed", return_value=True
-        ), mock.patch.object(sunshine, "reload_udev") as reload:
-            self.assertTrue(sunshine.install_sunshine())
-        reload.assert_not_called()
-        with mock.patch.object(sunshine, "ensure_package", return_value=True), mock.patch.object(
-            sunshine, "pacman_is_installed", return_value=False
-        ), mock.patch.object(sunshine, "reload_udev") as reload:
-            self.assertTrue(sunshine.install_sunshine())
-        reload.assert_called_once()
+class WayvncTests(unittest.TestCase):
+    def test_unit_binds_to_the_tailscale_address_only(self):
+        exec_start = next(
+            line for line in wayvnc.UNIT.splitlines() if line.startswith("ExecStart=")
+        )
+        self.assertIn('"$(tailscale ip -4)"', exec_start)
+        self.assertIn(str(wayvnc.PORT), exec_start)
+        self.assertIn("WantedBy=graphical-session.target", wayvnc.UNIT)
 
-    def test_firewall_rules_are_scoped_to_allow_from(self):
-        with mock.patch.object(sunshine, "ufw_allow", return_value=True) as allow:
-            self.assertTrue(sunshine.open_firewall("192.168.2.0/24"))
-        self.assertEqual(
-            [call.kwargs["from_cidr"] for call in allow.call_args_list],
-            ["192.168.2.0/24", "192.168.2.0/24"],
-        )
-        self.assertEqual(
-            sorted(call.args[1] for call in allow.call_args_list), ["tcp", "udp"]
-        )
+    def test_firewall_rule_is_scoped_to_the_tailnet(self):
+        with mock.patch.object(wayvnc, "parse_dry_run"), mock.patch.object(
+            wayvnc, "get_remote_access_config", return_value={"wayvnc": True}
+        ), mock.patch.object(wayvnc, "IS_ARCH", True), mock.patch.object(
+            wayvnc, "install_wayvnc", return_value=True
+        ), mock.patch.object(wayvnc, "install_unit", return_value=True), mock.patch.object(
+            wayvnc, "systemctl_enable", return_value=True
+        ), mock.patch.object(wayvnc, "ufw_allow", return_value=True) as allow:
+            self.assertEqual(wayvnc.main(), 0)
+        allow.assert_called_once()
+        self.assertEqual(allow.call_args.kwargs["from_cidr"], "100.64.0.0/10")
+        self.assertEqual(allow.call_args.args[:2], (5900, "tcp"))
+
+    def test_unit_is_rewritten_only_when_it_differs(self):
+        helpers.set_dry_run(False)
+        with tempfile.TemporaryDirectory() as tmp:
+            unit_path = Path(tmp) / "wayvnc.service"
+            ok = mock.Mock(returncode=0, stderr="")
+            with mock.patch.object(wayvnc, "UNIT_PATH", unit_path), mock.patch.object(
+                wayvnc, "run_cmd", return_value=ok
+            ) as run:
+                self.assertTrue(wayvnc.install_unit())
+                self.assertTrue(wayvnc.install_unit())
+            self.assertEqual(unit_path.read_text(), wayvnc.UNIT)
+        run.assert_called_once()
 
 
 if __name__ == "__main__":

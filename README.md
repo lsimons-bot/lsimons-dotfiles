@@ -175,7 +175,6 @@ The installation script (`./script/install.py`) will:
 | `lsimons-agent/` | LLM agent environment configuration |
 | `memex/` | memex agent-transcript search + its herdr plugin |
 | `mise/` | mise (polyglot tool version manager) |
-| `moonlight/` | Moonlight streaming client, for reaching any machine that hosts Sunshine. **Desktop only** |
 | `node/` | Node.js (via mise) + pnpm (via corepack) |
 | `oh-my-zsh/` | Oh My Zsh + powerlevel10k |
 | `omarchy/` | LSD Warm Dark/Light Omarchy themes, an extra Hyprland keybinding layer, Omarchy's default-app selection, and a per-machine foot font size. **Linux only** |
@@ -189,8 +188,8 @@ The installation script (`./script/install.py`) will:
 | `sh/` | Shared shell configuration (PATH, XDG, settings) |
 | `ssh/` | SSH configuration (post-quantum warning, 1Password agent) |
 | `sshd/` | OpenSSH server: `authorized_keys` from the machine config, keys-only login, port 22 in ufw. **Opt-in per machine** via `remoteAccess.sshd`; Linux only |
-| `sunshine/` | Sunshine remote-desktop host (`sunshine-bin`, VA-API driver, user service, ufw). **Opt-in per machine** via `remoteAccess.sunshine`; Linux only |
 | `swiftdialog/` | swiftDialog (via Homebrew cask; skipped if already present, e.g. via MDM). **macOS only** |
+| `tailscale/` | Tailscale (Homebrew cask on macOS, `tailscale` + `tailscaled` on Arch). Joining the tailnet stays manual |
 | `terminal/` | macOS Terminal.app "LSD Warm Light" profile (mirrors Ghostty). **macOS only** |
 | `terraform/` | tfenv and Terraform |
 | `timeout/` | `timeout` command for macOS (via the `aisk/tap` Homebrew tap). **macOS only** — Linux coreutils already has it |
@@ -198,6 +197,7 @@ The installation script (`./script/install.py`) will:
 | `topgrade/` | topgrade (automated updates) |
 | `uv/` | uv (Python package manager) |
 | `vivaldi/` | Vivaldi Browser (no aarch64 Linux build) |
+| `wayvnc/` | wayvnc remote desktop for a Hyprland session, bound to the machine's Tailscale address, as a systemd user unit plus a tailnet-only ufw rule. **Opt-in per machine** via `remoteAccess.wayvnc`; Linux desktop only |
 | `wordpress/` | WordPress shell environment |
 | `zed/` | Zed editor (`zeditor` on Linux; no aarch64 build — config only there) |
 | `zsh/` | ZSH itself (Arch has no zsh by default) and its directories |
@@ -339,16 +339,15 @@ instead of falling back to another machine's account or reference.
 
 ### Remote access (`remoteAccess`)
 
-Hosting SSH or a Sunshine desktop stream is opt-in per machine, since
-either opens a port on whatever network the machine sits on:
+Hosting SSH or a VNC desktop is opt-in per machine, since either opens a
+port on whatever network the machine sits on:
 
 ```json
 {
   "remoteAccess": {
     "allowFrom": "192.168.2.0/24",
     "sshd": true,
-    "sunshine": true,
-    "vaapiDriver": "libva-intel-driver"
+    "wayvnc": true
   }
 }
 ```
@@ -356,19 +355,20 @@ either opens a port on whatever network the machine sits on:
 - `sshd` runs the `sshd/` topic: OpenSSH server enabled, `authorized_keys`
   generated from this machine's `ssh.keys` entries with `auth: true`,
   and password/root login disabled once at least one key is present.
-- `sunshine` runs the `sunshine/` topic: the prebuilt `sunshine-bin`, its
-  systemd user unit, and its ports in ufw. Pair each Moonlight client once
-  from `https://localhost:47990` on the host itself (the web UI rejects
-  other origins).
-- `vaapiDriver` names the VA-API package for the host's GPU so Sunshine
-  encodes in hardware: `libva-intel-driver` for Intel up to Haswell,
-  `intel-media-driver` for Broadwell and later; AMD needs nothing extra.
-- `allowFrom` scopes every ufw rule the two topics add to one CIDR,
-  normally the home LAN. Omit it to allow from anywhere the firewall
-  already permits.
+- `wayvnc` runs the `wayvnc/` topic: wayvnc as a systemd user unit that
+  starts with the Hyprland session and listens on this machine's
+  Tailscale IPv4 address only, plus 5900/tcp in ufw for the tailnet range
+  (`100.64.0.0/10`). VNC auth is off; the tailnet is the access control,
+  so connect from another tailnet device with a VNC viewer (TigerVNC or
+  RealVNC on macOS — Apple's Screen Sharing does not get along with
+  wayvnc). wayvnc encodes on the CPU and never touches GPU buffers, which
+  is why it replaced Sunshine here.
+- `allowFrom` scopes the `sshd` ufw rule to one CIDR, normally the home
+  LAN. Omit it to allow from anywhere the firewall already permits. The
+  `wayvnc` rule is always tailnet-only and ignores it.
 
-The `moonlight/` client topic has no switch: it installs on every desktop
-that packages Moonlight.
+Both hosts depend on the `tailscale/` topic, which installs Tailscale on
+every machine but leaves `tailscale up` to the user.
 
 ### Omarchy desktop (`omarchy`)
 

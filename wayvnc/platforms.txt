@@ -1,0 +1,2 @@
+# A VNC server for a live Hyprland session; nothing to host on macOS or WSL.
+linux-desktop

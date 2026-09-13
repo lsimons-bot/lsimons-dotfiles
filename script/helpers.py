@@ -694,7 +694,7 @@ def ufw_allow(port, proto, comment, from_cidr=None):
 def get_remote_access_config():
     """This machine's `remoteAccess` block, or {} when it has none.
 
-    Hosting SSH or a Sunshine stream is opt-in per machine; see
+    Hosting SSH or a wayvnc desktop is opt-in per machine; see
     'Machine-Specific Configuration' in README.md for the keys.
     """
     config, _ = get_machine_config()
