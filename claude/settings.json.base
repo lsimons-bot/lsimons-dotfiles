@@ -133,7 +133,7 @@
   },
   "autoCompactEnabled": false,
   "spinnerTipsEnabled": false,
-  "model": "sonnet",
+  "model": "fable",
   "effortLevel": "medium",
   "theme": "custom:lsd-warm-light"
 }
