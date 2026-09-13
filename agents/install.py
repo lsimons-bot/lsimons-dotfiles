@@ -39,6 +39,25 @@ UNIVERSAL_SKILL_DIRS = (
 )
 
 
+def agent_browser_works():
+    """Report whether `agent-browser` is installed *and* runnable.
+
+    A bare PATH probe is not enough: mise leaves a shim behind for every
+    global npm package, including ones installed into a node version that
+    is no longer active. That happens on a fresh install, where the codex
+    topic's npm-backed tool pulls in the latest node before the node topic
+    pins node 24. The stale shim then fails with "No version is set for
+    shim: agent-browser" and has to be reinstalled into the active node.
+    """
+    if not command_exists("agent-browser"):
+        return False
+    result = run_cmd(["agent-browser", "--version"], check=False, capture_output=True)
+    if result.returncode != 0:
+        warn("agent-browser is on PATH but does not run; reinstalling")
+        return False
+    return True
+
+
 def install_agent_browser():
     """Install the CLI that the agent-browser skill drives.
 
@@ -47,7 +66,7 @@ def install_agent_browser():
     build. npm blocks the package's postinstall script by default, so fetch
     the browser explicitly.
     """
-    if command_exists("agent-browser"):
+    if agent_browser_works():
         success("agent-browser already installed")
     else:
         info("Installing agent-browser...")

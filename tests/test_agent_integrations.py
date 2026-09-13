@@ -1,6 +1,8 @@
 import importlib.util
 import json
 import shlex
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -134,6 +136,36 @@ class DeterministicAgentIntegrationTests(unittest.TestCase):
             (REPO_ROOT / "agents/dependencies.txt").read_text().splitlines()
         )
         self.assertIn("node", dependencies)
+
+    def test_agent_browser_stale_mise_shim_counts_as_not_installed(self):
+        """A shim left behind by npm under an inactive node must be replaced.
+
+        On a fresh install mise pulls in the latest node for the npm-backed
+        codex tool before the node topic pins node 24, so the first
+        `npm install -g agent-browser` lands in a node that is later
+        deactivated. The shim still exists but fails to run.
+        """
+        with patch.object(sys, "path", [str(REPO_ROOT / "agents"), *sys.path]):
+            module = load_module(
+                "agents_install_test", REPO_ROOT / "agents/install.py"
+            )
+        broken = subprocess.CompletedProcess(["agent-browser", "--version"], 1)
+        with (
+            patch.object(module, "command_exists", return_value=True),
+            patch.object(module, "run_cmd", return_value=broken),
+            patch.object(module, "warn"),
+        ):
+            self.assertFalse(module.agent_browser_works())
+
+        working = subprocess.CompletedProcess(["agent-browser", "--version"], 0)
+        with (
+            patch.object(module, "command_exists", return_value=True),
+            patch.object(module, "run_cmd", return_value=working),
+        ):
+            self.assertTrue(module.agent_browser_works())
+
+        with patch.object(module, "command_exists", return_value=False):
+            self.assertFalse(module.agent_browser_works())
 
     def test_skills_come_from_the_sibling_lsimons_skills_checkout(self):
         module = load_module("agents_shared_test", REPO_ROOT / "agents/shared.py")
