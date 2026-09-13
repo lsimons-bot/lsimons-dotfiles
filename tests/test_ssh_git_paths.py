@@ -23,6 +23,54 @@ ssh_installer = load_module("dotfiles_ssh_installer", REPO_ROOT / "ssh" / "insta
 git_installer = load_module("dotfiles_git_installer", REPO_ROOT / "git" / "install.py")
 
 
+class SshAgentUnitTests(unittest.TestCase):
+    """The agent exists so AI sessions over SSH can sign commits; the
+    costly mistakes are shadowing the distro's own unit and writing a
+    unit that listens somewhere other than where ssh.sh looks."""
+
+    def setUp(self):
+        helpers.set_dry_run(False)
+
+    def run_with(self, tmp, packaged):
+        service = Path(tmp) / "ssh-agent.service"
+        env_d = Path(tmp) / "20-ssh-agent.conf"
+        ok = mock.Mock(returncode=0, stderr="")
+        with mock.patch.object(ssh_installer, "IS_LINUX", True), mock.patch.object(
+            ssh_installer, "AGENT_SERVICE_PATH", service
+        ), mock.patch.object(ssh_installer, "AGENT_ENVIRONMENT_D", env_d), mock.patch.object(
+            ssh_installer, "_user_unit_exists", return_value=packaged
+        ), mock.patch.object(
+            ssh_installer.shutil, "which", side_effect=lambda name: f"/usr/bin/{name}"
+        ), mock.patch.object(ssh_installer, "run_cmd", return_value=ok), mock.patch.object(
+            ssh_installer, "systemctl_enable", return_value=True
+        ) as enable:
+            self.assertTrue(ssh_installer.configure_ssh_agent())
+        return service, env_d, enable
+
+    def test_prefers_the_packaged_socket_unit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            service, env_d, enable = self.run_with(tmp, packaged=True)
+            self.assertFalse(service.exists())
+            self.assertTrue(env_d.exists())
+        enable.assert_called_once_with("ssh-agent.socket", user=True)
+
+    def test_writes_an_equivalent_service_when_none_is_packaged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            service, env_d, enable = self.run_with(tmp, packaged=False)
+            unit = service.read_text()
+            self.assertIn("ExecStart=/usr/bin/ssh-agent -D -a %t/ssh-agent.socket", unit)
+            # Where ssh.sh and the environment.d drop-in expect it.
+            self.assertIn("SSH_AUTH_SOCK=${XDG_RUNTIME_DIR}/ssh-agent.socket", env_d.read_text())
+        enable.assert_called_once_with("ssh-agent.service", user=True)
+
+    def test_is_a_no_op_off_linux(self):
+        with mock.patch.object(ssh_installer, "IS_LINUX", False), mock.patch.object(
+            ssh_installer, "systemctl_enable"
+        ) as enable:
+            self.assertTrue(ssh_installer.configure_ssh_agent())
+        enable.assert_not_called()
+
+
 class SshGitPathTests(unittest.TestCase):
     def setUp(self):
         helpers.set_dry_run(False)

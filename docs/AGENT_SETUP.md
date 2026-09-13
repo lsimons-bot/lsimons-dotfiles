@@ -141,6 +141,10 @@ This is a good time to make a VM snapshot/copy. Before you do:
 2. Click 'export', export with the right password
 3. Save as `~/.ssh/ai_ed25519`
 
+On Linux the `ssh/` topic runs an `ssh-agent` systemd user unit for this
+key. Interactive shells load it through 1Password; over SSH, run
+`ssh-add ~/.ssh/ai_ed25519` once per boot (see README troubleshooting).
+
 ### 7. Configure Browser and Accounts
 
 1. Make Vivaldi the default browser and configure its settings

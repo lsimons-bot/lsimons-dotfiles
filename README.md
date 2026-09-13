@@ -186,7 +186,7 @@ The installation script (`./script/install.py`) will:
 | `ruby/` | Ruby (via mise) |
 | `rust/` | Rust (via mise) + CARGO_HOME |
 | `sh/` | Shared shell configuration (PATH, XDG, settings) |
-| `ssh/` | SSH configuration (post-quantum warning, 1Password agent) |
+| `ssh/` | SSH configuration (post-quantum warning, 1Password agent), and on Linux an `ssh-agent` systemd user unit holding the AI signing key |
 | `sshd/` | OpenSSH server: `authorized_keys` from the machine config, keys-only login, port 22 in ufw. **Opt-in per machine** via `remoteAccess.sshd`; Linux only |
 | `swiftdialog/` | swiftDialog (via Homebrew cask; skipped if already present, e.g. via MDM). **macOS only** |
 | `tailscale/` | Tailscale (Homebrew cask on macOS, `tailscale` + `tailscaled` on Arch). Joining the tailnet stays manual |
@@ -454,6 +454,23 @@ provides from the Windows app. Check it with
 `SSH_AUTH_SOCK=~/.1password/agent.sock ssh-add -l`. It needs `npiperelay`
 on the Windows side (`scoop install npiperelay`) and the SSH agent enabled
 in the Windows 1Password app.
+
+### AI commits fail to sign over SSH on Linux
+
+The AI signing key is a passphrase-protected file, `~/.ssh/ai_ed25519`,
+not a 1Password agent key, so it needs an ssh-agent. `ssh/install.py`
+enables the `ssh-agent.socket` systemd user unit (or writes an equivalent
+service where the distro ships none), and `ssh/ssh.sh` exports its
+socket as `SSH_AUTH_SOCK` when nothing else has set one. Interactive
+shells then load the key with the passphrase from 1Password. Over SSH
+there is no desktop app to approve that read, so the shell prints a hint
+and you load it by hand once per boot:
+
+```bash
+ssh-add ~/.ssh/ai_ed25519
+```
+
+Check with `ssh-add -l` and `systemctl --user status ssh-agent.socket`.
 
 ### XDG directories not created
 
