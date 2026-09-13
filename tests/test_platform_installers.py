@@ -119,3 +119,32 @@ class PrerequisiteGuardTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+terraform_installer = load_module(
+    "dotfiles_terraform_platform", REPO_ROOT / "terraform" / "install.py"
+)
+
+
+class TerraformInstallerTests(unittest.TestCase):
+    """The Arch tfenv package needs a writable config dir and the tfenv group."""
+
+    def test_platform_terraform_arch_sets_config_dir_without_prompting(self):
+        with mock.patch.object(terraform_installer, "IS_ARCH", True):
+            cmd = terraform_installer.tfenv_command(["install", "latest"], group_active=True)
+        self.assertEqual(cmd[0], "env")
+        self.assertTrue(cmd[1].startswith("TFENV_CONFIG_DIR="))
+        self.assertEqual(cmd[2:], ["tfenv", "install", "latest"])
+
+    def test_platform_terraform_arch_borrows_group_until_relogin(self):
+        with mock.patch.object(terraform_installer, "IS_ARCH", True), mock.patch.object(
+            terraform_installer.getpass, "getuser", return_value="someone"
+        ):
+            cmd = terraform_installer.tfenv_command(["use", "latest"], group_active=False)
+        self.assertEqual(cmd[:5], ["sudo", "-u", "someone", "-g", "tfenv"])
+        self.assertEqual(cmd[-3:], ["tfenv", "use", "latest"])
+
+    def test_platform_terraform_other_platforms_call_tfenv_directly(self):
+        with mock.patch.object(terraform_installer, "IS_ARCH", False):
+            cmd = terraform_installer.tfenv_command(["install", "latest"], group_active=True)
+        self.assertEqual(cmd, ["tfenv", "install", "latest"])
