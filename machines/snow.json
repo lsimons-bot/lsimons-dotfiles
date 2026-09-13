@@ -1,0 +1,39 @@
+{
+  "git": {
+    "user": {
+      "signingkey": "lsimons_id_ed25519"
+    }
+  },
+  "ssh": {
+    "aiKey": "lsimons_ai_ed25519",
+    "keys": [
+      {
+        "name": "lsimons_id_ed25519",
+        "fingerprint": "SHA256:HUn9PwXOevuImnVSi/oKHCMZHxq4lyf+Cpyn6TjEIbc",
+        "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIChIgVpQEQZ7xxOiOLi98uOydERLsKSpQeND7syB2utM lsimons@op-my-private",
+        "op_vault": "Private",
+        "op_account": "my.1password.eu",
+        "auth": true,
+        "sign": true
+      },
+      {
+        "name": "lsimons_ai_ed25519",
+        "fingerprint": "SHA256:xvoVxIdtl7LjzZ+P/r5EHFLgsg20K0rQZ7hQktIqNcI",
+        "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOpDn18HKgc+k5z4eF88PJ13zsAOn9VfOBCLWKXp0Wv6 lsimons_claude_signing@op-my-private",
+        "op_vault": "Private",
+        "op_account": "my.1password.eu",
+        "auth": false,
+        "sign": true
+      },
+      {
+        "name": "lsimons-bot_id_ed25519",
+        "fingerprint": "SHA256:YlEe9GYgnnlcpv9iod/RBvmZ/mlQSKrKVVOGRH3kfNE",
+        "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDEqWWKMxrHuWw1pnd5awLQVwc9qgSjP7SNHKEtmsDrY lsimons-bot@op-my-shared",
+        "op_vault": "AI",
+        "op_account": "my.1password.eu",
+        "auth": false,
+        "sign": false
+      }
+    ]
+  }
+}
