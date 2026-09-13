@@ -51,9 +51,15 @@ class ColorsServeSaveEndpointTests(unittest.TestCase):
         serve.TARGET_MD = here / "lsd-colors.md"
         serve.TARGET_JSON = here / "lsd-colors.json"
 
-        self.server = serve.http.server.ThreadingHTTPServer(
-            ("127.0.0.1", 0), serve.Handler
-        )
+        # Sandboxed agent sessions (e.g. Claude Code's Bash sandbox) deny
+        # binding even a loopback socket. Skip rather than fail so the rest
+        # of the suite stays useful there; CI runs unsandboxed and covers this.
+        try:
+            self.server = serve.http.server.ThreadingHTTPServer(
+                ("127.0.0.1", 0), serve.Handler
+            )
+        except PermissionError as exc:
+            self.skipTest(f"cannot bind a loopback socket in this environment: {exc}")
         self.port = self.server.server_port
         self.token = "test-token-" + "a" * 16
         serve.Handler.save_token = self.token
