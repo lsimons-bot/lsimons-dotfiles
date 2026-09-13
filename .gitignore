@@ -38,3 +38,8 @@ __pycache__/
 .claude/settings.local.json
 .claude/worktrees/
 agents/skills/.system/
+
+# Omarchy's theme-set hook renders the active theme for Claude Code and pi
+# into their theme directories, which are symlinked from this repo.
+/claude/themes/omarchy.json
+/pi-coding-agent/themes/omarchy-system.json
