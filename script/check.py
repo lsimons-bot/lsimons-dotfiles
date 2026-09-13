@@ -196,7 +196,7 @@ def validate_machine_data(data, source, *, require_git=False) -> list[str]:
             _machine_error(errors, source, f'{path}.{key}', 'unknown key')
         return True
 
-    object_at(data, '$', {'git', 'ssh', 'claude', 'providers', 'remoteAccess'})
+    object_at(data, '$', {'git', 'ssh', 'claude', 'providers', 'remoteAccess', 'omarchy'})
     if require_git and 'git' not in data:
         _machine_error(errors, source, '$.git', 'required key missing')
 
@@ -229,6 +229,17 @@ def validate_machine_data(data, source, *, require_git=False) -> list[str]:
         if 'removeDenyRules' in data['claude'] and type(value) is not bool:
             _machine_error(
                 errors, source, '$.claude.removeDenyRules', 'must be a boolean'
+            )
+
+    if 'omarchy' in data and object_at(
+        data['omarchy'], '$.omarchy', {'terminalFontSize'}
+    ):
+        size = data['omarchy'].get('terminalFontSize')
+        if 'terminalFontSize' in data['omarchy'] and (
+            type(size) not in (int, float) or size <= 0
+        ):
+            _machine_error(
+                errors, source, '$.omarchy.terminalFontSize', 'must be a positive number'
             )
 
     if 'ssh' in data and object_at(data['ssh'], '$.ssh', {'aiKey', 'keys'}):

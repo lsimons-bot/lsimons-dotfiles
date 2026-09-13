@@ -178,7 +178,7 @@ The installation script (`./script/install.py`) will:
 | `moonlight/` | Moonlight streaming client, for reaching any machine that hosts Sunshine. **Desktop only** |
 | `node/` | Node.js (via mise) + pnpm (via corepack) |
 | `oh-my-zsh/` | Oh My Zsh + powerlevel10k |
-| `omarchy/` | LSD Warm Dark/Light Omarchy themes, an extra Hyprland keybinding layer, and Omarchy's default-app selection. **Linux only** |
+| `omarchy/` | LSD Warm Dark/Light Omarchy themes, an extra Hyprland keybinding layer, Omarchy's default-app selection, and a per-machine foot font size. **Linux only** |
 | `opencode/` | OpenCode CLI (permissions, model variants, LSD Warm theme, git-config-ai routing) |
 | `openspec/` | openspec |
 | `pi-coding-agent/` | pi-coding-agent (settings, LSD Warm themes, git-config-ai routing) |
@@ -369,6 +369,26 @@ either opens a port on whatever network the machine sits on:
 
 The `moonlight/` client topic has no switch: it installs on every desktop
 that packages Moonlight.
+
+### Omarchy desktop (`omarchy`)
+
+Per-machine tweaks to Omarchy's stock desktop, applied by the `omarchy/`
+topic:
+
+```json
+{
+  "omarchy": {
+    "terminalFontSize": 14
+  }
+}
+```
+
+- `terminalFontSize` sets the size on the `font=` line of Omarchy's own
+  `~/.config/foot/foot.ini` (foot is Omarchy's default terminal). Only
+  the size attribute changes; the family stays whatever Omarchy set. Note
+  that `omarchy-font-set` rewrites that line back to size 9, so re-run
+  the installer after changing the system font. Omit the key to leave
+  foot's config untouched.
 
 ## 1Password Integration
 

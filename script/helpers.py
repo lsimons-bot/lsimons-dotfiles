@@ -140,12 +140,14 @@ SSH_SIGN_BRIDGE_PATH = XDG_CONFIG_HOME / "dotfiles" / "ssh-sign-1password-bridge
 # Omarchy ships its own config tree; its presence is what distinguishes
 # "an Arch box" from "the Omarchy desktop" for topics that theme it.
 OMARCHY_ROOT = XDG_CONFIG_HOME / "omarchy"
-OMARCHY_SHARE = Path(XDG_DATA_HOME_STR) / "omarchy"
+# Omarchy 4 is a package and lives in /usr/share; before that it was a
+# git checkout in the user's XDG data dir.
+OMARCHY_SHARE_DIRS = (Path("/usr/share/omarchy"), Path(XDG_DATA_HOME_STR) / "omarchy")
 
 
 def is_omarchy():
-    """True when this machine runs Omarchy (its config tree is present)."""
-    return IS_LINUX and OMARCHY_SHARE.is_dir()
+    """True when this machine runs Omarchy (its install tree is present)."""
+    return IS_LINUX and any(path.is_dir() for path in OMARCHY_SHARE_DIRS)
 
 
 def info(msg):
@@ -697,6 +699,16 @@ def get_remote_access_config():
     """
     config, _ = get_machine_config()
     return config.get("remoteAccess", {})
+
+
+def get_omarchy_config():
+    """This machine's `omarchy` block, or {} when it has none.
+
+    Per-machine desktop tweaks (terminal font size); see
+    'Machine-Specific Configuration' in README.md for the keys.
+    """
+    config, _ = get_machine_config()
+    return config.get("omarchy", {})
 
 
 def npm_install_global(package):

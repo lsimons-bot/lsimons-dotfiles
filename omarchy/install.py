@@ -11,6 +11,8 @@ Omarchy documents as user-owned:
   repo installs, required from ``hyprland.lua`` after Omarchy's defaults.
 * Omarchy's default-application selection, pointed at the terminal and
   editor these dotfiles actually install.
+* The font size in Omarchy's own ``~/.config/foot/foot.ini``, when the
+  machine config asks for one (``omarchy.terminalFontSize``).
 
 Nothing here writes to ``/usr/share/omarchy``, and nothing replaces a
 stock config file, so ``omarchy update`` and ``omarchy refresh`` keep
@@ -19,6 +21,7 @@ working. The one exception is the single ``require`` line appended to
 and the next run of this installer puts it back.
 """
 
+import re
 import sys
 from pathlib import Path
 
@@ -28,6 +31,7 @@ from helpers import (
     XDG_CONFIG_HOME,
     command_exists,
     dry,
+    get_omarchy_config,
     info,
     is_dry_run,
     is_omarchy,
@@ -61,6 +65,14 @@ HYPR_REQUIRE_LINE = f'require("hypr.{HYPR_MODULE}")'
 # is worse than leaving its own default (foot / nvim) in place.
 TERMINAL_PREFERENCE = [("ghostty", "ghostty")]
 EDITOR_PREFERENCE = [("zeditor", "zed")]
+
+# foot is Omarchy's stock terminal. Its config is Omarchy's file, not
+# ours, so only the size attribute of the `font=` line is touched — the
+# same line `omarchy-font-set` rewrites (and resets to size 9, which is
+# why the next install run has to put the size back).
+FOOT_CONFIG = XDG_CONFIG_HOME / "foot" / "foot.ini"
+FOOT_FONT_LINE = re.compile(r"^font=(?P<family>[^:\n]*)(?P<attrs>(?::[^\n]*)?)$", re.MULTILINE)
+FOOT_SIZE_ATTR = re.compile(r":size=[0-9.]+")
 
 
 def install_themes():
@@ -169,6 +181,49 @@ def configure_defaults():
                 break
 
 
+def foot_config_with_font_size(content, size):
+    """Return `content` with the first `font=` line's size set to `size`.
+
+    fontconfig syntax: `Family:size=9:weight=bold`. An existing size is
+    replaced in place; a line without one gets `:size=` appended.
+    Returns the content unchanged when there is no `font=` line at all.
+    """
+    match = FOOT_FONT_LINE.search(content)
+    if not match:
+        return content
+    attrs = match.group("attrs")
+    if FOOT_SIZE_ATTR.search(attrs):
+        attrs = FOOT_SIZE_ATTR.sub(f":size={size}", attrs, count=1)
+    else:
+        attrs = f"{attrs}:size={size}"
+    return content[: match.start()] + f"font={match.group('family')}{attrs}" + content[match.end() :]
+
+
+def configure_terminal_font_size():
+    """Apply `omarchy.terminalFontSize` from the machine config to foot."""
+    size = get_omarchy_config().get("terminalFontSize")
+    if size is None:
+        return
+    if not FOOT_CONFIG.exists():
+        warn(f"{FOOT_CONFIG} does not exist; not setting the foot font size")
+        return
+
+    content = FOOT_CONFIG.read_text()
+    updated = foot_config_with_font_size(content, size)
+    if updated == content and not FOOT_FONT_LINE.search(content):
+        warn(f"{FOOT_CONFIG} has no font= line; not setting the foot font size")
+        return
+    if updated == content:
+        success(f"foot font size is already {size}")
+        return
+
+    if is_dry_run():
+        dry(f"would set font size {size} in {FOOT_CONFIG}")
+        return
+    write_file(FOOT_CONFIG, updated)
+    success(f"Set foot font size to {size} in {FOOT_CONFIG} (new windows only)")
+
+
 def current_theme():
     result = run_cmd(["omarchy", "theme", "current"], check=False, capture_output=True)
     if result.returncode != 0:
@@ -212,6 +267,7 @@ def main():
     install_themes()
     install_backgrounds()
     install_hypr_module()
+    configure_terminal_font_size()
 
     if not command_exists("omarchy"):
         warn("The omarchy CLI is not on PATH; skipping defaults and theme")

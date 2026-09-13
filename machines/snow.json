@@ -41,5 +41,8 @@
     "sshd": true,
     "sunshine": true,
     "vaapiDriver": "libva-intel-driver"
+  },
+  "omarchy": {
+    "terminalFontSize": 14
   }
 }

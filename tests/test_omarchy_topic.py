@@ -1,9 +1,10 @@
 """Tests for the Omarchy desktop layer.
 
-The topic writes into config Omarchy also owns, so these cover the two
+The topic writes into config Omarchy also owns, so these cover the
 things that would be expensive to discover on a live desktop: a theme
-missing a colour key its templates expand, and the hyprland.lua require
-line being appended more than once.
+missing a colour key its templates expand, the hyprland.lua require line
+being appended more than once, and the foot font-size edit touching
+anything other than the size attribute of the `font=` line.
 """
 
 import importlib.util
@@ -229,6 +230,53 @@ class HyprModuleTests(unittest.TestCase):
             ), mock.patch.object(omarchy, "link_file"):
                 omarchy.install_hypr_module()
             self.assertFalse(entrypoint.exists())
+
+
+FOOT_INI = """\
+[main]
+include=~/.local/state/omarchy/current/theme/foot.ini
+font=JetBrainsMono Nerd Font:size=9
+pad=14x14
+
+[cursor]
+style=block
+"""
+
+
+class FootFontSizeTests(unittest.TestCase):
+    def setUp(self):
+        helpers.set_dry_run(False)
+
+    def run_with(self, foot_ini, config):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "foot.ini"
+            if foot_ini is not None:
+                path.write_text(foot_ini)
+            with mock.patch.object(omarchy, "FOOT_CONFIG", path), mock.patch.object(
+                omarchy, "get_omarchy_config", return_value=config
+            ):
+                omarchy.configure_terminal_font_size()
+            return path.read_text() if path.exists() else None
+
+    def test_replaces_only_the_size_attribute(self):
+        result = self.run_with(FOOT_INI, {"terminalFontSize": 14})
+        self.assertEqual(result, FOOT_INI.replace(":size=9", ":size=14"))
+
+    def test_is_idempotent(self):
+        once = self.run_with(FOOT_INI, {"terminalFontSize": 14})
+        twice = self.run_with(once, {"terminalFontSize": 14})
+        self.assertEqual(once, twice)
+
+    def test_appends_a_size_when_the_font_line_has_none(self):
+        result = omarchy.foot_config_with_font_size("font=Iosevka:weight=bold\n", 12)
+        self.assertEqual(result, "font=Iosevka:weight=bold:size=12\n")
+
+    def test_leaves_foot_alone_without_a_machine_setting(self):
+        self.assertEqual(self.run_with(FOOT_INI, {}), FOOT_INI)
+
+    def test_does_not_create_a_missing_foot_ini(self):
+        """foot.ini is Omarchy's file to create, not ours."""
+        self.assertIsNone(self.run_with(None, {"terminalFontSize": 14}))
 
 
 class SkipWhenNotOmarchyTests(unittest.TestCase):
