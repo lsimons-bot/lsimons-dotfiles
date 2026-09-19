@@ -111,4 +111,4 @@ jobs:
           # `collect` is deliberately left at its default, which already
           # collects every input kind (workflows, actions, dependabot,
           # pre-commit) while respecting .gitignore.
-          version: "1.29.0"
+          version: "1.30.1"
