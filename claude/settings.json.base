@@ -133,7 +133,7 @@
   },
   "autoCompactEnabled": false,
   "spinnerTipsEnabled": false,
-  "model": "fable",
+  "model": "opus",
   "effortLevel": "medium",
   "theme": "custom:lsd-warm-light"
 }

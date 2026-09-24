@@ -1,7 +1,6 @@
 # Communication
 
 - Flag vague requests and bad approaches.
-- Be terse in interactions.
 - State assumptions clearly.
 
 ## Code Approach
@@ -59,12 +58,3 @@ Outside those conditions, ask first.
 
 - TypeScript 7 is new and cannot always be used yet.
 - Do not upgrade from TypeScript 6 to 7 without my explicit agreement.
-
-# Skills by development phase
-
-- **Define:** ao-interview-me, ao-idea-refine, ao-spec-driven-development
-- **Plan:** ao-planning-and-task-breakdown
-- **Build:** ao-incremental-implementation + ao-test-driven-development (one task at a time), or ao-autonomous-plan-execution (the whole plan, hands-off after one approval); also ao-context-engineering, ao-source-driven-development, ao-doubt-driven-development, ao-frontend-ui-engineering, ao-api-and-interface-design
-- **Verify:** ao-browser-testing-with-devtools, ao-debugging-and-error-recovery
-- **Review:** ao-code-review-and-quality, ao-code-simplification, ao-security-and-hardening, ao-performance-optimization
-- **Ship:** ao-git-workflow-and-versioning, ao-ci-cd-and-automation, ao-deprecation-and-migration, ao-documentation-and-adrs, ao-observability-and-instrumentation, ao-shipping-and-launch
