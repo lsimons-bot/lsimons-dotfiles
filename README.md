@@ -325,8 +325,10 @@ is not a topic. Without `topics`, every topic runs as usual.
 The shared lab machines (`sbplabmac01`, `02`, `04`, `05`) use this. They
 run Claude Code agents for lsimons-bot inside
 [claude-docker](https://github.com/schubergphilis/claude-docker), so they
-get Claude Code, Rancher Desktop, git, gh and a shell, and nothing else:
-no 1Password, no SSH keys, no other agents and no desktop apps. Git
+get Claude Code, Rancher Desktop, git, gh, Tailscale and a shell, and
+nothing else: no 1Password, no SSH keys, no other agents and no desktop
+apps beyond the Tailscale menu-bar app. Joining the tailnet
+(`tailscale up`) stays a manual step, as on every machine. Git
 commits as lsimons-bot, unsigned (`git.sign: false`), over HTTPS with
 gh's credential helper. To set one up, starting from Homebrew:
 
