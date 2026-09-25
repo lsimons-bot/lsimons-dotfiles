@@ -1,0 +1,10 @@
+# lsimons zsh login profile
+# Runs after /etc/zprofile, whose path_helper rebuilds PATH from /etc/paths
+# and /etc/paths.d. Neither lists Apple Silicon Homebrew unless its .pkg
+# installer added /etc/paths.d/homebrew, so add it here the way Homebrew's
+# installer recommends. ~/.zshrc prepends mise and the other topics later,
+# so they still win over Homebrew.
+
+if [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi

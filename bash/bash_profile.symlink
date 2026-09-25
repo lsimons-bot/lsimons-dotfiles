@@ -2,6 +2,13 @@
 # On macOS, bash reads .bash_profile for login shells.
 # Source .bashrc so all config lives in one place.
 
+# Apple Silicon Homebrew is not in /etc/paths, so add it the way Homebrew's
+# installer recommends (see zsh/zprofile.symlink). Done before .bashrc so
+# the topics it loads still prepend in front of Homebrew.
+if [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
 if [ -f "$HOME/.bashrc" ]; then
   source "$HOME/.bashrc"
 fi
