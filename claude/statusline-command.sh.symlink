@@ -64,8 +64,9 @@ if command -v ccusage >/dev/null 2>&1; then
   fi
   if [ -s "$cache_file" ]; then
     current_month=$(date +%Y-%m)
+    # ccusage 20 renamed each row's .month to .period; accept both.
     monthly_cost=$(jq -r --arg m "$current_month" \
-      '.monthly[]? | select(.month == $m) | .totalCost // empty' \
+      '.monthly[]? | select((.period // .month) == $m) | .totalCost // empty' \
       "$cache_file" 2>/dev/null | head -1)
     if [ -n "$monthly_cost" ] && [ "$monthly_cost" != "null" ]; then
       cost_int=$(printf '%.0f' "$monthly_cost" 2>/dev/null || echo 0)
