@@ -2,6 +2,11 @@
 # Claude Code status line script
 # Reads JSON from stdin and outputs a formatted status line
 
+# Re-run under bash when invoked as `sh script` (dash on Debian/Ubuntu, e.g.
+# claude-docker's statusline wrapper): the rest of this file is bash-only.
+# Must stay above `input=$(cat)` so stdin is still unread when we exec.
+if [ -z "${BASH_VERSION:-}" ]; then exec bash "$0" "$@"; fi
+
 input=$(cat)
 
 # Extract fields (all optional — degrade gracefully)
@@ -45,7 +50,9 @@ cost_str=""
 if command -v ccusage >/dev/null 2>&1; then
   cache_file="${TMPDIR:-/tmp}/claude-ccusage-monthly.json"
   now=$(date +%s)
-  mtime=$(stat -f %m "$cache_file" 2>/dev/null || echo 0)
+  # GNU stat (-c %Y) first, BSD/macOS stat (-f %m) second. Not the other way
+  # round: GNU `stat -f` means --file-system and prints junk to stdout.
+  mtime=$(stat -c %Y "$cache_file" 2>/dev/null || stat -f %m "$cache_file" 2>/dev/null || echo 0)
   if [ ! -s "$cache_file" ] || [ $(( now - mtime )) -gt 300 ]; then
     (
       temp_file="${cache_file}.$$"
