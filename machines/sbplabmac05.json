@@ -1,0 +1,32 @@
+{
+  "topics": [
+    "bash",
+    "claude",
+    "claude-docker",
+    "docker",
+    "gh",
+    "git",
+    "jq",
+    "mise",
+    "node",
+    "oh-my-zsh",
+    "timeout",
+    "topgrade",
+    "zsh"
+  ],
+  "git": {
+    "sign": false,
+    "user": {
+      "name": "Leo-Bot Simons",
+      "email": "bot@leosimons.com",
+      "signingkey": null
+    }
+  },
+  "claude": {
+    "docker": true
+  },
+  "docker": {
+    "vmMemoryGB": 4,
+    "kubernetes": false
+  }
+}
