@@ -412,6 +412,31 @@ class BrewWithoutHomebrewTests(unittest.TestCase):
             self.assertFalse(helpers.brew_install("gemini-cli"))
 
 
+class NpmGlobalInstalledTests(unittest.TestCase):
+    """npm_global_installed asks npm, not PATH, whether a package is present."""
+
+    def setUp(self):
+        helpers.set_dry_run(False)
+
+    def test_asks_npm_about_the_active_node(self):
+        done = subprocess.CompletedProcess([], 0, stdout=b"", stderr=b"")
+        with mock.patch.object(helpers.shutil, "which", return_value="/usr/bin/npm"), \
+                mock.patch.object(helpers.subprocess, "run", return_value=done) as run:
+            self.assertTrue(helpers.npm_global_installed("ccusage"))
+        self.assertEqual(run.call_args.args[0], ["npm", "ls", "--global", "--depth=0", "ccusage"])
+
+    def test_stale_mise_shim_counts_as_absent(self):
+        # The shim is on PATH, but the active node has no such package.
+        missing = subprocess.CompletedProcess([], 1, stdout=b"", stderr=b"")
+        with mock.patch.object(helpers.shutil, "which", return_value="/shims/ccusage"), \
+                mock.patch.object(helpers.subprocess, "run", return_value=missing):
+            self.assertFalse(helpers.npm_global_installed("ccusage"))
+
+    def test_without_npm_answers_no_rather_than_raising(self):
+        with mock.patch.object(helpers.shutil, "which", return_value=None):
+            self.assertFalse(helpers.npm_global_installed("ccusage"))
+
+
 class TopicPlatformTests(unittest.TestCase):
     def test_topic_without_platforms_txt_runs_everywhere(self):
         with tempfile.TemporaryDirectory() as tmp:

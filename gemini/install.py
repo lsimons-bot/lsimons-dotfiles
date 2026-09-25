@@ -9,11 +9,11 @@ from helpers import (
     SKILLS_DIR,
     brew_is_installed,
     brew_uninstall,
-    command_exists,
     error,
     info,
     is_dry_run,
     link_directory,
+    npm_global_installed,
     npm_install_global,
     parse_dry_run,
     render_agents_md,
@@ -45,7 +45,7 @@ def main():
         if not brew_uninstall('gemini-cli'):
             warn("Failed to uninstall Homebrew gemini-cli; continuing anyway")
 
-    if command_exists('gemini'):
+    if npm_global_installed('@google/gemini-cli'):
         success("Gemini CLI already installed")
     elif npm_install_global('@google/gemini-cli'):
         success("Gemini CLI installed")

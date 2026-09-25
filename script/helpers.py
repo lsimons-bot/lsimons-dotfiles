@@ -711,6 +711,31 @@ def get_omarchy_config():
     return config.get("omarchy", {})
 
 
+def npm_global_installed(package):
+    """Check if an npm package is installed globally in the active mise node.
+
+    Use this, not command_exists(), to decide whether to install an npm CLI.
+    `npm install -g` puts a package under one node version, and mise keeps a
+    shim for it in PATH after node moves to a newer version. The shim then
+    fails with "No version is set for shim", but shutil.which still finds it,
+    so a command_exists() probe skips the reinstall that would repair it.
+
+    In dry-run mode, reports packages as absent so the install path is
+    exercised without changing the system.
+    """
+    if _DRY_RUN:
+        dry(f"probe npm package '{package}' as absent")
+        return False
+    if not command_exists("npm"):
+        return False
+    result = subprocess.run(
+        ["npm", "ls", "--global", "--depth=0", package],
+        capture_output=True,
+        check=False,
+    )
+    return result.returncode == 0
+
+
 def npm_install_global(package):
     """Install an npm package globally (into the active mise node).
 

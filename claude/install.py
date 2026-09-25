@@ -20,6 +20,7 @@ from helpers import (
     install_symlinks,
     is_dry_run,
     link_directory,
+    npm_global_installed,
     npm_install_global,
     parse_dry_run,
     render_agents_md,
@@ -208,7 +209,7 @@ def main():
         return 1
 
     # ccusage powers the monthly $-spend segment in the status line.
-    if command_exists("ccusage"):
+    if npm_global_installed("ccusage"):
         success("ccusage already installed")
     elif npm_install_global("ccusage"):
         success("ccusage installed")

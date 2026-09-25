@@ -12,6 +12,7 @@ from helpers import (
     error,
     info,
     is_dry_run,
+    npm_global_installed,
     parse_dry_run,
     run_cmd,
     success,
@@ -43,7 +44,7 @@ def main():
         error("npm not found; run node/install.py first")
         return 1
 
-    if command_exists('openspec'):
+    if npm_global_installed(NPM_PACKAGE):
         success("openspec already installed")
         return 0
 

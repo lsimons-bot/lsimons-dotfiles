@@ -10,12 +10,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'script'))
 from helpers import (
     SKILLS_DIR,
-    command_exists,
     dry,
     error,
     info,
     is_dry_run,
     link_directory,
+    npm_global_installed,
     npm_install_global,
     parse_dry_run,
     render_agents_md,
@@ -28,7 +28,7 @@ def install_npm_package():
     """Install the pi-coding-agent npm package via mise-managed npm."""
     info("Installing pi-coding-agent npm package...")
 
-    if command_exists('pi'):
+    if npm_global_installed('@mariozechner/pi-coding-agent'):
         success("pi-coding-agent already installed")
         return 0
 
