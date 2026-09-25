@@ -223,13 +223,11 @@ def validate_machine_data(data, source, *, require_git=False) -> list[str]:
                 )
 
     if 'claude' in data and object_at(
-        data['claude'], '$.claude', {'removeDenyRules'}
+        data['claude'], '$.claude', {'removeDenyRules', 'docker'}
     ):
-        value = data['claude'].get('removeDenyRules')
-        if 'removeDenyRules' in data['claude'] and type(value) is not bool:
-            _machine_error(
-                errors, source, '$.claude.removeDenyRules', 'must be a boolean'
-            )
+        for key in ('removeDenyRules', 'docker'):
+            if key in data['claude'] and type(data['claude'][key]) is not bool:
+                _machine_error(errors, source, f'$.claude.{key}', 'must be a boolean')
 
     if 'omarchy' in data and object_at(
         data['omarchy'], '$.omarchy', {'terminalFontSize'}

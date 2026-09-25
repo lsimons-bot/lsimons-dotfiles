@@ -1,4 +1,7 @@
 {
+  "claude": {
+    "docker": true
+  },
   "git": {
     "user": {
       "signingkey": "sbp_lsimons_id_ed25519"
