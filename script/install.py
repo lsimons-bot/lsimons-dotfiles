@@ -21,6 +21,11 @@ which excludes WSL); topics without one run everywhere. Unsupported
 topics are skipped, and any dependency on a skipped topic is dropped
 rather than treated as an error.
 
+A machine whose ``machines/<hostname>.json`` has a ``topics`` list installs
+only those topics. Dependencies on topics outside the list are dropped the
+same way, so the list is the complete set: a lean machine names what it
+wants instead of inheriting whatever the dependency graph pulls in.
+
 Pass --dry-run to preview without touching the system. The flag is
 propagated to each topic installer.
 """
@@ -79,6 +84,7 @@ from helpers import (
     PLATFORM,
     apt_is_installed,
     dry,
+    get_machine_config,
     is_dry_run,
     set_dry_run,
 )
@@ -681,6 +687,21 @@ def topic_supported(topic_dir):
     return platforms is None or bool(platforms & HOST_PLATFORMS)
 
 
+def get_topic_allowlist():
+    """Return the machine's ``topics`` list as a set, or None for every topic."""
+    config, _ = get_machine_config()
+    topics = config.get('topics')
+    return None if topics is None else set(topics)
+
+
+def unknown_allowlisted_topics(dotfiles_root, allowlist):
+    """Return allowlisted names that are not a topic with an install.py."""
+    return sorted(
+        name for name in allowlist
+        if not (dotfiles_root / name / 'install.py').exists()
+    )
+
+
 def topological_sort(topics, dependencies):
     """
     Sort topics so dependencies come before dependents.
@@ -739,6 +760,17 @@ def run_topic_installers(dotfiles_root, python_path):
     topics = {}  # topic_name -> install_script_path
     dependencies = {}  # topic_name -> list of dependencies
     skipped = []  # topic names excluded on this platform
+    excluded = []  # topic names left out of this machine's `topics` list
+
+    allowlist = get_topic_allowlist()
+    if allowlist is not None:
+        unknown = unknown_allowlisted_topics(dotfiles_root, allowlist)
+        if unknown:
+            error(
+                f"Machine config lists unknown topic(s): {', '.join(unknown)}"
+            )
+            return False
+        info(f"Machine config limits topics to: {', '.join(sorted(allowlist))}")
 
     # Find all install.py scripts and their dependencies
     for topic_dir in dotfiles_root.iterdir():
@@ -750,31 +782,41 @@ def run_topic_installers(dotfiles_root, python_path):
             install_py = topic_dir / 'install.py'
             if install_py.exists():
                 topic_name = topic_dir.name
+                if allowlist is not None and topic_name not in allowlist:
+                    excluded.append(topic_name)
+                    continue
                 if not topic_supported(topic_dir):
                     skipped.append(topic_name)
                     continue
                 topics[topic_name] = install_py
                 dependencies[topic_name] = get_topic_dependencies(topic_dir)
 
+    if excluded:
+        info(
+            f"Skipping {len(excluded)} topic(s) not in this machine's topics: "
+            f"{', '.join(sorted(excluded))}"
+        )
     if skipped:
         info(
             f"Skipping {len(skipped)} topic(s) not supported on {PLATFORM}: "
             f"{', '.join(sorted(skipped))}"
         )
 
-    # A dependency on a topic that is skipped on this platform is not an
-    # error: the dependent topic just loses an ordering constraint it no
-    # longer needs. Dropping it here keeps topological_sort's genuine
-    # "depends on a topic that does not exist" check meaningful.
-    skipped_set = set(skipped)
+    # A dependency on a topic that is skipped on this platform, or left out
+    # of the machine's topics, is not an error: the dependent topic just
+    # loses an ordering constraint it no longer needs. Dropping it here
+    # keeps topological_sort's genuine "depends on a topic that does not
+    # exist" check meaningful.
+    reasons = {name: f"skipped on {PLATFORM}" for name in skipped}
+    reasons.update({name: "not in this machine's topics" for name in excluded})
     for topic_name, deps in dependencies.items():
-        dropped = [dep for dep in deps if dep in skipped_set]
+        dropped = [dep for dep in deps if dep in reasons]
         if dropped:
             info(
                 f"{topic_name}: dropping dependency on "
-                f"{', '.join(sorted(dropped))} (skipped on {PLATFORM})"
+                + ", ".join(f"{dep} ({reasons[dep]})" for dep in sorted(dropped))
             )
-            dependencies[topic_name] = [d for d in deps if d not in skipped_set]
+            dependencies[topic_name] = [d for d in deps if d not in reasons]
 
     if not topics:
         info("No topic install.py scripts found")
@@ -811,11 +853,15 @@ def run_topic_installers(dotfiles_root, python_path):
 def run_final_topics(dotfiles_root, python_path):
     """Run the FINAL_TOPICS installers last, in declared order."""
     child_args = ['--dry-run'] if is_dry_run() else []
+    allowlist = get_topic_allowlist()
 
     for topic in FINAL_TOPICS:
         topic_dir = dotfiles_root / topic
         script = topic_dir / 'install.py'
         if not script.exists():
+            continue
+        if allowlist is not None and topic not in allowlist:
+            info(f"Skipping final topic {topic}: not in this machine's topics")
             continue
         if not topic_supported(topic_dir):
             info(f"Skipping final topic {topic}: not supported on {PLATFORM}")

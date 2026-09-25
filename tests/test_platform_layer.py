@@ -629,6 +629,7 @@ class GitCredentialHelperTests(unittest.TestCase):
             allowed_signers_file="/tmp/signers",
             name="Test User",
             email="t@example.com",
+            gpgsign="true",
             signingkey="",
             gpg_ssh_program="ssh-keygen",
             editor="vim",

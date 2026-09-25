@@ -159,6 +159,11 @@ def generate_config():
 
     machine_config, hostname = get_machine_config()
     git_user = machine_config["git"]["user"]
+    # Signing is on unless a machine turns it off explicitly with
+    # `git.sign: false` (the lab machines, which hold no SSH keys).
+    gpgsign = "true" if machine_config["git"].get("sign", True) else "false"
+    if gpgsign == "false":
+        info(f"Commit signing is disabled for {hostname}")
     signing_key = git_user["signingkey"]
     signing_key_pub = ""
     if signing_key is not None:
@@ -177,6 +182,7 @@ def generate_config():
         allowed_signers_file=str(_xdg_git_dir() / "allowed-signers"),
         name=git_user["name"],
         email=git_user["email"],
+        gpgsign=gpgsign,
         signingkey=signing_key_pub,
         gpg_ssh_program=GPG_SSH_PROGRAM_DEFAULT,
         editor=resolve_editor(),
@@ -188,6 +194,7 @@ def generate_config():
         allowed_signers_file=str(_xdg_git_dir() / "allowed-signers"),
         name=git_user["name"],
         email=git_user["email"],
+        gpgsign=gpgsign,
         signingkey=str(AI_KEY_PUB_PATH),
         gpg_ssh_program="ssh-keygen",
         editor="vim",

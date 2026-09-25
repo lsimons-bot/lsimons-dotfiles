@@ -196,12 +196,37 @@ def validate_machine_data(data, source, *, require_git=False) -> list[str]:
             _machine_error(errors, source, f'{path}.{key}', 'unknown key')
         return True
 
-    object_at(data, '$', {'git', 'ssh', 'claude', 'providers', 'remoteAccess', 'omarchy'})
+    object_at(
+        data,
+        '$',
+        {'topics', 'git', 'ssh', 'claude', 'docker', 'providers', 'remoteAccess', 'omarchy'},
+    )
     if require_git and 'git' not in data:
         _machine_error(errors, source, '$.git', 'required key missing')
 
-    if 'git' in data and object_at(data['git'], '$.git', {'user'}):
+    if 'topics' in data:
+        topics = data['topics']
+        if not isinstance(topics, list):
+            _machine_error(errors, source, '$.topics', 'must be an array')
+        else:
+            seen = set()
+            for index, topic in enumerate(topics):
+                path = f'$.topics[{index}]'
+                if not isinstance(topic, str):
+                    _machine_error(errors, source, path, 'must be a string')
+                elif not (REPO_ROOT / topic / 'install.py').is_file():
+                    _machine_error(
+                        errors, source, path, f'{topic!r} is not a topic with an install.py'
+                    )
+                elif topic in seen:
+                    _machine_error(errors, source, path, f'duplicate topic {topic!r}')
+                else:
+                    seen.add(topic)
+
+    if 'git' in data and object_at(data['git'], '$.git', {'user', 'sign'}):
         git = data['git']
+        if 'sign' in git and type(git['sign']) is not bool:
+            _machine_error(errors, source, '$.git.sign', 'must be a boolean')
         if require_git and 'user' not in git:
             _machine_error(errors, source, '$.git.user', 'required key missing')
         if 'user' in git and object_at(
@@ -228,6 +253,15 @@ def validate_machine_data(data, source, *, require_git=False) -> list[str]:
         for key in ('removeDenyRules', 'docker'):
             if key in data['claude'] and type(data['claude'][key]) is not bool:
                 _machine_error(errors, source, f'$.claude.{key}', 'must be a boolean')
+
+    if 'docker' in data and object_at(
+        data['docker'], '$.docker', {'vmMemoryGB', 'kubernetes'}
+    ):
+        memory = data['docker'].get('vmMemoryGB')
+        if 'vmMemoryGB' in data['docker'] and (type(memory) is not int or memory <= 0):
+            _machine_error(errors, source, '$.docker.vmMemoryGB', 'must be a positive integer')
+        if 'kubernetes' in data['docker'] and type(data['docker']['kubernetes']) is not bool:
+            _machine_error(errors, source, '$.docker.kubernetes', 'must be a boolean')
 
     if 'omarchy' in data and object_at(
         data['omarchy'], '$.omarchy', {'terminalFontSize'}

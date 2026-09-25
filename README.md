@@ -306,6 +306,66 @@ The `machines/` directory contains per-machine configuration in JSON format. Dur
 
 **Every machine must be enrolled before installing.** `machines/default.json` intentionally has no SSH keys and no git signing key, so `get_machine_config()` refuses to fall back to it for a hostname with no dedicated file — the installer exits with an error instead of silently generating a git config with commit signing enabled but no signing key, or a 1Password SSH agent config with no exposed keys. To enroll a new machine, create `machines/<hostname>.json` (use `hostname -s` to get the short hostname) before running the installer.
 
+### Lean machines (`topics`)
+
+A machine that should not get the full setup lists the topics it wants:
+
+```json
+{
+  "topics": ["bash", "claude", "git", "jq", "mise", "node", "zsh"]
+}
+```
+
+Only those topics run. A dependency on a topic outside the list is
+dropped rather than pulled in, so the list is the complete set: `claude`
+depends on `ssh`, which depends on `1password`, and a machine that lists
+`claude` without them gets neither. `mise run check` rejects a name that
+is not a topic. Without `topics`, every topic runs as usual.
+
+The shared lab machines (`sbplabmac01`, `02`, `04`, `05`) use this. They
+run Claude Code agents for lsimons-bot inside
+[claude-docker](https://github.com/schubergphilis/claude-docker), so they
+get Claude Code, Rancher Desktop, git, gh and a shell, and nothing else:
+no 1Password, no SSH keys, no other agents and no desktop apps. Git
+commits as lsimons-bot, unsigned (`git.sign: false`), over HTTPS with
+gh's credential helper. To set one up, starting from Homebrew:
+
+```bash
+brew install python
+mkdir -p ~/git/lsimons && cd ~/git/lsimons
+git clone https://github.com/lsimons/lsimons-dotfiles.git
+git clone https://github.com/lsimons/lsimons-skills.git
+cd lsimons-dotfiles
+./script/install.py
+open -a "Rancher Desktop"   # first start, then wait for it to be running
+./script/install.py         # applies the Rancher settings, builds the claude-docker image
+gh auth login               # as lsimons-bot
+```
+
+### Commit signing (`git.sign`)
+
+Commits are signed unless a machine sets `"git": {"sign": false}`. That is
+for machines that hold no signing key at all; with signing on and no key,
+every commit fails.
+
+### Rancher Desktop (`docker`)
+
+```json
+{
+  "docker": {
+    "vmMemoryGB": 4,
+    "kubernetes": false
+  }
+}
+```
+
+On macOS the `docker/` topic applies these with `rdctl set`, and only the
+ones that differ from the current settings. It also pins the moby
+engine, since the docker CLI needs it. `rdctl` only reaches a running
+Rancher Desktop, so on a fresh machine start the app once and re-run the
+installer; until then the installer prints the command instead. Linux
+has no VM and ignores this key.
+
 ### Provider credentials (`providers`)
 
 Some tools (currently the Codex and OpenCode shell wrappers, see
