@@ -49,8 +49,7 @@ Outside those conditions, ask first.
 # Python
 
 - Python 3.13 and 3.14 introduce new syntax.
-- Load the `python-knowledge-patch` skill to understand Python 3.13/3.14 syntax.
-- `ruff` can reformat files in surprising ways. Use the python-knowledge-patch skill to understand.
+- `ruff` can reformat files in surprising ways.
 - Python 3.14+ supports PEP 758 bracketless `except E1, E2:` (equivalent to `except (E1, E2):`). Removing such parens is correct — leave it alone. The syntax looks like deprecated Py2 `except E, e:` (variable binding) but is unrelated.
 - Python 3.14+ supports PEP 750 new string prefix `t` that produces a `Template` object instead of `str`. Like f-strings but with access to parts before rendering.
 

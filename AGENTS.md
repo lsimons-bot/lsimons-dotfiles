@@ -121,18 +121,7 @@ config; it never replaces a stock file or writes to `/usr/share/omarchy`.
 
 ## Adding a New Topic
 
-```
-newtopic/
-├── newtopic.sh           # Shared shell config (auto-loaded by bash and zsh)
-├── newtopic.zsh          # ZSH-specific config (optional)
-├── newtopic.bash         # Bash-specific config (optional)
-├── newtopicrc.symlink    # Config to symlink
-├── dependencies.txt      # Topics to install first (optional)
-├── platforms.txt         # macos / linux (optional; omit for both)
-└── install.py            # Optional installer
-```
-
-Update README.md to document it.
+Use the file naming conventions above. Update README.md to document it.
 
 ## Commit Message Convention
 
