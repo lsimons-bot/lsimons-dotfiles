@@ -263,10 +263,23 @@ def validate_machine_data(data, source, *, require_git=False) -> list[str]:
                 else:
                     seen.add(topic)
 
-    if 'git' in data and object_at(data['git'], '$.git', {'user', 'sign'}):
+    if 'git' in data and object_at(data['git'], '$.git', {'user', 'sign', 'gitlabHosts'}):
         git = data['git']
         if 'sign' in git and type(git['sign']) is not bool:
             _machine_error(errors, source, '$.git.sign', 'must be a boolean')
+        if 'gitlabHosts' in git:
+            hosts = git['gitlabHosts']
+            if not isinstance(hosts, list):
+                _machine_error(errors, source, '$.git.gitlabHosts', 'must be a list')
+            else:
+                for index, host in enumerate(hosts):
+                    path = f'$.git.gitlabHosts[{index}]'
+                    if not isinstance(host, str) or not host:
+                        _machine_error(errors, source, path, 'must be a non-empty string')
+                    elif '/' in host or '://' in host:
+                        _machine_error(
+                            errors, source, path, 'must be a bare hostname, not a URL'
+                        )
         if require_git and 'user' not in git:
             _machine_error(errors, source, '$.git.user', 'required key missing')
         if 'user' in git and object_at(

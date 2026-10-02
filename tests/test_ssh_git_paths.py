@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import ClassVar
 from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -130,6 +131,84 @@ class SshGitPathTests(unittest.TestCase):
             ai_config = (xdg / "git" / "config.ai").read_text()
             self.assertIn(f"allowedSignersFile = {expected}", config)
             self.assertIn(f"allowedSignersFile = {expected}", ai_config)
+
+
+class GitCredentialHelperTests(unittest.TestCase):
+    """gh and glab each answer only for their own hosts; GCM is scoped to
+    Azure DevOps and, on Linux, must name a credential store or every
+    call fails. The expensive mistake is a config that silently has no
+    working helper for a host, which is what happened on Arch when GCM
+    was the default without a store."""
+
+    MACHINE: ClassVar[dict] = {
+        "git": {
+            "user": {"name": "Test User", "email": "test@example.com", "signingkey": None}
+        }
+    }
+
+    def render(self, machine=None, gcm_installed=False, linux=False):
+        with (
+            mock.patch.object(
+                git_installer,
+                "command_exists",
+                side_effect=lambda cmd: cmd == "git-credential-manager" and gcm_installed,
+            ),
+            mock.patch.object(git_installer, "IS_LINUX", linux),
+        ):
+            return git_installer.render_credential_blocks(machine or self.MACHINE)
+
+    def test_gitlab_com_gets_glab_by_default(self):
+        blocks = self.render()
+        self.assertIn(
+            '[credential "https://gitlab.com"]\n\thelper = !glab auth git-credential\n',
+            blocks,
+        )
+
+    def test_machine_config_lists_its_own_gitlab_hosts(self):
+        machine = {"git": {**self.MACHINE["git"], "gitlabHosts": ["gitlab.example.internal"]}}
+        blocks = self.render(machine)
+        self.assertIn('[credential "https://gitlab.example.internal"]', blocks)
+        self.assertNotIn("gitlab.com", blocks)
+
+    def test_azure_devops_uses_gcm_only_when_installed(self):
+        without = self.render(gcm_installed=False)
+        self.assertIn('[credential "https://dev.azure.com"]\n\tuseHttpPath = true\n', without)
+        self.assertNotIn("manager", without)
+
+        with_gcm = self.render(gcm_installed=True)
+        self.assertIn("\thelper = manager\n", with_gcm)
+        self.assertNotIn("credentialStore", with_gcm)
+
+    def test_gcm_on_linux_names_the_secret_service_store(self):
+        blocks = self.render(gcm_installed=True, linux=True)
+        azure = blocks[blocks.index('[credential "https://dev.azure.com"]') :]
+        self.assertIn("\thelper = manager\n", azure)
+        self.assertIn("\tcredentialStore = secretservice\n", azure)
+
+    def test_generated_config_defaults_to_gh_and_scopes_the_rest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            xdg = Path(tmp) / "xdg"
+            with (
+                mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": str(xdg)}),
+                mock.patch.object(
+                    git_installer, "get_machine_config", return_value=(self.MACHINE, "test")
+                ),
+                mock.patch.object(
+                    git_installer,
+                    "command_exists",
+                    side_effect=lambda cmd: cmd == "git-credential-manager",
+                ),
+                mock.patch.object(git_installer, "IS_LINUX", True),
+            ):
+                git_installer.generate_config()
+            for name in ("config", "config.ai"):
+                config = (xdg / "git" / name).read_text()
+                head, _, scoped = config.partition('[credential "')
+                self.assertIn("[credential]\n\thelper =\n\thelper = !gh auth git-credential\n", head)
+                self.assertNotIn("manager", head)
+                self.assertIn("gitlab.com", scoped)
+                self.assertIn("dev.azure.com", scoped)
+                self.assertIn("credentialStore = secretservice", scoped)
 
 
 if __name__ == "__main__":

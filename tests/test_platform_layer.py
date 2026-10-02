@@ -595,9 +595,10 @@ class GitCredentialHelperTests(unittest.TestCase):
     """credential.helper must name a helper that can actually run.
 
     Git Credential Manager has no Debian/Ubuntu package (so none under
-    WSL either), and the AUR build is optional. Where it is missing, gh
-    stands in; otherwise a non-interactive `git push` dies with
-    "'credential-manager' is not a git command".
+    WSL either) and on Arch fails without a named store, so it is never
+    the default: gh is, with glab and GCM scoped to their own hosts.
+    Otherwise a non-interactive `git push` dies with "'credential-manager'
+    is not a git command" or "No credential store has been selected".
     """
 
     def setUp(self):
@@ -605,24 +606,22 @@ class GitCredentialHelperTests(unittest.TestCase):
             "dotfiles_git_credential", REPO_ROOT / "git" / "install.py"
         )
 
-    def test_prefers_git_credential_manager_when_present(self):
+    def test_default_helper_is_gh_regardless_of_gcm(self):
+        self.assertEqual(
+            self.git_installer.CREDENTIAL_HELPER_GH, "!gh auth git-credential"
+        )
         with mock.patch.object(
             self.git_installer,
             "command_exists",
             lambda cmd: cmd == "git-credential-manager",
         ):
-            self.assertEqual(self.git_installer.resolve_credential_helper(), "manager")
+            blocks = self.git_installer.render_credential_blocks({})
+        self.assertNotIn("[credential]\n", blocks)
+        azure = blocks[blocks.index('[credential "https://dev.azure.com"]') :]
+        self.assertIn("helper = manager", azure)
+        self.assertNotIn("manager", blocks[: len(blocks) - len(azure)])
 
-    def test_falls_back_to_gh_when_gcm_is_missing(self):
-        with mock.patch.object(
-            self.git_installer, "command_exists", return_value=False
-        ):
-            self.assertEqual(
-                self.git_installer.resolve_credential_helper(),
-                "!gh auth git-credential",
-            )
-
-    def test_template_renders_the_resolved_helper(self):
+    def test_template_renders_the_default_helper_and_scoped_blocks(self):
         template = (REPO_ROOT / "git" / "config.template").read_text()
         rendered = self.git_installer._render_config(
             template,
@@ -634,9 +633,11 @@ class GitCredentialHelperTests(unittest.TestCase):
             gpg_ssh_program="ssh-keygen",
             editor="vim",
             credential_helper="!gh auth git-credential",
+            credential_blocks='[credential "https://gitlab.com"]\n\thelper = x\n',
             ssh_command_block="",
         )
         self.assertIn("\thelper =\n\thelper = !gh auth git-credential\n", rendered)
+        self.assertIn('[credential "https://gitlab.com"]\n\thelper = x\n', rendered)
         self.assertNotIn("helper = manager", rendered)
 
 

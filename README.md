@@ -169,7 +169,7 @@ The installation script (`./script/install.py`) will:
 | `glab/` | GitLab CLI (`glab`) |
 | `go/` | Go (via mise) |
 | `ghostty/` | Ghostty terminal (no aarch64 Linux build — config only there) |
-| `git/` | Git + credential helper (Git Credential Manager where packaged, else `gh auth git-credential`), git-filter-repo, Git LFS (installed and initialized) |
+| `git/` | Git + credential helpers (`gh` for GitHub, `glab` per GitLab host, Git Credential Manager for Azure DevOps where packaged), git-filter-repo, Git LFS (installed and initialized) |
 | `herdr/` | herdr terminal agent multiplexer + LSD Warm Light theme |
 | `jdk/` | OpenJDK (via mise) |
 | `jq/` | jq JSON processor (used by the Claude statusline) |
@@ -352,6 +352,31 @@ gh auth login               # as lsimons-bot
 Commits are signed unless a machine sets `"git": {"sign": false}`. That is
 for machines that hold no signing key at all; with signing on and no key,
 every commit fails.
+
+### Git credential helpers (`git.gitlabHosts`)
+
+HTTPS remotes authenticate through the CLI that already holds a login:
+`gh auth git-credential` is the default helper and answers for github.com
+(and any host `gh auth login` was run for); each host in `git.gitlabHosts`
+gets `glab auth git-credential`, so run `glab auth login --hostname <host>`
+once per machine. `machines/default.json` lists `gitlab.com`; a machine
+that uses a self-hosted GitLab overrides the list:
+
+```json
+{
+  "git": {
+    "gitlabHosts": ["gitlab.com", "gitlab.example.internal"]
+  }
+}
+```
+
+Both CLIs keep their token in the system keyring where one is reachable
+(macOS Keychain, Secret Service on Linux) and fall back to a mode-0600
+config file on a headless box. Azure DevOps is the exception: it needs
+Entra ID OAuth, so `dev.azure.com` is scoped to Git Credential Manager,
+written only where GCM is installed (Homebrew, AUR; Debian has no
+package), with `credentialStore = secretservice` on Linux because GCM
+refuses to run there without a store named.
 
 ### Rancher Desktop (`docker`)
 

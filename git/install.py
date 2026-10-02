@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "script"))
 from helpers import (
     AI_KEY_PUB_PATH,
+    IS_LINUX,
     IS_MACOS,
     IS_WSL,
     SSH_CONFIG_AI_PATH,
@@ -51,16 +52,31 @@ EDITOR_CANDIDATES = [
 ]
 EDITOR_FALLBACK = "vim"
 
-# Credential helpers. Git Credential Manager is preferred and main()
-# installs it where a package exists (Homebrew cask, AUR). Debian and
-# Ubuntu, WSL included, have no GCM package, so there the GitHub CLI
-# stands in: `gh auth git-credential` answers for github.com (and any
-# other host `gh auth login` was run for) with gh's own token and stays
-# silent for everything else, which then falls through to git's prompt.
-# gh is not probed for: the `gh` topic depends on this one and so runs
-# later, and git only invokes the helper at fetch/push time anyway.
-CREDENTIAL_HELPER_GCM = "manager"
+# Credential helpers. The default is the GitHub CLI: `gh auth
+# git-credential` answers for github.com (and any other host `gh auth
+# login` was run for) with gh's own token, read from the same keyring gh
+# uses, and stays silent for every other host. GitLab hosts get the
+# matching `glab auth git-credential` from the GitLab CLI, scoped per
+# host so the two never see each other's traffic. Neither CLI is probed
+# for: the `gh` and `glab` topics depend on this one and so run later,
+# and git only invokes a helper at fetch/push time anyway.
+#
+# Git Credential Manager is kept only for Azure DevOps, which does Entra
+# ID OAuth that neither CLI can do. It is scoped to dev.azure.com and
+# only written when the binary is installed (Homebrew cask, AUR; Debian
+# and Ubuntu have no package). On Linux GCM also needs a credential
+# store named explicitly or it fails every call with "No credential
+# store has been selected"; the freedesktop Secret Service is the one
+# that shares the keyring gh and glab already use.
 CREDENTIAL_HELPER_GH = "!gh auth git-credential"
+CREDENTIAL_HELPER_GLAB = "!glab auth git-credential"
+CREDENTIAL_HELPER_GCM = "manager"
+GCM_CREDENTIAL_STORE_LINUX = "secretservice"
+AZURE_DEVOPS_URL = "https://dev.azure.com"
+# Hosts that get the glab helper when a machine config has no
+# `git.gitlabHosts`. machines/default.json sets the same list, so this
+# only matters for a config that deletes the key outright.
+GITLAB_HOSTS_DEFAULT = ["gitlab.com"]
 
 
 def resolve_editor():
@@ -76,15 +92,39 @@ def resolve_editor():
     return EDITOR_FALLBACK
 
 
-def resolve_credential_helper():
-    """Return the `credential.helper` value: GCM if installed, else gh."""
+def _credential_section(url, *settings):
+    lines = [f'[credential "{url}"]']
+    lines += [f"\t{key} = {value}" for key, value in settings]
+    return "\n".join(lines) + "\n"
+
+
+def render_credential_blocks(machine_config):
+    """Return the per-host `[credential "<url>"]` sections for the config.
+
+    One section per GitLab host (`git.gitlabHosts`, default gitlab.com)
+    pointing at glab, then one for Azure DevOps. The Azure section always
+    carries useHttpPath, which GCM needs to tell organisations apart; the
+    GCM helper itself is only written when the binary exists, otherwise
+    Azure HTTPS remotes fall through to git's own prompt.
+    """
+    gitlab_hosts = machine_config.get("git", {}).get("gitlabHosts", GITLAB_HOSTS_DEFAULT)
+    blocks = [
+        _credential_section(f"https://{host}", ("helper", CREDENTIAL_HELPER_GLAB))
+        for host in gitlab_hosts
+    ]
+
+    azure_settings = [("useHttpPath", "true")]
     if command_exists("git-credential-manager"):
-        return CREDENTIAL_HELPER_GCM
-    info(
-        "git-credential-manager not found; using "
-        f"'{CREDENTIAL_HELPER_GH}' as credential.helper"
-    )
-    return CREDENTIAL_HELPER_GH
+        azure_settings.append(("helper", CREDENTIAL_HELPER_GCM))
+        if IS_LINUX:
+            azure_settings.append(("credentialStore", GCM_CREDENTIAL_STORE_LINUX))
+    else:
+        info(
+            "git-credential-manager not found; HTTPS remotes on "
+            f"{AZURE_DEVOPS_URL} will prompt for credentials"
+        )
+    blocks.append(_credential_section(AZURE_DEVOPS_URL, *azure_settings))
+    return "\n".join(blocks)
 
 
 def _xdg_git_dir():
@@ -175,7 +215,7 @@ def generate_config():
 
     config_path = _xdg_git_dir() / "config"
     ai_path = _xdg_git_dir() / "config.ai"
-    credential_helper = resolve_credential_helper()
+    credential_blocks = render_credential_blocks(machine_config)
 
     main_content = _render_config(
         template,
@@ -186,7 +226,8 @@ def generate_config():
         signingkey=signing_key_pub,
         gpg_ssh_program=GPG_SSH_PROGRAM_DEFAULT,
         editor=resolve_editor(),
-        credential_helper=credential_helper,
+        credential_helper=CREDENTIAL_HELPER_GH,
+        credential_blocks=credential_blocks,
         ssh_command_block="",
     )
     ai_content = _render_config(
@@ -198,7 +239,8 @@ def generate_config():
         signingkey=str(AI_KEY_PUB_PATH),
         gpg_ssh_program="ssh-keygen",
         editor="vim",
-        credential_helper=credential_helper,
+        credential_helper=CREDENTIAL_HELPER_GH,
+        credential_blocks=credential_blocks,
         ssh_command_block=f"\tsshCommand = ssh -F {SSH_CONFIG_AI_PATH}\n",
     )
 
@@ -268,11 +310,11 @@ def main():
     if not ensure_package("Git", brew="git", pacman="git", apt="git"):
         return 1
 
-    # Optional on Linux: git-credential-manager publishes a .deb/.rpm and
-    # an AUR build that pulls in the whole .NET runtime, and Debian/Ubuntu
-    # have no package at all. generate_config() below picks GCM when it
-    # is present and `gh auth git-credential` otherwise, which is why the
-    # config is written after this step rather than before.
+    # Optional: only Azure DevOps needs git-credential-manager, and
+    # Debian/Ubuntu have no package for it at all (the AUR build pulls in
+    # the whole .NET runtime). generate_config() below writes the Azure
+    # helper only when GCM is present, which is why the config is written
+    # after this step rather than before.
     if not ensure_package(
         "Git Credential Manager",
         brew="git-credential-manager",
