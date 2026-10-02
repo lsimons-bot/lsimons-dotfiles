@@ -12,11 +12,14 @@ What it sets up:
 
 * clones the repository to ~/git/sbp/claude-docker, and leaves an existing
   checkout alone (it may be on a feature branch);
-* links ~/.local/bin/claude-docker to the checkout's run.sh;
+* links ~/.local/bin/claude-docker to claude-docker.sh here, a wrapper that
+  runs the checkout's run.sh against the personal image below;
 * writes ~/.claude/settings.docker.json, the container's settings.json,
   from the same settings.json.base as the host (see docker_settings);
-* builds the claude-code:local image when it is missing and docker is
-  running. Rebuilds after a pull or pin change are left to the user.
+* builds the claude-code:local image, then the personal
+  claude-code-lsimons:local image on top of it (image/Dockerfile: mise and
+  a C toolchain), each when it is missing and docker is running. Rebuilds
+  after a pull or pin change are left to the user; rebuild both, in order.
 """
 
 import copy
@@ -44,7 +47,13 @@ from helpers import (
 REPO_URL = "https://github.com/schubergphilis/claude-docker.git"
 REPO_DIR = HOME / "git" / "sbp" / "claude-docker"
 COMMAND_LINK = HOME / ".local" / "bin" / "claude-docker"
+# In bin/, not the topic root: the shell rc files source every <topic>/*.sh
+# at startup, and this script ends in an exec.
+WRAPPER = Path(__file__).resolve().parent / "bin" / "claude-docker.sh"
 IMAGE = "claude-code:local"
+# Must match the default in claude-docker.sh.
+PERSONAL_IMAGE = "claude-code-lsimons:local"
+PERSONAL_IMAGE_DIR = Path(__file__).resolve().parent / "image"
 
 CLAUDE_DIR = HOME / ".claude"
 SETTINGS_BASE = Path(__file__).resolve().parent.parent / "claude" / "settings.json.base"
@@ -55,6 +64,24 @@ SETTINGS_PATH = CLAUDE_DIR / "settings.docker.json"
 # reference host paths. claude/install.py also adds env.GIT_CONFIG_GLOBAL,
 # a host path, but only to the host file, so it never needs removing here.
 EXCLUDED_KEYS = ("sandbox", "hooks")
+
+# The container gets its own hooks instead: a SessionStart report of mise
+# tools the project pins but the container has not installed yet. The
+# script lives in the personal image; the test keeps this command a no-op
+# under the plain claude-code:local image, which shares this settings file.
+SESSION_START_SCRIPT = "/usr/local/share/claude-docker-lsimons/session_start.sh"
+CONTAINER_HOOKS = {
+    "SessionStart": [
+        {
+            "hooks": [
+                {
+                    "type": "command",
+                    "command": f"if [ -x {SESSION_START_SCRIPT} ]; then {SESSION_START_SCRIPT}; fi",
+                }
+            ]
+        }
+    ]
+}
 
 
 def docker_enabled():
@@ -80,6 +107,7 @@ def docker_settings(base, machine_config):
     if machine_config.get("claude", {}).get("removeDenyRules"):
         settings.get("permissions", {}).pop("deny", None)
     settings["autoUpdates"] = False
+    settings["hooks"] = copy.deepcopy(CONTAINER_HOOKS)
     return settings
 
 
@@ -122,9 +150,9 @@ def write_settings():
     success(f"Wrote: {SETTINGS_PATH}")
 
 
-def build_image():
+def build_image(image, context):
     """Build the image once. Returns False only when a build was tried and failed."""
-    build_cmd = f"docker build -t {IMAGE} {REPO_DIR}"
+    build_cmd = f"docker build -t {image} {context}"
     if is_dry_run():
         dry(f"would run: {build_cmd} (only if the image is missing)")
         return True
@@ -134,18 +162,18 @@ def build_image():
     if run_cmd(["docker", "info"], check=False, capture_output=True).returncode != 0:
         warn(f"docker is not running; build the image later with: {build_cmd}")
         return True
-    inspect = run_cmd(["docker", "image", "inspect", IMAGE], check=False, capture_output=True)
+    inspect = run_cmd(["docker", "image", "inspect", image], check=False, capture_output=True)
     if inspect.returncode == 0:
-        success(f"Image {IMAGE} already built (rebuild after pulling: {build_cmd})")
+        success(f"Image {image} already built (rebuild after pulling: {build_cmd})")
         return True
 
-    info(f"Building {IMAGE}; this takes a few minutes...")
+    info(f"Building {image}; this takes a few minutes...")
     try:
-        run_cmd(["docker", "build", "-t", IMAGE, str(REPO_DIR)], check=True)
+        run_cmd(["docker", "build", "-t", image, str(context)], check=True)
     except subprocess.CalledProcessError:
-        error(f"Failed to build {IMAGE}")
+        error(f"Failed to build {image}")
         return False
-    success(f"Built {IMAGE}")
+    success(f"Built {image}")
     return True
 
 
@@ -159,9 +187,12 @@ def main():
     info("Installing claude-docker...")
     if not clone_repo():
         return 1
-    link_file(REPO_DIR / "run.sh", COMMAND_LINK)
+    link_file(WRAPPER, COMMAND_LINK)
     write_settings()
-    if not build_image():
+    # The personal image is FROM the base, so the base must exist first.
+    if not build_image(IMAGE, REPO_DIR):
+        return 1
+    if not build_image(PERSONAL_IMAGE, PERSONAL_IMAGE_DIR):
         return 1
     return 0
 
