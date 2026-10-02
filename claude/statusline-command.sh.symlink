@@ -19,6 +19,7 @@ used_pct=$(echo "$input"       | jq -r '.context_window.used_percentage // empty
 remaining_pct=$(echo "$input"  | jq -r '.context_window.remaining_percentage // empty')
 input_tokens=$(echo "$input"   | jq -r '[.context_window.current_usage.input_tokens, .context_window.current_usage.cache_creation_input_tokens, .context_window.current_usage.cache_read_input_tokens] | map(. // 0) | add | if . == 0 then empty else . end')
 context_size=$(echo "$input"   | jq -r '.context_window.context_window_size // .context_window.total // empty')
+session_cost=$(echo "$input"   | jq -r '.cost.total_cost_usd // empty')
 
 # ANSI colors
 RESET=$'\033[0m'
@@ -43,6 +44,13 @@ git_branch=""
 if [ -n "$cwd" ] && command -v git >/dev/null 2>&1; then
   git_branch=$(GIT_OPTIONAL_LOCKS=0 git -C "$cwd" symbolic-ref --short HEAD 2>/dev/null \
     || GIT_OPTIONAL_LOCKS=0 git -C "$cwd" rev-parse --short HEAD 2>/dev/null)
+fi
+
+# Session $ spend, as computed by Claude Code.
+session_cost_str=""
+if [ -n "$session_cost" ]; then
+  session_cost_fmt=$(printf '%.2f' "$session_cost" 2>/dev/null)
+  [ -n "$session_cost_fmt" ] && session_cost_str="${DIM}\$${session_cost_fmt}${RESET}"
 fi
 
 # Monthly $ spend via ccusage (cached; refreshed in background every 5 min)
@@ -115,6 +123,13 @@ term_width=$({ stty size </dev/tty; } 2>/dev/null | awk '{print $2}')
 [ -z "$term_width" ] && term_width=$({ tput cols </dev/tty; } 2>/dev/null)
 [ -z "$term_width" ] && term_width="${COLUMNS:-120}"
 
+# Under claude-docker with opt-ins, its wrapper prepends `docker:<flags> `
+# to this line. Leave room for it so the right segment isn't cut off.
+if [ -n "${CLAUDE_DOCKER_FLAGS:-}" ]; then
+  docker_tag="docker:${CLAUDE_DOCKER_FLAGS} "
+  term_width=$(( term_width - ${#docker_tag} ))
+fi
+
 # Strip our ANSI sequences to count visible characters.
 vlen() {
   local stripped
@@ -140,6 +155,13 @@ left="${left}   ${BLUE}${short_cwd}${RESET}"
 # Strip the leading space context_str/cost_str carried for the old single-line layout.
 center="${context_str# }"
 right="${cost_str# }"
+if [ -n "$session_cost_str" ]; then
+  if [ -n "$right" ]; then
+    right="${session_cost_str} ${DIM}·${RESET} ${right}"
+  else
+    right="$session_cost_str"
+  fi
+fi
 
 left_len=$(vlen "$left")
 center_len=$(vlen "$center")
