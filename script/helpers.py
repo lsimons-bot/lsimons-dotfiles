@@ -43,10 +43,21 @@ _DRY_RUN = False
 SSH_CONFIG_DIR = HOME / ".ssh"
 SSH_CONFIG_AI_PATH = SSH_CONFIG_DIR / "config.ai"
 SSH_ASKPASS_AI_PATH = XDG_CONFIG_HOME / "dotfiles" / "ssh-askpass-ai.sh"
-AI_KEY_FILE = "ai_ed25519"
-AI_KEY_PATH = SSH_CONFIG_DIR / AI_KEY_FILE
-AI_KEY_PUB_FILE = AI_KEY_FILE + ".pub"
-AI_KEY_PUB_PATH = SSH_CONFIG_DIR / AI_KEY_PUB_FILE
+# Filename the AI signing key had before it was named after the machine's
+# `ssh.aiKey`; ssh/install.py renames it on first run. Still the fallback
+# for a machine that configures no aiKey.
+AI_KEY_LEGACY_NAME = "ai_ed25519"
+
+
+def ai_key_paths(ai_key_name):
+    """Return (private, public) paths of the AI signing key under ~/.ssh.
+
+    The file is named after the machine's `ssh.aiKey`, which is also the
+    1Password item it is exported from, so a key forwarded from another
+    machine (work vs. personal) never shares a filename with the local one.
+    """
+    name = ai_key_name or AI_KEY_LEGACY_NAME
+    return SSH_CONFIG_DIR / name, SSH_CONFIG_DIR / f"{name}.pub"
 
 
 # --- Platform detection -------------------------------------------------

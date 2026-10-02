@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "script"))
 from helpers import (
     IS_MACOS,
     SKILLS_DIR,
+    ai_key_paths,
     command_exists,
     dry,
     ensure_package,
@@ -61,6 +62,20 @@ def write_settings(claude_dir, topic_dir):
     )
 
     machine_config, hostname = get_machine_config()
+
+    # The sandbox must read the AI signing key to sign commits. Its filename
+    # follows the machine's ssh.aiKey (see helpers.ai_key_paths), so the
+    # base file lists only allowed-signers and the key paths are added here.
+    key_path, pub_path = ai_key_paths(machine_config.get("ssh", {}).get("aiKey"))
+    allow_read = (
+        settings.setdefault("sandbox", {})
+        .setdefault("filesystem", {})
+        .setdefault("allowRead", [])
+    )
+    for path in (pub_path, key_path):
+        if str(path) not in allow_read:
+            allow_read.append(str(path))
+
     if machine_config.get("claude", {}).get("removeDenyRules"):
         info(f"Removing deny rules for machine: {hostname}")
         settings.get("permissions", {}).pop("deny", None)

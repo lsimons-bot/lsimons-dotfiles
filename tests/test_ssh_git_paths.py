@@ -92,6 +92,55 @@ class SshGitPathTests(unittest.TestCase):
         # `op` is the Windows op.exe under WSL.
         write.assert_called_once_with("/key", "ssh-ed25519 AAAA key\n", mode=0o644)
 
+    def test_op_write_warns_and_skips_when_op_read_fails(self):
+        # Over a plain SSH session there is no desktop app to authorize the
+        # read; the install must carry on rather than crash.
+        failed = mock.Mock(stdout=b"", stderr=b"authorization prompt dismissed", returncode=1)
+        with (
+            mock.patch.object(ssh_installer.subprocess, "run", return_value=failed),
+            mock.patch.object(ssh_installer, "write_file") as write,
+            mock.patch.object(ssh_installer, "warn") as warn,
+        ):
+            ok = ssh_installer.op_write_secret("work", "op://vault/key/public", "/key")
+
+        self.assertFalse(ok)
+        write.assert_not_called()
+        self.assertIn("authorization prompt dismissed", warn.call_args.args[0])
+
+    def test_ai_key_is_named_after_the_1password_item(self):
+        # A key forwarded from the work machine's agent and the local
+        # personal key must not share a filename.
+        key, pub = helpers.ai_key_paths("sbp_lsimons_ai_ed25519")
+        self.assertEqual(key, helpers.SSH_CONFIG_DIR / "sbp_lsimons_ai_ed25519")
+        self.assertEqual(pub, helpers.SSH_CONFIG_DIR / "sbp_lsimons_ai_ed25519.pub")
+        legacy, _ = helpers.ai_key_paths(None)
+        self.assertEqual(legacy, helpers.SSH_CONFIG_DIR / "ai_ed25519")
+
+    def test_legacy_ai_key_is_renamed_unless_new_name_exists(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ssh_dir = Path(tmp)
+            (ssh_dir / "ai_ed25519").write_text("private")
+            (ssh_dir / "ai_ed25519.pub").write_text("legacy pub")
+            (ssh_dir / "lsimons_ai_ed25519.pub").write_text("new pub")
+            with mock.patch.object(ssh_installer, "SSH_CONFIG_DIR", ssh_dir):
+                ssh_installer.migrate_legacy_ai_key(
+                    ssh_dir / "lsimons_ai_ed25519", ssh_dir / "lsimons_ai_ed25519.pub"
+                )
+
+            self.assertFalse((ssh_dir / "ai_ed25519").exists())
+            self.assertEqual((ssh_dir / "lsimons_ai_ed25519").read_text(), "private")
+            # An already-exported key under the new name wins.
+            self.assertTrue((ssh_dir / "ai_ed25519.pub").exists())
+            self.assertEqual((ssh_dir / "lsimons_ai_ed25519.pub").read_text(), "new pub")
+
+    def test_ai_ssh_config_points_at_the_named_key(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            config_ai = Path(tmp) / "config.ai"
+            with mock.patch.object(ssh_installer, "SSH_CONFIG_AI_PATH", config_ai):
+                ssh_installer.write_ai_ssh_config(Path("/home/u/.ssh/lsimons_ai_ed25519"))
+            # ssh/rc.sh reads the key path from this line.
+            self.assertIn("IdentityFile /home/u/.ssh/lsimons_ai_ed25519\n", config_ai.read_text())
+
     def test_askpass_has_explicit_account_and_repairs_mode_when_unchanged(self):
         with tempfile.TemporaryDirectory() as tmp:
             askpass = Path(tmp) / "askpass.sh"
@@ -131,6 +180,28 @@ class SshGitPathTests(unittest.TestCase):
             ai_config = (xdg / "git" / "config.ai").read_text()
             self.assertIn(f"allowedSignersFile = {expected}", config)
             self.assertIn(f"allowedSignersFile = {expected}", ai_config)
+
+    def test_ai_git_config_signs_with_the_machines_ai_key(self):
+        machine = {
+            "git": {
+                "user": {"name": "Test User", "email": "test@example.com", "signingkey": None}
+            },
+            "ssh": {"aiKey": "lsimons_ai_ed25519"},
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            xdg = Path(tmp) / "config"
+            with (
+                mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": str(xdg)}),
+                mock.patch.object(
+                    git_installer, "get_machine_config", return_value=(machine, "test")
+                ),
+            ):
+                git_installer.generate_config()
+
+            ai_config = (xdg / "git" / "config.ai").read_text()
+            self.assertIn(
+                f"signingkey = {helpers.SSH_CONFIG_DIR / 'lsimons_ai_ed25519.pub'}", ai_config
+            )
 
 
 class GitCredentialHelperTests(unittest.TestCase):

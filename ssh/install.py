@@ -15,8 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "script"))
 from helpers import (
-    AI_KEY_PATH,
-    AI_KEY_PUB_PATH,
+    AI_KEY_LEGACY_NAME,
     HOME,
     IS_LINUX,
     IS_MACOS,
@@ -27,6 +26,7 @@ from helpers import (
     SSH_CONFIG_DIR,
     SSH_SIGN_BRIDGE_PATH,
     XDG_CONFIG_HOME,
+    ai_key_paths,
     chmod,
     dry,
     find_ssh_key,
@@ -184,16 +184,35 @@ def op_write_secret(op_account, op_ref, filename, mode="0600"):
     return True
 
 
-def write_ai_ssh_key(op_account, op_vault, ai_key_name):
+def migrate_legacy_ai_key(key_path, pub_path):
+    """Rename ~/.ssh/ai_ed25519(.pub) to the aiKey-named files.
+
+    Only when the new name is not taken yet, so a key the user already
+    exported under the new name wins over the legacy one.
+    """
+    for legacy, new in (
+        (SSH_CONFIG_DIR / AI_KEY_LEGACY_NAME, key_path),
+        (SSH_CONFIG_DIR / f"{AI_KEY_LEGACY_NAME}.pub", pub_path),
+    ):
+        if legacy == new or not legacy.exists() or new.exists():
+            continue
+        if is_dry_run():
+            dry(f"would rename {legacy} -> {new}")
+            continue
+        legacy.rename(new)
+        success(f"Renamed {legacy} -> {new}")
+
+
+def write_ai_ssh_key(op_account, op_vault, ai_key_name, key_path, pub_path):
     if is_dry_run():
-        dry(f"would write {AI_KEY_PATH}")
+        dry(f"would write {pub_path}")
         return
     op_public_ref = f"op://{op_vault}/{ai_key_name}/public key"
-    if not op_write_secret(op_account, op_public_ref, str(AI_KEY_PUB_PATH), mode="0644"):
+    if not op_write_secret(op_account, op_public_ref, str(pub_path), mode="0644"):
         return
-    if not AI_KEY_PATH.exists():
+    if not key_path.exists():
         warn(
-            f"{AI_KEY_PATH} does not exist!\n"
+            f"{key_path} does not exist!\n"
             "  Export\n\n"
             f"    {ai_key_name}\n\n"
             "  from\n\n"
@@ -289,7 +308,7 @@ def write_bridge_sign_helper():
     success(f"Generated {SSH_SIGN_BRIDGE_PATH}")
 
 
-def write_ai_ssh_config():
+def write_ai_ssh_config(key_path):
     config_ai_path = SSH_CONFIG_AI_PATH
     if is_dry_run():
         dry(f"would generate {config_ai_path}")
@@ -299,7 +318,7 @@ def write_ai_ssh_config():
         "# Used by AI sessions only, via core.sshCommand in\n"
         "# ~/.config/git/config.ai.\n"
         "\n"
-        f"IdentityFile {AI_KEY_PATH}\n"
+        f"IdentityFile {key_path}\n"
         "IdentitiesOnly yes\n"
         "IdentityAgent SSH_AUTH_SOCK\n"
         "\n"
@@ -329,9 +348,12 @@ def configure_ai_ssh():
     op_account = ssh_key["op_account"]
     op_ref = f"op://{op_vault}/{ai_key_name}/password"
 
-    write_ai_ssh_key(op_account, op_vault, ai_key_name)
+    key_path, pub_path = ai_key_paths(ai_key_name)
+
+    migrate_legacy_ai_key(key_path, pub_path)
+    write_ai_ssh_key(op_account, op_vault, ai_key_name, key_path, pub_path)
     write_ai_askpass(op_ref, op_account)
-    write_ai_ssh_config()
+    write_ai_ssh_config(key_path)
 
 
 def main():

@@ -588,8 +588,12 @@ in the Windows 1Password app.
 
 ### AI commits fail to sign over SSH on Linux
 
-The AI signing key is a passphrase-protected file, `~/.ssh/ai_ed25519`,
-not a 1Password agent key, so it needs an ssh-agent. `ssh/install.py`
+The AI signing key is a passphrase-protected file in `~/.ssh`, named
+after the machine's `ssh.aiKey` (its 1Password item, e.g.
+`~/.ssh/lsimons_ai_ed25519`), not a 1Password agent key, so it needs an
+ssh-agent. Naming it after the item keeps it apart from an AI key
+forwarded from another machine's agent. Older installs had it as
+`~/.ssh/ai_ed25519`; `ssh/install.py` renames that file. `ssh/install.py`
 enables the `ssh-agent.socket` systemd user unit (or writes an equivalent
 service where the distro ships none), and `ssh/rc.sh` exports its
 socket as `SSH_AUTH_SOCK` when nothing else has set one. Interactive
@@ -598,7 +602,7 @@ there is no desktop app to approve that read, so the shell prints a hint
 and you load it by hand once per boot:
 
 ```bash
-ssh-add ~/.ssh/ai_ed25519
+ssh-add ~/.ssh/<aiKey>   # the IdentityFile in ~/.ssh/config.ai
 ```
 
 Check with `ssh-add -l` and `systemctl --user status ssh-agent.socket`.

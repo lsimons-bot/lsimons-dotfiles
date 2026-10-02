@@ -12,11 +12,14 @@ stronger isolation boundary for a dedicated bot account.
 
 ## 1. Read access to the private SSH signing key
 
-`claude/settings.json.base` (`sandbox.filesystem.allowRead`) lists:
+`sandbox.filesystem.allowRead` in the generated `~/.claude/settings.json`
+lists:
 
-- `~/.ssh/ai_ed25519` — the **private** half of the dedicated agent
-  signing key
-- `~/.ssh/ai_ed25519.pub` and `~/.config/git/allowed-signers`
+- `~/.ssh/<aiKey>` — the **private** half of the dedicated agent
+  signing key, named after the machine's `ssh.aiKey` and added by
+  `claude/install.py`
+- `~/.ssh/<aiKey>.pub` (added likewise) and
+  `~/.config/git/allowed-signers` (from `claude/settings.json.base`)
 
 **Why:** git commit signing (`git config commit.gpgsign` with
 `gpg.format = ssh`) needs to read the private key at commit time. If the
@@ -28,7 +31,7 @@ point of sandboxing commits in the first place.
 compromised or misbehaving one — can read this key. It can sign
 arbitrary commits as the agent identity, or exfiltrate the key itself
 (e.g. over an allowed network domain, or by writing it somewhere it can
-later retrieve it). The key is scoped to the dedicated `ai_ed25519`
+later retrieve it). The key is scoped to the dedicated AI
 signing identity, not a human's primary key, which bounds the blast
 radius to "commits attributed to the bot" rather than to Leo.
 

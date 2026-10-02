@@ -36,7 +36,9 @@ case $- in
 esac
 
 _dotfiles_ssh_askpass_ai="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/ssh-askpass-ai.sh"
-_dotfiles_ai_key="$HOME/.ssh/ai_ed25519"
+# The key is named after the machine's ssh.aiKey; ssh/install.py writes
+# that path into config.ai, so read it from there rather than guessing.
+_dotfiles_ai_key=$(awk '/^IdentityFile /{print $2; exit}' "$HOME/.ssh/config.ai" 2>/dev/null)
 
 if [ -z "${SSH_CONNECTION:-}" ] \
   && [ -x "$_dotfiles_ssh_askpass_ai" ] \

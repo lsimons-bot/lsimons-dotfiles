@@ -139,11 +139,13 @@ This is a good time to make a VM snapshot/copy. Before you do:
 
 1. Open 1Password, find bot SSH signing key
 2. Click 'export', export with the right password
-3. Save as `~/.ssh/ai_ed25519`
+3. Save as `~/.ssh/<aiKey>`, where `<aiKey>` is the `ssh.aiKey` in the
+   machine's `machines/*.json` (the 1Password item name, e.g.
+   `lsimons-bot_id_ed25519`)
 
 On Linux the `ssh/` topic runs an `ssh-agent` systemd user unit for this
 key. Interactive shells load it through 1Password; over SSH, run
-`ssh-add ~/.ssh/ai_ed25519` once per boot (see README troubleshooting).
+`ssh-add ~/.ssh/<aiKey>` once per boot (see README troubleshooting).
 
 ### 7. Configure Browser and Accounts
 

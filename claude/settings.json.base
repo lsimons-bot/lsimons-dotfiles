@@ -147,8 +147,6 @@
     },
     "filesystem": {
       "allowRead": [
-        "/Users/lsimons/.ssh/ai_ed25519.pub",
-        "/Users/lsimons/.ssh/ai_ed25519",
         "/Users/lsimons/.config/git/allowed-signers"
       ]
     }

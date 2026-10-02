@@ -7,12 +7,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "script"))
 from helpers import (
-    AI_KEY_PUB_PATH,
     IS_LINUX,
     IS_MACOS,
     IS_WSL,
     SSH_CONFIG_AI_PATH,
     SSH_SIGN_BRIDGE_PATH,
+    ai_key_paths,
     backup_file,
     command_exists,
     ensure_package,
@@ -201,6 +201,7 @@ def generate_config():
     git_user = machine_config["git"]["user"]
     # Signing is on unless a machine turns it off explicitly with
     # `git.sign: false` (the lab machines, which hold no SSH keys).
+    _, ai_key_pub_path = ai_key_paths(machine_config.get("ssh", {}).get("aiKey"))
     gpgsign = "true" if machine_config["git"].get("sign", True) else "false"
     if gpgsign == "false":
         info(f"Commit signing is disabled for {hostname}")
@@ -236,7 +237,7 @@ def generate_config():
         name=git_user["name"],
         email=git_user["email"],
         gpgsign=gpgsign,
-        signingkey=str(AI_KEY_PUB_PATH),
+        signingkey=str(ai_key_pub_path),
         gpg_ssh_program="ssh-keygen",
         editor="vim",
         credential_helper=CREDENTIAL_HELPER_GH,
