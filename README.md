@@ -476,9 +476,10 @@ every machine but leaves `tailscale up` to the user.
 - `docker` runs the `claude-docker/` topic. It clones
   [claude-docker](https://github.com/schubergphilis/claude-docker) to
   `~/git/sbp/claude-docker` (an existing checkout is left alone), links
-  `~/.local/bin/claude-docker` to `claude-docker/bin/claude-docker.sh`
-  and `~/.local/bin/git-sign` to `claude-docker/bin/git-sign.sh`, and
-  builds the `claude-code:local` image if it is missing and docker is
+  `~/.local/bin/claude-docker` to `claude-docker/bin/claude-docker.sh`,
+  `~/.local/bin/git-sign` to `claude-docker/bin/git-sign.sh` and
+  `~/.local/bin/claude-docker-sync` to `claude-docker/bin/claude-docker-sync.sh`,
+  and builds the `claude-code:local` image if it is missing and docker is
   running. The wrapper runs the checkout's `run.sh` with
   `CLAUDE_DOCKER_IMAGE=claude-code-lsimons:local`, a personal image built
   from `claude-docker/image/` that adds mise and build-essential: projects
@@ -486,7 +487,14 @@ every machine but leaves `tailscale up` to the user.
   and mise installs Linux builds into the persistent `claude-code-root`
   volume on first use (`mise install`). The image also has the shared
   libraries Playwright's Chromium needs, so `playwright install chromium`
-  works inside the container, and minisign. uv, pnpm, cargo, Python
+  works inside the container, and minisign. `claude-docker-sync` copies the
+  container's session transcripts from the `claude-code-home` volume into
+  `~/.claude/projects`, one way and without deleting anything, using a small
+  `claude-docker-sync:local` image (alpine plus rsync, from
+  `claude-docker/sync-image/`). Container projects keep their
+  `-workspaces-<name>` names and their `memory/` directories are skipped, so
+  container auto-memory never reaches host sessions. Without a running docker
+  it warns and exits 0. uv, pnpm, cargo, Python
   and ruff are set to keep their bulk on the volume rather than on the
   slow workspace bind mount: `.venv` and `node_modules` hold symlinks,
   `target/` only final binaries. An existing `.venv` or `node_modules`

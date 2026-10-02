@@ -16,12 +16,17 @@ What it sets up:
   runs the checkout's run.sh against the personal image below;
 * links ~/.local/bin/git-sign to git-sign.sh here, so `git sign` on the
   host re-signs and pushes a branch that claude-docker committed unsigned;
+* links ~/.local/bin/claude-docker-sync to claude-docker-sync.sh here,
+  which copies the container's session transcripts out of the
+  claude-code-home volume into the host's ~/.claude/projects;
 * writes ~/.claude/settings.docker.json, the container's settings.json,
   from the same settings.json.base as the host (see docker_settings);
 * builds the claude-code:local image, then the personal
   claude-code-lsimons:local image on top of it (image/Dockerfile: mise, a
   C toolchain and Playwright's Chromium libraries), each when it is missing and docker is running. Rebuilds
   after a pull or pin change are left to the user; rebuild both, in order;
+* builds the small claude-docker-sync:local image (sync-image/Dockerfile:
+  alpine plus rsync) that claude-docker-sync runs, when it is missing;
 * with `claude.dockerByDefault` also set, writes the DEFAULT_MARKER file
   that makes rc.sh here turn `claude` in an interactive shell into
   `claude-docker --gh --glab`, with `claude-local` for the host install.
@@ -59,10 +64,15 @@ COMMAND_LINK = HOME / ".local" / "bin" / "claude-docker"
 WRAPPER = Path(__file__).resolve().parent / "bin" / "claude-docker.sh"
 SIGN_LINK = HOME / ".local" / "bin" / "git-sign"
 SIGN_SCRIPT = Path(__file__).resolve().parent / "bin" / "git-sign.sh"
+SYNC_LINK = HOME / ".local" / "bin" / "claude-docker-sync"
+SYNC_SCRIPT = Path(__file__).resolve().parent / "bin" / "claude-docker-sync.sh"
 IMAGE = "claude-code:local"
 # Must match the default in claude-docker.sh.
 PERSONAL_IMAGE = "claude-code-lsimons:local"
 PERSONAL_IMAGE_DIR = Path(__file__).resolve().parent / "image"
+# Must match the image in claude-docker-sync.sh.
+SYNC_IMAGE = "claude-docker-sync:local"
+SYNC_IMAGE_DIR = Path(__file__).resolve().parent / "sync-image"
 
 # Must match the path in rc.sh.
 DEFAULT_MARKER = XDG_CONFIG_HOME / "claude-docker" / "default-claude"
@@ -242,11 +252,14 @@ def main():
         return 1
     link_file(WRAPPER, COMMAND_LINK)
     link_file(SIGN_SCRIPT, SIGN_LINK)
+    link_file(SYNC_SCRIPT, SYNC_LINK)
     write_settings()
     # The personal image is FROM the base, so the base must exist first.
     if not build_image(IMAGE, REPO_DIR):
         return 1
     if not build_image(PERSONAL_IMAGE, PERSONAL_IMAGE_DIR):
+        return 1
+    if not build_image(SYNC_IMAGE, SYNC_IMAGE_DIR):
         return 1
     return 0
 

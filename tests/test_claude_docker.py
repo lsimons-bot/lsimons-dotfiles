@@ -227,8 +227,73 @@ class PersonalImageTests(unittest.TestCase):
             self.assertEqual(claude_docker.main(), 0)
         self.assertEqual(
             [c.args[0] for c in build.call_args_list],
-            [claude_docker.IMAGE, claude_docker.PERSONAL_IMAGE],
+            [claude_docker.IMAGE, claude_docker.PERSONAL_IMAGE, claude_docker.SYNC_IMAGE],
         )
+
+
+class SyncTests(unittest.TestCase):
+    """claude-docker-sync copies container transcripts to the host.
+
+    The costly mistakes are the script running an image nothing builds,
+    container auto-memory reaching host sessions, and a machine without a
+    running docker failing a caller that only wanted a best-effort sync.
+    """
+
+    def test_script_uses_the_image_the_installer_builds(self):
+        script = claude_docker.SYNC_SCRIPT.read_text()
+        self.assertIn(f'image="{claude_docker.SYNC_IMAGE}"', script)
+        self.assertTrue((claude_docker.SYNC_IMAGE_DIR / "Dockerfile").is_file())
+
+    def test_script_is_not_sourced_by_the_shell_rc_files(self):
+        sourced = set((REPO_ROOT / "claude-docker").glob("*.sh"))
+        self.assertNotIn(claude_docker.SYNC_SCRIPT, sourced)
+
+    def test_script_skips_memory_and_mounts_the_volume_read_only(self):
+        script = claude_docker.SYNC_SCRIPT.read_text()
+        self.assertIn("--exclude '/*/memory/'", script)
+        self.assertIn('-v "$volume:/src:ro"', script)
+        self.assertNotIn("--delete", script)
+
+    def run_sync(self, docker_stub):
+        """Run the sync script with PATH holding only `docker_stub`, if any."""
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            bin_dir = tmp / "bin"
+            bin_dir.mkdir()
+            if docker_stub is not None:
+                stub = bin_dir / "docker"
+                stub.write_text(docker_stub)
+                stub.chmod(0o755)
+            # Only the stub dir and system dirs: a real docker elsewhere on
+            # the caller's PATH must not be found.
+            env = {"PATH": f"{bin_dir}:/usr/bin:/bin", "HOME": str(tmp)}
+            if shutil.which("docker", path=env["PATH"]) and docker_stub is None:
+                self.skipTest("a docker in /usr/bin or /bin would be found")
+            result = subprocess.run(
+                [shutil.which("bash"), str(claude_docker.SYNC_SCRIPT)],
+                capture_output=True,
+                text=True,
+                env=env,
+                check=False,
+            )
+        return result.returncode, result.stderr
+
+    def test_warns_and_succeeds_without_docker(self):
+        code, stderr = self.run_sync(None)
+        self.assertEqual(code, 0)
+        self.assertIn("warning: docker not on PATH", stderr)
+
+    def test_warns_and_succeeds_when_docker_is_not_running(self):
+        code, stderr = self.run_sync("#!/bin/sh\nexit 1\n")
+        self.assertEqual(code, 0)
+        self.assertIn("warning: docker is not running", stderr)
+
+    def test_fails_when_the_image_is_missing(self):
+        # Running but no image is a broken install, not "nothing to sync".
+        stub = '#!/bin/sh\n[ "$1" = info ] && exit 0\nexit 1\n'
+        code, stderr = self.run_sync(stub)
+        self.assertEqual(code, 1)
+        self.assertIn("image claude-docker-sync:local is missing", stderr)
 
 
 if __name__ == "__main__":
