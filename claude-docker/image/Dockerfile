@@ -62,7 +62,11 @@ COPY claude_env.sh session_start.sh /usr/local/share/claude-docker-lsimons/
 #   `mise activate` never runs; shims work regardless.
 # CLAUDE_ENV_FILE: loads mise.toml [env] into that same shell (see
 #   claude_env.sh).
-ENV CLAUDE_ENV_FILE=/usr/local/share/claude-docker-lsimons/claude_env.sh \
+# CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: the base image turns agent teams
+#   on; this image turns them off again. The wrapper has no way to pass
+#   -e, so the override has to live in the image.
+ENV CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=0 \
+    CLAUDE_ENV_FILE=/usr/local/share/claude-docker-lsimons/claude_env.sh \
     MISE_TRUSTED_CONFIG_PATHS=/workspaces \
     MISE_YES=1 \
     MISE_MINIMUM_RELEASE_AGE=7d \
