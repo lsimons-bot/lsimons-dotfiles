@@ -152,20 +152,36 @@ def configure_ssh_agent():
 def op_write_secret(op_account, op_ref, filename, mode="0600"):
     """Write the secret behind `op_ref` to `filename` with `mode`.
 
+    Returns False, with a warning, when `op` is missing or the read fails
+    (not signed in, no desktop app to unlock, e.g. over a plain SSH
+    session) so the rest of the install can carry on without 1Password.
+
     Reads through stdout rather than op's own `-o`: under WSL `op` is the
     Windows op.exe (see 1password/install.py), which would resolve an `-o`
     path on the Windows side. It may also end lines with CRLF, which a key
     file must not contain.
     """
+    if shutil.which("op") is None:
+        warn(f"op not on PATH; skipping {filename}")
+        return False
     result = subprocess.run(
         ["op", "read", "--account", op_account, op_ref],
-        check=True,
+        check=False,
         capture_output=True,
     )
+    if result.returncode != 0:
+        detail = result.stderr.decode(errors="replace").strip() or f"exit code {result.returncode}"
+        warn(
+            f"Could not read {op_ref}; skipping {filename}\n"
+            f"  {detail}\n"
+            "  Sign in to 1Password (`op signin`) and re-run to write it"
+        )
+        return False
     content = result.stdout.replace(b"\r\n", b"\n").decode()
     if not content.endswith("\n"):
         content += "\n"
     write_file(filename, content, mode=int(mode, 8))
+    return True
 
 
 def write_ai_ssh_key(op_account, op_vault, ai_key_name):
@@ -173,7 +189,8 @@ def write_ai_ssh_key(op_account, op_vault, ai_key_name):
         dry(f"would write {AI_KEY_PATH}")
         return
     op_public_ref = f"op://{op_vault}/{ai_key_name}/public key"
-    op_write_secret(op_account, op_public_ref, str(AI_KEY_PUB_PATH), mode="0644")
+    if not op_write_secret(op_account, op_public_ref, str(AI_KEY_PUB_PATH), mode="0644"):
+        return
     if not AI_KEY_PATH.exists():
         warn(
             f"{AI_KEY_PATH} does not exist!\n"
