@@ -15,9 +15,10 @@ FROM claude-code:local
 
 # build-essential: mise's source-built runtimes (ruby, erlang) and native
 # npm/pip packages need a compiler. Claude runs unprivileged, so it cannot
-# apt-get install one itself.
+# apt-get install one itself. minisign: verifying release signatures, which
+# Claude could not otherwise install for the same reason.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends build-essential \
+ && apt-get install -y --no-install-recommends build-essential minisign \
  && rm -rf /var/lib/apt/lists/*
 
 # Shared libraries for Playwright's own Chromium build, which a project
