@@ -14,6 +14,8 @@ What it sets up:
   checkout alone (it may be on a feature branch);
 * links ~/.local/bin/claude-docker to claude-docker.sh here, a wrapper that
   runs the checkout's run.sh against the personal image below;
+* links ~/.local/bin/git-sign to git-sign.sh here, so `git sign` on the
+  host re-signs and pushes a branch that claude-docker committed unsigned;
 * writes ~/.claude/settings.docker.json, the container's settings.json,
   from the same settings.json.base as the host (see docker_settings);
 * builds the claude-code:local image, then the personal
@@ -55,6 +57,8 @@ COMMAND_LINK = HOME / ".local" / "bin" / "claude-docker"
 # In bin/, not the topic root: the shell rc files source every <topic>/*.sh
 # at startup, and this script ends in an exec.
 WRAPPER = Path(__file__).resolve().parent / "bin" / "claude-docker.sh"
+SIGN_LINK = HOME / ".local" / "bin" / "git-sign"
+SIGN_SCRIPT = Path(__file__).resolve().parent / "bin" / "git-sign.sh"
 IMAGE = "claude-code:local"
 # Must match the default in claude-docker.sh.
 PERSONAL_IMAGE = "claude-code-lsimons:local"
@@ -237,6 +241,7 @@ def main():
     if not clone_repo():
         return 1
     link_file(WRAPPER, COMMAND_LINK)
+    link_file(SIGN_SCRIPT, SIGN_LINK)
     write_settings()
     # The personal image is FROM the base, so the base must exist first.
     if not build_image(IMAGE, REPO_DIR):

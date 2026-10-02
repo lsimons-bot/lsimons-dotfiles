@@ -476,7 +476,8 @@ every machine but leaves `tailscale up` to the user.
 - `docker` runs the `claude-docker/` topic. It clones
   [claude-docker](https://github.com/schubergphilis/claude-docker) to
   `~/git/sbp/claude-docker` (an existing checkout is left alone), links
-  `~/.local/bin/claude-docker` to `claude-docker/bin/claude-docker.sh`, and
+  `~/.local/bin/claude-docker` to `claude-docker/bin/claude-docker.sh`
+  and `~/.local/bin/git-sign` to `claude-docker/bin/git-sign.sh`, and
   builds the `claude-code:local` image if it is missing and docker is
   running. The wrapper runs the checkout's `run.sh` with
   `CLAUDE_DOCKER_IMAGE=claude-code-lsimons:local`, a personal image built
@@ -493,7 +494,10 @@ every machine but leaves `tailscale up` to the user.
   `docker build -t claude-code:local ~/git/sbp/claude-docker` and then
   `docker build -t claude-code-lsimons:local claude-docker/image`.
   `CLAUDE_DOCKER_IMAGE=claude-code:local claude-docker` runs the
-  upstream image as-is.
+  upstream image as-is. The container commits unsigned; `git sign
+  [--no-push] [<base>]` on the host re-signs every commit since the
+  branch forked from `<base>` (default `origin/main`), checks each
+  signature, then pushes with `--force-with-lease`.
 - `dockerByDefault` (requires `docker`) makes `claude` in an interactive
   shell run `claude-docker --gh --glab`, and adds `claude-local` for the
   host install. Both are shell functions in `claude-docker/rc.sh`, active
