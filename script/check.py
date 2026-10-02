@@ -288,11 +288,15 @@ def validate_machine_data(data, source, *, require_git=False) -> list[str]:
                 )
 
     if 'claude' in data and object_at(
-        data['claude'], '$.claude', {'removeDenyRules', 'docker'}
+        data['claude'], '$.claude', {'removeDenyRules', 'docker', 'dockerByDefault'}
     ):
-        for key in ('removeDenyRules', 'docker'):
+        for key in ('removeDenyRules', 'docker', 'dockerByDefault'):
             if key in data['claude'] and type(data['claude'][key]) is not bool:
                 _machine_error(errors, source, f'$.claude.{key}', 'must be a boolean')
+        if data['claude'].get('dockerByDefault') is True and data['claude'].get('docker') is not True:
+            _machine_error(
+                errors, source, '$.claude.dockerByDefault', 'requires $.claude.docker to be true'
+            )
 
     if 'docker' in data and object_at(
         data['docker'], '$.docker', {'vmMemoryGB', 'kubernetes'}

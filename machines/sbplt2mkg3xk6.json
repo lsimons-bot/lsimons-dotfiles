@@ -1,6 +1,7 @@
 {
   "claude": {
-    "docker": true
+    "docker": true,
+    "dockerByDefault": true
   },
   "git": {
     "user": {

@@ -442,6 +442,7 @@ every machine but leaves `tailscale up` to the user.
 {
   "claude": {
     "docker": true,
+    "dockerByDefault": false,
     "removeDenyRules": false
   }
 }
@@ -466,6 +467,12 @@ every machine but leaves `tailscale up` to the user.
   `docker build -t claude-code-lsimons:local claude-docker/image`.
   `CLAUDE_DOCKER_IMAGE=claude-code:local claude-docker` runs the
   upstream image as-is.
+- `dockerByDefault` (requires `docker`) makes `claude` in an interactive
+  shell run `claude-docker --gh --glab`, and adds `claude-local` for the
+  host install. Both are shell functions in `claude-docker/rc.sh`, active
+  while `~/.config/claude-docker/default-claude` exists; the installer
+  writes that file, and removes it when the key is unset. Scripts that
+  call `claude` still get the host install.
 - `removeDenyRules` drops the `permissions.deny` list from both settings
   files.
 

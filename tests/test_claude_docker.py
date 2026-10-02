@@ -9,8 +9,10 @@ leaking into the container's settings.json.
 
 import importlib.util
 import json
+import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -50,14 +52,103 @@ class GateTests(unittest.TestCase):
     def test_skips_when_not_enabled(self):
         with mock.patch.object(claude_docker, "parse_dry_run"), mock.patch.object(
             claude_docker, "get_machine_config", return_value=({}, "host")
-        ), mock.patch.object(claude_docker, "clone_repo") as clone:
+        ), mock.patch.object(claude_docker, "set_default_marker") as marker, mock.patch.object(
+            claude_docker, "clone_repo"
+        ) as clone:
             self.assertEqual(claude_docker.main(), 0)
         clone.assert_not_called()
+        # Turning claude.docker off must also stop `claude` running claude-docker.
+        marker.assert_called_once_with(False)
 
     def test_truthy_non_boolean_does_not_enable(self):
         config = {"claude": {"docker": "yes"}}
         with mock.patch.object(claude_docker, "get_machine_config", return_value=(config, "host")):
             self.assertFalse(claude_docker.docker_enabled())
+
+
+class DockerByDefaultTests(unittest.TestCase):
+    def test_schema_accepts_it_with_docker(self):
+        errors = check.validate_machine_data(
+            {"claude": {"docker": True, "dockerByDefault": True}}, "machine.json"
+        )
+        self.assertEqual(errors, [])
+
+    def test_schema_rejects_it_without_docker(self):
+        # `claude` would run a claude-docker that was never installed.
+        errors = check.validate_machine_data({"claude": {"dockerByDefault": True}}, "machine.json")
+        self.assertIn(
+            "machine.json:$.claude.dockerByDefault: requires $.claude.docker to be true", errors
+        )
+
+    def test_needs_both_flags(self):
+        cases = [
+            ({"claude": {"docker": True, "dockerByDefault": True}}, True),
+            ({"claude": {"docker": True}}, False),
+            ({"claude": {"dockerByDefault": True}}, False),
+            ({"claude": {"docker": True, "dockerByDefault": "yes"}}, False),
+        ]
+        for config, expected in cases:
+            with mock.patch.object(
+                claude_docker, "get_machine_config", return_value=(config, "host")
+            ):
+                self.assertIs(claude_docker.docker_by_default(), expected, config)
+
+    def test_marker_is_written_and_removed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            marker = Path(tmp) / "claude-docker" / "default-claude"
+            with mock.patch.object(claude_docker, "DEFAULT_MARKER", marker), mock.patch.object(
+                claude_docker, "is_dry_run", return_value=False
+            ):
+                claude_docker.set_default_marker(True)
+                self.assertEqual(marker.read_text(), claude_docker.DEFAULT_MARKER_TEXT)
+                claude_docker.set_default_marker(True)
+                claude_docker.set_default_marker(False)
+                self.assertFalse(marker.exists())
+                claude_docker.set_default_marker(False)
+
+    def test_rc_checks_the_marker_the_installer_writes(self):
+        rc = (REPO_ROOT / "claude-docker" / "rc.sh").read_text()
+        relative = claude_docker.DEFAULT_MARKER.relative_to(claude_docker.XDG_CONFIG_HOME)
+        self.assertIn(f'"${{XDG_CONFIG_HOME:-$HOME/.config}}/{relative}"', rc)
+
+    def run_rc(self, shell, with_marker, command):
+        """Source rc.sh in `shell` with stub claude/claude-docker on PATH."""
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            if with_marker:
+                (tmp / "claude-docker").mkdir()
+                (tmp / "claude-docker" / "default-claude").write_text("")
+            bin_dir = tmp / "bin"
+            bin_dir.mkdir()
+            for name in ("claude", "claude-docker"):
+                stub = bin_dir / name
+                stub.write_text(f'#!/bin/sh\necho {name} "$@"\n')
+                stub.chmod(0o755)
+            env = {"PATH": f"{bin_dir}:/usr/bin:/bin", "HOME": str(tmp), "XDG_CONFIG_HOME": str(tmp)}
+            script = f". {REPO_ROOT / 'claude-docker' / 'rc.sh'}; {command}"
+            result = subprocess.run(
+                [shell, "-c", script], capture_output=True, text=True, env=env, check=False
+            )
+        return result.returncode, result.stdout.strip()
+
+    def test_rc_switches_claude_to_claude_docker(self):
+        for shell in ("bash", "zsh"):
+            if shutil.which(shell) is None:
+                continue
+            with self.subTest(shell=shell):
+                self.assertEqual(
+                    self.run_rc(shell, True, "claude -p hi"),
+                    (0, "claude-docker --gh --glab -p hi"),
+                )
+                self.assertEqual(self.run_rc(shell, True, "claude-local -p hi"), (0, "claude -p hi"))
+
+    def test_rc_leaves_claude_alone_without_the_marker(self):
+        for shell in ("bash", "zsh"):
+            if shutil.which(shell) is None:
+                continue
+            with self.subTest(shell=shell):
+                self.assertEqual(self.run_rc(shell, False, "claude -p hi"), (0, "claude -p hi"))
+                self.assertNotEqual(self.run_rc(shell, False, "claude-local")[0], 0)
 
 
 class DockerSettingsTests(unittest.TestCase):
@@ -126,6 +217,8 @@ class PersonalImageTests(unittest.TestCase):
     def test_builds_the_base_before_the_personal_image(self):
         with mock.patch.object(claude_docker, "parse_dry_run"), mock.patch.object(
             claude_docker, "docker_enabled", return_value=True
+        ), mock.patch.object(claude_docker, "docker_by_default", return_value=False), mock.patch.object(
+            claude_docker, "set_default_marker"
         ), mock.patch.object(claude_docker, "clone_repo", return_value=True), mock.patch.object(
             claude_docker, "link_file"
         ), mock.patch.object(claude_docker, "write_settings"), mock.patch.object(

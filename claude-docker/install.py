@@ -19,7 +19,11 @@ What it sets up:
 * builds the claude-code:local image, then the personal
   claude-code-lsimons:local image on top of it (image/Dockerfile: mise and
   a C toolchain), each when it is missing and docker is running. Rebuilds
-  after a pull or pin change are left to the user; rebuild both, in order.
+  after a pull or pin change are left to the user; rebuild both, in order;
+* with `claude.dockerByDefault` also set, writes the DEFAULT_MARKER file
+  that makes rc.sh here turn `claude` in an interactive shell into
+  `claude-docker --gh --glab`, with `claude-local` for the host install.
+  Without it, the marker is removed again.
 """
 
 import copy
@@ -31,6 +35,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "script"))
 from helpers import (
     HOME,
+    XDG_CONFIG_HOME,
     command_exists,
     dry,
     error,
@@ -54,6 +59,15 @@ IMAGE = "claude-code:local"
 # Must match the default in claude-docker.sh.
 PERSONAL_IMAGE = "claude-code-lsimons:local"
 PERSONAL_IMAGE_DIR = Path(__file__).resolve().parent / "image"
+
+# Must match the path in rc.sh.
+DEFAULT_MARKER = XDG_CONFIG_HOME / "claude-docker" / "default-claude"
+DEFAULT_MARKER_TEXT = (
+    "Written by claude-docker/install.py because this machine sets\n"
+    "claude.dockerByDefault. While this file exists, claude-docker/rc.sh makes\n"
+    "`claude` run `claude-docker --gh --glab` and `claude-local` run the host's\n"
+    "claude. Re-run the installer to remove it, rather than deleting it by hand.\n"
+)
 
 CLAUDE_DIR = HOME / ".claude"
 SETTINGS_BASE = Path(__file__).resolve().parent.parent / "claude" / "settings.json.base"
@@ -87,6 +101,39 @@ CONTAINER_HOOKS = {
 def docker_enabled():
     config, _ = get_machine_config()
     return config.get("claude", {}).get("docker") is True
+
+
+def docker_by_default():
+    config, _ = get_machine_config()
+    claude = config.get("claude", {})
+    return claude.get("docker") is True and claude.get("dockerByDefault") is True
+
+
+def set_default_marker(enabled):
+    """Write DEFAULT_MARKER when enabled, remove it otherwise.
+
+    A marker file rather than reading the machine JSON from rc.sh, so a new
+    shell does not parse JSON at startup.
+    """
+    if not enabled:
+        if not DEFAULT_MARKER.exists():
+            return
+        if is_dry_run():
+            dry(f"would remove {DEFAULT_MARKER}")
+            return
+        DEFAULT_MARKER.unlink()
+        success(f"Removed {DEFAULT_MARKER}; `claude` runs the host install again")
+        return
+
+    if DEFAULT_MARKER.is_file() and DEFAULT_MARKER.read_text() == DEFAULT_MARKER_TEXT:
+        success(f"claude-docker is already the default claude: {DEFAULT_MARKER}")
+        return
+    if is_dry_run():
+        dry(f"would write {DEFAULT_MARKER}")
+        return
+    DEFAULT_MARKER.parent.mkdir(parents=True, exist_ok=True)
+    DEFAULT_MARKER.write_text(DEFAULT_MARKER_TEXT)
+    success(f"Wrote {DEFAULT_MARKER}: `claude` now runs claude-docker in new shells")
 
 
 def docker_settings(base, machine_config):
@@ -179,6 +226,8 @@ def build_image(image, context):
 
 def main():
     parse_dry_run()
+
+    set_default_marker(docker_by_default())
 
     if not docker_enabled():
         info("claude.docker is not enabled for this machine; skipping claude-docker")
