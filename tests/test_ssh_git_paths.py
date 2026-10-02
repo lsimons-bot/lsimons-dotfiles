@@ -78,9 +78,11 @@ class SshGitPathTests(unittest.TestCase):
 
     def test_op_write_uses_path_and_explicit_account(self):
         completed = mock.Mock(stdout=b"ssh-ed25519 AAAA key\r\n", returncode=0)
-        with mock.patch.object(
-            ssh_installer.subprocess, "run", return_value=completed
-        ) as run, mock.patch.object(ssh_installer, "write_file") as write:
+        with (
+            mock.patch.object(ssh_installer.shutil, "which", return_value="/usr/bin/op"),
+            mock.patch.object(ssh_installer.subprocess, "run", return_value=completed) as run,
+            mock.patch.object(ssh_installer, "write_file") as write,
+        ):
             ssh_installer.op_write_secret("work", "op://vault/key/public", "/key", mode="0644")
 
         command = run.call_args.args[0]
@@ -97,6 +99,7 @@ class SshGitPathTests(unittest.TestCase):
         # read; the install must carry on rather than crash.
         failed = mock.Mock(stdout=b"", stderr=b"authorization prompt dismissed", returncode=1)
         with (
+            mock.patch.object(ssh_installer.shutil, "which", return_value="/usr/bin/op"),
             mock.patch.object(ssh_installer.subprocess, "run", return_value=failed),
             mock.patch.object(ssh_installer, "write_file") as write,
             mock.patch.object(ssh_installer, "warn") as warn,
