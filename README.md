@@ -486,7 +486,11 @@ every machine but leaves `tailscale up` to the user.
   and mise installs Linux builds into the persistent `claude-code-root`
   volume on first use (`mise install`). The image also has the shared
   libraries Playwright's Chromium needs, so `playwright install chromium`
-  works inside the container. It also
+  works inside the container, and minisign. uv, pnpm, cargo, Python
+  and ruff are set to keep their bulk on the volume rather than on the
+  slow workspace bind mount: `.venv` and `node_modules` hold symlinks,
+  `target/` only final binaries. An existing `.venv` or `node_modules`
+  keeps its old layout until removed. It also
   writes `~/.claude/settings.docker.json` from `claude/settings.json.base`,
   without `sandbox` or `hooks` and with `autoUpdates` off, since the image
   pins Claude Code. Opt-in because it needs a container engine and a

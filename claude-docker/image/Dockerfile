@@ -72,3 +72,29 @@ ENV CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=0 \
     MISE_YES=1 \
     MISE_MINIMUM_RELEASE_AGE=7d \
     PATH="/root/.local/share/mise/shims:${PATH}"
+
+# Build output out of /workspaces: the workspace is a host bind mount with
+# slow file I/O, while /root is the claude-code-root volume. Each setting is
+# the same for every project, so worktrees and extra workspaces need nothing
+# per-session. What stays in the repo is small: symlinks and final artifacts.
+# UV_LINK_MODE: .venv symlinks into the uv cache instead of copying it,
+#   since the cache and .venv are on different filesystems, so hardlinks
+#   cannot work. `uv cache clean` leaves such venvs dangling until the
+#   next `uv sync`.
+# pnpm_config_enable_global_virtual_store: node_modules holds only symlinks
+#   into the pnpm store. pnpm_config_store_dir: spelled out, because pnpm
+#   puts a new store inside the project (node_modules/.pnpm-store) when
+#   the default one is on another filesystem, which /root always is.
+#   pnpm keeps an existing node_modules as it is; only after removing it
+#   does an install use this layout.
+# CARGO_BUILD_BUILD_DIR: intermediate artifacts go on the volume, one
+#   directory per workspace path, so worktrees don't share one; target/
+#   keeps only the final binaries.
+# PYTHONPYCACHEPREFIX, RUFF_CACHE_DIR: both are keyed by source path, so
+#   one shared location serves every project.
+ENV UV_LINK_MODE=symlink \
+    pnpm_config_enable_global_virtual_store=true \
+    pnpm_config_store_dir=/root/.local/share/pnpm/store \
+    CARGO_BUILD_BUILD_DIR="{cargo-cache-home}/build/{workspace-path-hash}" \
+    PYTHONPYCACHEPREFIX=/root/.cache/pycache \
+    RUFF_CACHE_DIR=/root/.cache/ruff
