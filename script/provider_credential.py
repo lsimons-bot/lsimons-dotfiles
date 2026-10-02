@@ -12,7 +12,7 @@ prints, on stdout, ``eval``-able assignments:
     PROVIDER_CREDENTIAL_OP_REF='...'
 
 Called at call time (not install time) by shell wrapper functions such as
-codex/codex.sh and opencode/opencode.sh, so that credentials resolve from
+codex/rc.sh and opencode/rc.sh, so that credentials resolve from
 whichever machine the shell is running on right now.
 
 Fails closed: if the current machine has no (complete) configuration for

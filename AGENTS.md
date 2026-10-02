@@ -40,11 +40,16 @@ Machine-specific config lives in `machines/` as JSON files. Use `get_machine_con
 
 **File naming:**
 - `*.symlink` - Symlinked to home or XDG directories
-- `*.sh` - Shared shell config (sourced by both bash and zsh)
-- `*.zsh` - ZSH-specific config (sourced only by zsh)
-- `*.bash` - Bash-specific config (sourced only by bash)
-- `path.sh` / `path.zsh` / `path.bash` - Loaded first (PATH config)
-- `completion.sh` / `completion.zsh` / `completion.bash` - Loaded last
+- Shell config: zshrc/bashrc source only these fixed names from a topic
+  root, in this order. `.sh` is shared by bash and zsh and loads first in
+  each phase; `.zsh` / `.bash` are shell-specific.
+  - `path.sh` / `path.zsh` / `path.bash` - Loaded first (PATH config)
+  - `rc.sh` / `rc.zsh` / `rc.bash` - Everything else (env, functions, aliases)
+  - `completion.sh` / `completion.zsh` / `completion.bash` - Loaded last
+- Any other shell file goes in a subdirectory, e.g. `bin/` for a script
+  that is run rather than sourced. `check.py` fails on any other
+  `.sh` / `.zsh` / `.bash` in a topic root: it would either never load or,
+  under the old load-everything rule, take over every new shell
 - `install.py` - Topic installation script
 - `dependencies.txt` - Topics that must install first, one per line
 - `platforms.txt` - Platforms this topic supports: `macos`, `linux`, or

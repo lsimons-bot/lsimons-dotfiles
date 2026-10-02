@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -21,6 +22,48 @@ def load_module(name, path):
 
 check = load_module("dotfiles_check_validation", REPO_ROOT / "script" / "check.py")
 helpers = load_module("dotfiles_helpers_validation", REPO_ROOT / "script" / "helpers.py")
+
+
+class ShellLayoutTests(unittest.TestCase):
+    """zshrc/bashrc source only fixed names from each topic root.
+
+    A script anywhere else in a topic root used to be sourced too, and one
+    ending in exec replaced every new interactive shell.
+    """
+
+    LOADERS = ("zsh/zshrc.symlink", "bash/bashrc.symlink")
+
+    def test_repository_has_no_stray_shell_files(self):
+        self.assertEqual(check.stray_shell_files(REPO_ROOT), [])
+
+    def test_flags_unsourced_shell_files_in_a_topic_root(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for rel in (
+                "topic/rc.sh",
+                "topic/path.zsh",
+                "topic/completion.bash",
+                "topic/topic.sh",
+                "topic/extra.zsh",
+                "topic/old.bash",
+                "topic/bin/tool.sh",
+                "topic/profile.sh.symlink",
+                ".git/hooks/pre-commit.sh",
+            ):
+                (root / rel).parent.mkdir(parents=True, exist_ok=True)
+                (root / rel).write_text("")
+            self.assertEqual(
+                check.stray_shell_files(root),
+                ["topic/extra.zsh", "topic/old.bash", "topic/topic.sh"],
+            )
+
+    def test_loaders_source_exactly_the_names_the_check_allows(self):
+        sourced = set()
+        for loader in self.LOADERS:
+            text = (REPO_ROOT / loader).read_text()
+            self.assertNotRegex(text, r'"\$DOTFILES"/\*/\*\.', loader)
+            sourced |= set(re.findall(r'"\$DOTFILES"/\*/([a-z]+\.(?:sh|zsh|bash))', text))
+        self.assertEqual(sourced, check.SOURCED_SHELL_FILES)
 
 
 class MachineValidationTests(unittest.TestCase):

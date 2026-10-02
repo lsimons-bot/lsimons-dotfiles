@@ -9,10 +9,12 @@ Checks, in order:
   1. Compile every Python file in memory (without creating ``__pycache__``)
   2. Ruff linting for every Python file
   3. ShellCheck over every ``.sh`` and ``.bash`` file
-  4. actionlint over the GitHub Actions workflows
-  5. JSON validity and machine configuration validation
-  6. Standard-library unit tests
-  7. Installer dry-run: ``python3 script/install.py --dry-run``
+  4. Shell layout: no shell file in a topic root other than the names
+     zshrc/bashrc source (``path``, ``rc``, ``completion``)
+  5. actionlint over the GitHub Actions workflows
+  6. JSON validity and machine configuration validation
+  7. Standard-library unit tests
+  8. Installer dry-run: ``python3 script/install.py --dry-run``
      (exercises every topic installer with dry-run propagated)
 
 Every external tool used here is exact-pinned in ``.mise.toml``, so
@@ -131,6 +133,44 @@ def check_shellcheck() -> bool:
         print('[FAIL] shellcheck reported issues')
         return False
     print('[ok]   shellcheck')
+    return True
+
+
+# The only shell files zshrc/bashrc source from a topic root, by phase.
+SOURCED_SHELL_FILES = {
+    f'{phase}.{ext}' for phase in ('path', 'rc', 'completion') for ext in ('sh', 'zsh', 'bash')
+}
+
+
+def stray_shell_files(root: Path) -> list[str]:
+    """Return shell files in a topic root that zshrc/bashrc will not source.
+
+    Such a file is either a misnamed config file, which silently stops
+    loading, or a script that belongs in a subdirectory such as ``bin/``.
+    Under the old loader, which sourced every ``<topic>/*.sh``, the second
+    kind replaced each new shell when it ended in ``exec``.
+    """
+    stray: list[str] = []
+    for ext in ('sh', 'zsh', 'bash'):
+        for path in root.glob(f'*/*.{ext}'):
+            topic = path.parent.name
+            if topic.startswith('.') or topic in SKIP_DIRS:
+                continue
+            if path.name not in SOURCED_SHELL_FILES:
+                stray.append(str(path.relative_to(root)))
+    return sorted(stray)
+
+
+def check_shell_layout() -> bool:
+    """Fail on shell files in a topic root that the shells will not source."""
+    stray = stray_shell_files(REPO_ROOT)
+    print('[check] shell layout: topic roots hold only path/rc/completion shell files')
+    if stray:
+        print('[FAIL] shell files the shells will not source:')
+        for entry in stray:
+            print(f'  - {entry}: rename to rc.*, or move a script into a subdirectory (bin/)')
+        return False
+    print('[ok]   shell layout')
     return True
 
 
@@ -506,6 +546,7 @@ CHECKS = {
     'py_compile': check_py_compile,
     'ruff': check_ruff,
     'shellcheck': check_shellcheck,
+    'shell-layout': check_shell_layout,
     'actionlint': check_actionlint,
     'json': check_json,
     'tests': check_tests,

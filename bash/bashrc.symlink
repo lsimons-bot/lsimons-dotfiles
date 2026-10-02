@@ -7,8 +7,11 @@ export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
-# Source all .sh and .bash files from the dotfiles directory
-# .sh files are shared between bash and zsh, loaded first
+# Source each topic's shell config from the dotfiles directory, in three
+# phases: path.*, then rc.*, then completion.*. Only those fixed names are
+# sourced; any other script in a topic is left alone, so a file that is
+# meant to be run (and may end in exec) can never take over a new shell.
+# .sh files are shared between bash and zsh, loaded first in each phase;
 # .bash files are bash-specific, loaded second
 DOTFILES="$HOME/.dotfiles"
 if [ -d "$DOTFILES" ]; then
@@ -29,17 +32,11 @@ if [ -d "$DOTFILES" ]; then
   done
 
   # Load everything else
-  for file in "$DOTFILES"/*/*.sh; do
-    case "$file" in
-      */path.sh|*/completion.sh) continue ;;
-      *) [ -r "$file" ] && source "$file" ;;
-    esac
+  for file in "$DOTFILES"/*/rc.sh; do
+    [ -r "$file" ] && source "$file"
   done
-  for file in "$DOTFILES"/*/*.bash; do
-    case "$file" in
-      */path.bash|*/completion.bash) continue ;;
-      *) [ -r "$file" ] && source "$file" ;;
-    esac
+  for file in "$DOTFILES"/*/rc.bash; do
+    [ -r "$file" ] && source "$file"
   done
 
   # Load completion configuration last

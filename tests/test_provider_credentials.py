@@ -1,7 +1,7 @@
 """Tests for machine-aware provider credential resolution (issue #13).
 
 Covers script/helpers.py::get_provider_credential and the
-script/provider_credential.py CLI that codex.sh/opencode.sh call at
+script/provider_credential.py CLI that codex/rc.sh and opencode/rc.sh call at
 runtime to resolve the LiteLLM 1Password account/reference from the
 CURRENT machine's config, with fail-closed behaviour and no fallback
 to another machine's credential.

@@ -3,7 +3,7 @@
 # op-ssh-sign -- no 1Password prompt mid-session. Mirrors the git-config-ai
 # routing in the claude, codex, and pi-coding-agent topics. Copilot CLI has
 # no config env block, so we scope GIT_CONFIG_GLOBAL to the launched process
-# (like opencode.sh / codex.sh). Requires the git topic's config.ai.
+# (like opencode/rc.sh / codex/rc.sh). Requires the git topic's config.ai.
 copilot() {
   GIT_CONFIG_GLOBAL="${XDG_CONFIG_HOME:-$HOME/.config}/git/config.ai" command copilot "$@"
 }

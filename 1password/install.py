@@ -47,7 +47,7 @@ WINDOWS_USERS_DIR = Path("/mnt/c/Users")
 
 # Both the macOS and the Linux desktop app read the agent config from
 # this XDG path, so nothing here is platform-specific. What does differ
-# is the agent socket, which ssh/ssh.sh points SSH_AUTH_SOCK at.
+# is the agent socket, which ssh/rc.sh points SSH_AUTH_SOCK at.
 OP_CONFIG_DIR = XDG_CONFIG_HOME / "1Password"
 OP_SSH_CONFIG_DIR = OP_CONFIG_DIR / "ssh"
 SSH_AGENT_TOML = OP_SSH_CONFIG_DIR / "agent.toml"

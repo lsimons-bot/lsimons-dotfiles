@@ -26,7 +26,7 @@ git_installer = load_module("dotfiles_git_installer", REPO_ROOT / "git" / "insta
 class SshAgentUnitTests(unittest.TestCase):
     """The agent exists so AI sessions over SSH can sign commits; the
     costly mistakes are shadowing the distro's own unit and writing a
-    unit that listens somewhere other than where ssh.sh looks."""
+    unit that listens somewhere other than where ssh/rc.sh looks."""
 
     def setUp(self):
         helpers.set_dry_run(False)
@@ -59,7 +59,7 @@ class SshAgentUnitTests(unittest.TestCase):
             service, env_d, enable = self.run_with(tmp, packaged=False)
             unit = service.read_text()
             self.assertIn("ExecStart=/usr/bin/ssh-agent -D -a %t/ssh-agent.socket", unit)
-            # Where ssh.sh and the environment.d drop-in expect it.
+            # Where ssh/rc.sh and the environment.d drop-in expect it.
             self.assertIn("SSH_AUTH_SOCK=${XDG_RUNTIME_DIR}/ssh-agent.socket", env_d.read_text())
         enable.assert_called_once_with("ssh-agent.service", user=True)
 

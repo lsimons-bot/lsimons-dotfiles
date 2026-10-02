@@ -30,7 +30,7 @@ from helpers import (
 # to fall back to ~/.tfenv. Point it at an XDG path instead so it never asks.
 # On Arch the config dir only holds install locks and the optional
 # use-gpgv/use-gnupg files; the versions still land in /var/lib/tfenv.
-# terraform.sh exports the same path for interactive shells.
+# terraform/rc.sh exports the same path for interactive shells.
 ARCH_TFENV_GROUP = 'tfenv'
 ARCH_TFENV_CONFIG_DIR = os.path.join(XDG_DATA_HOME_STR, 'tfenv')
 

@@ -22,8 +22,11 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# Source all .sh and .zsh files from the dotfiles directory
-# .sh files are shared between bash and zsh, loaded first
+# Source each topic's shell config from the dotfiles directory, in three
+# phases: path.*, then rc.*, then completion.*. Only those fixed names are
+# sourced; any other script in a topic is left alone, so a file that is
+# meant to be run (and may end in exec) can never take over a new shell.
+# .sh files are shared between bash and zsh, loaded first in each phase;
 # .zsh files are zsh-specific, loaded second
 DOTFILES="$HOME/.dotfiles"
 if [ -d "$DOTFILES" ]; then
@@ -36,17 +39,11 @@ if [ -d "$DOTFILES" ]; then
   done
 
   # Load everything else
-  for file in "$DOTFILES"/*/*.sh(N); do
-    case "$file" in
-      */path.sh|*/completion.sh) continue ;;
-      *) [ -r "$file" ] && source "$file" ;;
-    esac
+  for file in "$DOTFILES"/*/rc.sh(N); do
+    [ -r "$file" ] && source "$file"
   done
-  for file in "$DOTFILES"/*/*.zsh(N); do
-    case "$file" in
-      */path.zsh|*/completion.zsh) continue ;;
-      *) [ -r "$file" ] && source "$file" ;;
-    esac
+  for file in "$DOTFILES"/*/rc.zsh(N); do
+    [ -r "$file" ] && source "$file"
   done
 
   # Load completion configuration last

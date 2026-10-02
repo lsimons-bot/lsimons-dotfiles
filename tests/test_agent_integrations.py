@@ -102,7 +102,7 @@ class DeterministicAgentIntegrationTests(unittest.TestCase):
         self.assertIn(f"'{module.BOT_ATTRIBUTION}'", installer)
 
     def test_gemini_routes_git_through_ai_config(self):
-        shell_config = (REPO_ROOT / "gemini/gemini.sh").read_text()
+        shell_config = (REPO_ROOT / "gemini/rc.sh").read_text()
         self.assertIn("GIT_CONFIG_GLOBAL=", shell_config)
         self.assertIn("/git/config.ai", shell_config)
 

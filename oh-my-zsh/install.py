@@ -55,7 +55,7 @@ def install_oh_my_zsh():
 
 
 def powerlevel10k_theme_paths():
-    """Every place a packaged or cloned theme can be, as powerline10k.zsh
+    """Every place a packaged or cloned theme can be, as oh-my-zsh/rc.zsh
     searches them."""
     candidates = []
     if command_exists('brew'):
@@ -80,7 +80,7 @@ def install_powerlevel10k():
     # Homebrew and the AUR package the theme (Arch names the package after
     # what it is rather than after the theme); Debian/Ubuntu do not, so
     # there it is cloned from upstream instead, which is also romkatv's
-    # own recommended install. oh-my-zsh/powerline10k.zsh knows every one
+    # own recommended install. oh-my-zsh/rc.zsh knows every one
     # of these locations.
     if not ensure_package(
         'powerlevel10k',

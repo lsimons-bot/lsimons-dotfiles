@@ -224,11 +224,14 @@ If you're an AI coding agent (GitHub Copilot, Claude Code, etc.) working on this
 ### File Naming Convention
 
 - `*.symlink` - Files symlinked to home directory or XDG directories
-- `*.sh` - Shared shell config, sourced by both bash and zsh
-- `*.zsh` - ZSH-specific config, sourced only by zsh
-- `*.bash` - Bash-specific config, sourced only by bash
 - `path.sh` / `path.zsh` / `path.bash` - Loaded first, for PATH configuration
+- `rc.sh` / `rc.zsh` / `rc.bash` - Loaded next: environment, functions, aliases
 - `completion.sh` / `completion.zsh` / `completion.bash` - Loaded last
+
+  In each phase `.sh` is shared by bash and zsh and loads first, then the
+  shell's own `.zsh` / `.bash`. Only these names are sourced: any other
+  shell file in a topic root fails `check.py`, and scripts that are run
+  rather than sourced live in a subdirectory such as `bin/`.
 - `install.py` - Topic-specific installation script
 - `dependencies.txt` - Other topics that must install first, one per line
 - `platforms.txt` - Platforms this topic supports, one per line: `macos`,
@@ -371,7 +374,7 @@ has no VM and ignores this key.
 ### Provider credentials (`providers`)
 
 Some tools (currently the Codex and OpenCode shell wrappers, see
-`codex/codex.sh` and `opencode/opencode.sh`) need an LLM provider API key
+`codex/rc.sh` and `opencode/rc.sh`) need an LLM provider API key
 that lives in 1Password under a different account on different machines
 — e.g. the SBP work account on a work laptop, a personal account
 elsewhere. This is configured per machine under `providers`, mirroring
@@ -491,9 +494,9 @@ Secrets are loaded from 1Password, not stored in git. See the [1Password topic](
    ```
 
 2. Add files:
-   - `mytopic.sh` - Shared shell config (auto-loaded in both bash and zsh)
-   - `mytopic.zsh` - ZSH-specific config (optional)
-   - `mytopic.bash` - Bash-specific config (optional)
+   - `rc.sh` - Shared shell config (auto-loaded in both bash and zsh)
+   - `rc.zsh` - ZSH-specific config (optional)
+   - `rc.bash` - Bash-specific config (optional)
    - `mytopic.symlink` - File to symlink
    - `install.py` - Installation script (optional)
 
@@ -547,7 +550,7 @@ in the Windows 1Password app.
 The AI signing key is a passphrase-protected file, `~/.ssh/ai_ed25519`,
 not a 1Password agent key, so it needs an ssh-agent. `ssh/install.py`
 enables the `ssh-agent.socket` systemd user unit (or writes an equivalent
-service where the distro ships none), and `ssh/ssh.sh` exports its
+service where the distro ships none), and `ssh/rc.sh` exports its
 socket as `SSH_AUTH_SOCK` when nothing else has set one. Interactive
 shells then load the key with the passphrase from 1Password. Over SSH
 there is no desktop app to approve that read, so the shell prints a hint
