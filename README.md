@@ -156,7 +156,7 @@ The installation script (`./script/install.py`) will:
 | `bash/` | Bash configuration and directories |
 | `bash-it/` | Bash-it framework (prompt, plugins) |
 | `claude/` | Claude Code CLI and configuration |
-| `claude-docker/` | [claude-docker](https://github.com/schubergphilis/claude-docker): checkout in `~/git/sbp/claude-docker`, `claude-docker` on PATH, `~/.claude/settings.docker.json`, and the `claude-code:local` image. **Opt-in per machine** via `claude.docker` |
+| `claude-docker/` | [claude-docker](https://github.com/schubergphilis/claude-docker): checkout in `~/git/sbp/claude-docker`, a `claude-docker` wrapper on PATH, `~/.claude/settings.docker.json`, the `claude-code:local` image, and a personal `claude-code-lsimons:local` image on top of it with mise. **Opt-in per machine** via `claude.docker` |
 | `colors/` | `pastel` color CLI + docs for theme/palette files across tools |
 | `codex/` | OpenAI Codex CLI and configuration |
 | `copilot/` | GitHub Copilot CLI (git-config-ai routing) |
@@ -447,13 +447,22 @@ every machine but leaves `tailscale up` to the user.
 - `docker` runs the `claude-docker/` topic. It clones
   [claude-docker](https://github.com/schubergphilis/claude-docker) to
   `~/git/sbp/claude-docker` (an existing checkout is left alone), links
-  `~/.local/bin/claude-docker` to its `run.sh`, and builds the
-  `claude-code:local` image if it is missing and docker is running. It also
+  `~/.local/bin/claude-docker` to `claude-docker/bin/claude-docker.sh`, and
+  builds the `claude-code:local` image if it is missing and docker is
+  running. The wrapper runs the checkout's `run.sh` with
+  `CLAUDE_DOCKER_IMAGE=claude-code-lsimons:local`, a personal image built
+  from `claude-docker/image/` that adds mise and build-essential: projects
+  get their `mise.toml` tool versions and `[env]` inside the container,
+  and mise installs Linux builds into the persistent `claude-code-root`
+  volume on first use (`mise install`). It also
   writes `~/.claude/settings.docker.json` from `claude/settings.json.base`,
   without `sandbox` or `hooks` and with `autoUpdates` off, since the image
   pins Claude Code. Opt-in because it needs a container engine and a
-  ~2.4 GB image. After pulling the checkout, rebuild with
-  `docker build -t claude-code:local ~/git/sbp/claude-docker`.
+  ~2.4 GB image. After pulling the checkout, rebuild both images, in order:
+  `docker build -t claude-code:local ~/git/sbp/claude-docker` and then
+  `docker build -t claude-code-lsimons:local claude-docker/image`.
+  `CLAUDE_DOCKER_IMAGE=claude-code:local claude-docker` runs the
+  upstream image as-is.
 - `removeDenyRules` drops the `permissions.deny` list from both settings
   files.
 

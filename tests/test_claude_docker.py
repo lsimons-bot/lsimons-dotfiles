@@ -9,6 +9,7 @@ leaking into the container's settings.json.
 
 import importlib.util
 import json
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -68,8 +69,22 @@ class DockerSettingsTests(unittest.TestCase):
         base = {**self.base, "sandbox": {"network": {}}, "hooks": {"PreToolUse": []}}
         settings = claude_docker.docker_settings(base, {})
         self.assertNotIn("sandbox", settings)
-        self.assertNotIn("hooks", settings)
+        self.assertEqual(settings["hooks"], claude_docker.CONTAINER_HOOKS)
         self.assertIs(settings["autoUpdates"], False)
+
+    def test_session_start_hook_points_at_a_script_in_the_personal_image(self):
+        script = claude_docker.PERSONAL_IMAGE_DIR / Path(claude_docker.SESSION_START_SCRIPT).name
+        self.assertTrue(script.is_file(), script)
+        dockerfile = (claude_docker.PERSONAL_IMAGE_DIR / "Dockerfile").read_text()
+        self.assertIn(f"{script.name} {Path(claude_docker.SESSION_START_SCRIPT).parent}/", dockerfile)
+
+    def test_session_start_hook_is_a_no_op_without_the_script(self):
+        # The plain claude-code:local image reads the same settings file.
+        command = claude_docker.CONTAINER_HOOKS["SessionStart"][0]["hooks"][0]["command"]
+        result = subprocess.run(
+            ["sh", "-c", command], capture_output=True, text=True, check=False
+        )
+        self.assertEqual((result.returncode, result.stdout, result.stderr), (0, "", ""))
 
     def test_keeps_the_rest_of_the_base(self):
         # Attribution in particular: dropping it restores Claude's own
@@ -86,6 +101,41 @@ class DockerSettingsTests(unittest.TestCase):
     def test_remove_deny_rules_applies_like_the_host(self):
         settings = claude_docker.docker_settings(self.base, {"claude": {"removeDenyRules": True}})
         self.assertNotIn("deny", settings["permissions"])
+
+
+class PersonalImageTests(unittest.TestCase):
+    def test_wrapper_defaults_to_the_image_the_installer_builds(self):
+        # A mismatch would leave the wrapper pointing at an image nothing builds.
+        wrapper = claude_docker.WRAPPER.read_text()
+        self.assertIn(
+            f'CLAUDE_DOCKER_IMAGE="${{CLAUDE_DOCKER_IMAGE:-{claude_docker.PERSONAL_IMAGE}}}"',
+            wrapper,
+        )
+
+    def test_wrapper_is_not_sourced_by_the_shell_rc_files(self):
+        # zshrc/bashrc source every <topic>/*.sh; the wrapper's exec would
+        # then replace each new interactive shell with claude-docker.
+        sourced = set((REPO_ROOT / "claude-docker").glob("*.sh"))
+        self.assertNotIn(claude_docker.WRAPPER, sourced)
+        self.assertTrue(claude_docker.WRAPPER.is_file())
+
+    def test_personal_image_builds_on_the_base(self):
+        dockerfile = (claude_docker.PERSONAL_IMAGE_DIR / "Dockerfile").read_text()
+        self.assertIn(f"FROM {claude_docker.IMAGE}\n", dockerfile)
+
+    def test_builds_the_base_before_the_personal_image(self):
+        with mock.patch.object(claude_docker, "parse_dry_run"), mock.patch.object(
+            claude_docker, "docker_enabled", return_value=True
+        ), mock.patch.object(claude_docker, "clone_repo", return_value=True), mock.patch.object(
+            claude_docker, "link_file"
+        ), mock.patch.object(claude_docker, "write_settings"), mock.patch.object(
+            claude_docker, "build_image", return_value=True
+        ) as build:
+            self.assertEqual(claude_docker.main(), 0)
+        self.assertEqual(
+            [c.args[0] for c in build.call_args_list],
+            [claude_docker.IMAGE, claude_docker.PERSONAL_IMAGE],
+        )
 
 
 if __name__ == "__main__":
