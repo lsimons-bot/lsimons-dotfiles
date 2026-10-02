@@ -483,7 +483,9 @@ every machine but leaves `tailscale up` to the user.
   from `claude-docker/image/` that adds mise and build-essential: projects
   get their `mise.toml` tool versions and `[env]` inside the container,
   and mise installs Linux builds into the persistent `claude-code-root`
-  volume on first use (`mise install`). It also
+  volume on first use (`mise install`). The image also has the shared
+  libraries Playwright's Chromium needs, so `playwright install chromium`
+  works inside the container. It also
   writes `~/.claude/settings.docker.json` from `claude/settings.json.base`,
   without `sandbox` or `hooks` and with `autoUpdates` off, since the image
   pins Claude Code. Opt-in because it needs a container engine and a

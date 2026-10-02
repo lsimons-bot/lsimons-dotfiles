@@ -1,6 +1,7 @@
-# Personal claude-docker image: the upstream claude-code:local plus mise and a
-# C toolchain, so projects that pin their tools in mise.toml get those
-# versions inside the container instead of the image's own node/go/uv.
+# Personal claude-docker image: the upstream claude-code:local plus mise, a C
+# toolchain and the libraries Playwright's Chromium needs. Projects that pin
+# their tools in mise.toml get those versions inside the container instead of
+# the image's own node/go/uv.
 #
 # Built by claude-docker/install.py after the base image. Rebuild it whenever
 # the base is rebuilt, since run.sh and the image it runs are versioned together:
@@ -17,6 +18,22 @@ FROM claude-code:local
 # apt-get install one itself.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends build-essential \
+ && rm -rf /var/lib/apt/lists/*
+
+# Shared libraries for Playwright's own Chromium build, which a project
+# downloads with `playwright install chromium` into ~/.cache/ms-playwright on
+# the claude-code-root volume. Ubuntu's `chromium` apt package is only a
+# wrapper around the snap, and snaps cannot run in a container. These names
+# are the ones `ldd headless_shell` reports missing, so Claude, as a
+# non-root user, never needs `playwright install-deps`. fonts-liberation:
+# the image has no fonts at all, and text in screenshots would render as
+# empty boxes without one.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      libglib2.0-0t64 libnspr4 libnss3 libatk1.0-0t64 libatk-bridge2.0-0t64 \
+      libdbus-1-3 libcups2t64 libxcb1 libxkbcommon0 libasound2t64 libgbm1 \
+      libx11-6 libxext6 libcairo2 libpango-1.0-0 libxcomposite1 libxdamage1 \
+      libxfixes3 libxrandr2 libatspi2.0-0t64 fonts-liberation \
  && rm -rf /var/lib/apt/lists/*
 
 # mise: version + per-arch sha256 from the release's SHASUMS256.txt.

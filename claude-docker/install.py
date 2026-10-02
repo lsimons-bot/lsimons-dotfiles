@@ -17,8 +17,8 @@ What it sets up:
 * writes ~/.claude/settings.docker.json, the container's settings.json,
   from the same settings.json.base as the host (see docker_settings);
 * builds the claude-code:local image, then the personal
-  claude-code-lsimons:local image on top of it (image/Dockerfile: mise and
-  a C toolchain), each when it is missing and docker is running. Rebuilds
+  claude-code-lsimons:local image on top of it (image/Dockerfile: mise, a
+  C toolchain and Playwright's Chromium libraries), each when it is missing and docker is running. Rebuilds
   after a pull or pin change are left to the user; rebuild both, in order;
 * with `claude.dockerByDefault` also set, writes the DEFAULT_MARKER file
   that makes rc.sh here turn `claude` in an interactive shell into
