@@ -1,0 +1,2 @@
+# Linux already ships GNU sed and procps' watch.
+macos
