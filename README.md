@@ -168,6 +168,7 @@ The installation script (`./script/install.py`) will:
 | `gh/` | GitHub CLI + extensions (`gh stack`) |
 | `glab/` | GitLab CLI (`glab`) |
 | `go/` | Go (via mise) |
+| `gnu-tools/` | GNU sed (`gsed`) and `watch`. **macOS only** — Linux already has both |
 | `ghostty/` | Ghostty terminal (no aarch64 Linux build — config only there) |
 | `git/` | Git + credential helpers (`gh` for GitHub, `glab` per GitLab host, Git Credential Manager for Azure DevOps where packaged), git-filter-repo, Git LFS (installed and initialized) |
 | `herdr/` | herdr terminal agent multiplexer + LSD Warm Light theme |
@@ -182,10 +183,12 @@ The installation script (`./script/install.py`) will:
 | `opencode/` | OpenCode CLI (permissions, model variants, LSD Warm theme, git-config-ai routing) |
 | `openspec/` | openspec |
 | `pi-coding-agent/` | pi-coding-agent (settings, LSD Warm themes, git-config-ai routing) |
+| `postgres/` | PostgreSQL 16 client, keg-only and **not linked** (a project puts `/opt/homebrew/opt/postgresql@16/bin` on its own PATH). **macOS only** |
 | `python/` | Python (via mise) + XDG config |
 | `quarto/` | Quarto (Homebrew cask; `quarto-cli-bin` from the AUR) |
 | `ruby/` | Ruby (via mise) |
 | `rust/` | Rust (via mise) + CARGO_HOME |
+| `secretive/` | [Secretive](https://github.com/maxgoedjen/secretive) (Secure Enclave SSH agent; cask, needs admin) and `age-plugin-se`. Key creation and GitHub registration stay manual; 1Password stays the default agent. **macOS only** |
 | `sh/` | Shared shell configuration (PATH, XDG, settings) |
 | `ssh/` | SSH configuration (post-quantum warning, 1Password agent), and on Linux an `ssh-agent` systemd user unit holding the AI signing key |
 | `sshd/` | OpenSSH server: `authorized_keys` from the machine config, keys-only login, port 22 in ufw. **Opt-in per machine** via `remoteAccess.sshd`; Linux only |
@@ -195,6 +198,7 @@ The installation script (`./script/install.py`) will:
 | `terraform/` | tfenv and Terraform |
 | `timeout/` | `timeout` command for macOS (via the `aisk/tap` Homebrew tap). **macOS only** — Linux coreutils already has it |
 | `tmux/` | tmux |
+| `toolbelt/` | CLI toolbelt via mise: ripgrep, fd, bat, yq, ast-grep, shellcheck, shfmt, hyperfine, typst, pandoc, cloudflared, age; plus socat and tokei from the platform package manager |
 | `topgrade/` | topgrade (automated updates) |
 | `uv/` | uv (Python package manager) |
 | `vivaldi/` | Vivaldi Browser (no aarch64 Linux build) |

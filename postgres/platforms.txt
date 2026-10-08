@@ -1,0 +1,3 @@
+# A versioned, keg-only client is a Homebrew notion. Linux distributions
+# ship their own postgresql-client; add a Linux path here when needed.
+macos

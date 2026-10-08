@@ -1,0 +1,2 @@
+# Secretive and age-plugin-se are built on the macOS Secure Enclave.
+macos
